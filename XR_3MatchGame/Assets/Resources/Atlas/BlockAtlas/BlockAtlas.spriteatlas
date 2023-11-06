@@ -32,33 +32,33 @@ SpriteAtlas:
     secondaryTextureSettings: {}
     variantMultiplier: 1
     packables:
-    - {fileID: 2800000, guid: f358bcebcb4e0481e90f3123ee09ba9e, type: 3}
-    - {fileID: 2800000, guid: 1f65eb831ffc34ce8bd3bad330129fd8, type: 3}
-    - {fileID: 2800000, guid: 67e2869722de343228da2628fce2ef41, type: 3}
-    - {fileID: 2800000, guid: 1b0e1cd4908fe4dc6aafe221971b1d45, type: 3}
-    - {fileID: 2800000, guid: b383e523e729348fea38385365c81347, type: 3}
-    - {fileID: 2800000, guid: 36842a4d4c9d544dd9d80d48924edf2e, type: 3}
-    - {fileID: 2800000, guid: 081f11e542eb1e0439c95d597c90cfd8, type: 3}
+    - {fileID: 2800000, guid: 78288f711f515ad4b954be2557569ebb, type: 3}
+    - {fileID: 2800000, guid: 5aa3f694979a841408880ed2c4d39c3d, type: 3}
+    - {fileID: 2800000, guid: dbbc0bad406921e4f8a2d8fe17fe3e03, type: 3}
+    - {fileID: 2800000, guid: 3c5ac918639d8914bb0b138a8904c4d7, type: 3}
+    - {fileID: 2800000, guid: e081f688a2b0ccc458835ec637f921c4, type: 3}
+    - {fileID: 2800000, guid: 1c0c8f7786017854e97500dca8501a07, type: 3}
+    - {fileID: 2800000, guid: 3f2c683e465702f468ed6531871c2522, type: 3}
     bindAsDefault: 1
     isAtlasV2: 0
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
-  - {fileID: 21300000, guid: b383e523e729348fea38385365c81347, type: 3}
-  - {fileID: 21300000, guid: 1f65eb831ffc34ce8bd3bad330129fd8, type: 3}
-  - {fileID: 21300000, guid: 1b0e1cd4908fe4dc6aafe221971b1d45, type: 3}
-  - {fileID: 21300000, guid: 081f11e542eb1e0439c95d597c90cfd8, type: 3}
-  - {fileID: 21300000, guid: 67e2869722de343228da2628fce2ef41, type: 3}
-  - {fileID: 21300000, guid: f358bcebcb4e0481e90f3123ee09ba9e, type: 3}
-  - {fileID: 21300000, guid: 36842a4d4c9d544dd9d80d48924edf2e, type: 3}
+  - {fileID: 21300000, guid: 78288f711f515ad4b954be2557569ebb, type: 3}
+  - {fileID: 21300000, guid: 5aa3f694979a841408880ed2c4d39c3d, type: 3}
+  - {fileID: 21300000, guid: 1c0c8f7786017854e97500dca8501a07, type: 3}
+  - {fileID: 21300000, guid: 3c5ac918639d8914bb0b138a8904c4d7, type: 3}
+  - {fileID: 21300000, guid: e081f688a2b0ccc458835ec637f921c4, type: 3}
+  - {fileID: 21300000, guid: dbbc0bad406921e4f8a2d8fe17fe3e03, type: 3}
+  - {fileID: 21300000, guid: 3f2c683e465702f468ed6531871c2522, type: 3}
   m_PackedSpriteNamesToIndex:
-  - Pink
-  - Green
-  - DarkBlue
-  - Boom
-  - Cream
-  - Blue
-  - Purple
+  - GlowingBall1
+  - GlowingBall2
+  - GlowingBall6
+  - GlowingBall4
+  - GlowingBall5
+  - GlowingBall3
+  - GlowingBall7
   m_RenderDataMap: {}
   m_Tag: BlockAtlas
   m_IsVariant: 0
