@@ -158,6 +158,7 @@ namespace XR_3MatchGame_Object
             }
         }
 
+        /*
         /// <summary>
         /// ÆøÅº ¿©ºÎ¸¦ Ã¼Å©ÇÏ´Â ¸Þ¼­µå
         /// </summary>
@@ -392,6 +393,7 @@ namespace XR_3MatchGame_Object
 
             #endregion
         }
+        */
 
         public IEnumerator BlockCheck(Block curBlock)
         {
@@ -412,6 +414,7 @@ namespace XR_3MatchGame_Object
             var delBlocks = GM.delBlocks;
             var downBlocks = GM.downBlocks;
 
+            /*
             // ÆøÅº °Ë»ç ÀÛ¾÷
             for (int i = 0; i < blocks.Count; i++)
             {
@@ -420,7 +423,10 @@ namespace XR_3MatchGame_Object
                     BoomCheck(blocks[i]);
                 }
             }
+            */
 
+
+            /*
             // ÆøÅº ÀÛ¾÷ 
             if (delBlocks.Count != 0)
             {
@@ -614,6 +620,7 @@ namespace XR_3MatchGame_Object
                     }
                 }
             }
+            */
 
             yield return new WaitForSeconds(.4f);
 

@@ -72,34 +72,34 @@ namespace XR_3MatchGame_Object
             // 랜덤으로 블럭의 스프라이트를 설정
             switch (blockNum)
             {
-                case (int)BlockType.Blue:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Blue.ToString());
-                    blockType = BlockType.Blue;
+                case (int)BlockType.Dark:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Dark.ToString());
+                    blockType = BlockType.Dark;
                     break;
 
-                case (int)BlockType.Cream:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Cream.ToString());
-                    blockType = BlockType.Cream;
+                case (int)BlockType.Fire:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Fire.ToString());
+                    blockType = BlockType.Fire;
                     break;
 
-                case (int)BlockType.DarkBlue:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.DarkBlue.ToString());
-                    blockType = BlockType.DarkBlue;
+                case (int)BlockType.Light:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Light.ToString());
+                    blockType = BlockType.Light;
                     break;
 
-                case (int)BlockType.Green:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Green.ToString());
-                    blockType = BlockType.Green;
+                case (int)BlockType.Lightning:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Lightning.ToString());
+                    blockType = BlockType.Lightning;
                     break;
 
-                case (int)BlockType.Pink:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Pink.ToString());
-                    blockType = BlockType.Pink;
+                case (int)BlockType.Ice:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Ice.ToString());
+                    blockType = BlockType.Ice;
                     break;
 
-                case (int)BlockType.Purple:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Purple.ToString());
-                    blockType = BlockType.Purple;
+                case (int)BlockType.Tree:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Tree.ToString());
+                    blockType = BlockType.Tree;
                     break;
             }
 

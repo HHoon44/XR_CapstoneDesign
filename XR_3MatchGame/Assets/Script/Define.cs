@@ -22,7 +22,7 @@ namespace XR_3MatchGame.Util
 
     public enum BlockType
     {
-        None, Blue, Cream, DarkBlue, Green, Pink, Purple, Boom
+        None, Dark, Fire, Light, Lightning, Tree, Ice
     }
 
     public enum SwipeDir
