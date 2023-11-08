@@ -30,8 +30,13 @@ namespace XR_3MatchGame.Util
         None, Top, Bottom, Left, Right
     }
 
-    public enum BoomType
-    {
-        None, ColBoom, RowBoom
+    public enum StageIcon
+    { 
+        None, Fire, Ice, Tree
+    }
+
+    public enum Portrait
+    { 
+        None, Fire, Ice, Tree
     }
 }

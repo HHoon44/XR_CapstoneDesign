@@ -46,7 +46,6 @@ namespace XR_3MatchGame_Object
         private Board board;                    // 블럭이 존재하는 보드
 
         public BlockType blockType = BlockType.None;        // 현재 블럭의 타입
-        public BoomType boomType = BoomType.None;           // 만약에 블럭이 폭탄이라면 어떤 폭탄인지에 대한 타입
         private SwipeDir swipeDir = SwipeDir.None;
 
         [Header("Test")]
@@ -274,65 +273,26 @@ namespace XR_3MatchGame_Object
         {
             board.BlockUpdate();
 
-            var blocks = GM.blocks;
-
-            // 같은 블럭 개수
-            var count_T = 0;
-            var count_B = 0;
-            var count_M = 0;
-            var count_L = 0;
-            var count_R = 0;
-
             // 유저가 옮긴 블럭에 대한 로직
             switch (swipeDir)
             {
                 case SwipeDir.Top:
-                    for (int i = 0; i < blocks.Count; i++)
+                    if (board.BlockCheck(this, null, swipeDir))
                     {
-                        // Top
-                        if ((row + 1 == blocks[i].row || row + 2 == blocks[i].row) && col == blocks[i].col)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_T++;
-                            }
-                        }
-
-                        // Middle
-                        if ((col - 1 == blocks[i].col || col + 1 == blocks[i].col) && row == blocks[i].row)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_M++;
-                            }
-                        }
-
-                        // Left
-                        if ((col - 1 == blocks[i].col || col - 2 == blocks[i].col) && row == blocks[i].row)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_L++;
-                            }
-                        }
-
-                        // Right
-                        if ((col + 1 == blocks[i].col || col + 2 == blocks[i].col) && row == blocks[i].row)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_R++;
-                            }
-                        }
+                        // 블럭 매칭 시작
+                        GM.isStart = true;
                     }
-
-                    // 이동한 위치에 매칭되는 블럭이 없다면
-                    if (count_T < 2 && count_M < 2 && count_L < 2 && count_R < 2)
+                    else
                     {
                         yield return new WaitForSeconds(.2f);
 
                         // OtherBlock의 매칭 여부 판단
-                        if (OtherBlockCheck(count_T, count_B, count_M, count_L, count_R, blocks))
+                        if (board.BlockCheck(null, otherBlock, SwipeDir.None))
+                        {
+                            // 블럭 매칭 시작
+                            GM.isStart = true;
+                        }
+                        else
                         {
                             // 블럭 원위치
                             otherBlock.row += 1;
@@ -342,66 +302,28 @@ namespace XR_3MatchGame_Object
 
                             GM.GameStateUpdate(GameState.Play);
                         }
-                        else
-                        {
-                            // 블럭 매칭 시작
-                            GM.isStart = true;
-                        }
-                    }
-                    else
-                    {
-                        // 블럭 매칭 시작
-                        GM.isStart = true;
                     }
                     break;
 
                 case SwipeDir.Bottom:
-                    for (int i = 0; i < blocks.Count; i++)
+                    if (board.BlockCheck(this, null, swipeDir))
                     {
-                        // Bottom
-                        if ((row - 1 == blocks[i].row || row - 2 == blocks[i].row) && col == blocks[i].col)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_B++;
-                            }
-                        }
-
-                        // Middle
-                        if ((col - 1 == blocks[i].col || col + 1 == blocks[i].col) && row == blocks[i].row)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_M++;
-                            }
-                        }
-
-                        // Left
-                        if ((col - 1 == blocks[i].col || col - 2 == blocks[i].col) && row == blocks[i].row)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_L++;
-                            }
-                        }
-
-                        //Right
-                        if ((col + 1 == blocks[i].col || col + 2 == blocks[i].col) && row == blocks[i].row)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_R++;
-                            }
-                        }
+                        // 블럭 매칭 시작
+                        GM.isStart = true;
                     }
-
-                    if (count_B < 2 && count_M < 2 && count_L < 2 && count_R < 2)
+                    else
                     {
                         yield return new WaitForSeconds(.2f);
 
-                        // OtherBlock 매칭 여부 판단
-                        if (OtherBlockCheck(count_T, count_B, count_M, count_L, count_R, blocks))
+                        // OtherBlock의 매칭 여부 판단
+                        if (board.BlockCheck(null, otherBlock, SwipeDir.None))
                         {
+                            // 블럭 매칭 시작
+                            GM.isStart = true;
+                        }
+                        else
+                        {
+                            // 블럭 원위치
                             otherBlock.row -= 1;
                             row += 1;
 
@@ -409,66 +331,28 @@ namespace XR_3MatchGame_Object
 
                             GM.GameStateUpdate(GameState.Play);
                         }
-                        else
-                        {
-                            // OtherBlock에 매칭되는 블럭이 존재
-                            GM.isStart = true;
-                        }
-                    }
-                    else
-                    {
-                        // 현재 블럭과 매칭되는 블럭이 존재
-                        GM.isStart = true;
                     }
                     break;
 
                 case SwipeDir.Left:
-                    for (int i = 0; i < blocks.Count; i++)
+                    if (board.BlockCheck(this, null, swipeDir))
                     {
-                        // Top
-                        if ((row + 1 == blocks[i].row || row + 2 == blocks[i].row) && col == blocks[i].col)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_T++;
-                            }
-                        }
-
-                        // Bottom
-                        if ((row - 1 == blocks[i].row || row - 2 == blocks[i].row) && col == blocks[i].col)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_B++;
-                            }
-                        }
-
-                        // Middle
-                        if ((row - 1 == blocks[i].row || row + 1 == blocks[i].row) && col == blocks[i].col)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_M++;
-                            }
-                        }
-
-                        // Left
-                        if ((col - 1 == blocks[i].col || col - 2 == blocks[i].col) && row == blocks[i].row)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_L++;
-                            }
-                        }
+                        // 블럭 매칭 시작
+                        GM.isStart = true;
                     }
-
-                    if (count_T < 2 && count_B < 2 && count_M < 2 && count_L < 2)
+                    else
                     {
                         yield return new WaitForSeconds(.2f);
 
-                        // OtherBlock도 매칭되는 블럭이 있는지 확인
-                        if (OtherBlockCheck(count_T, count_B, count_M, count_L, count_R, blocks))
+                        // OtherBlock의 매칭 여부 판단
+                        if (board.BlockCheck(null, otherBlock, SwipeDir.None))
                         {
+                            // 블럭 매칭 시작
+                            GM.isStart = true;
+                        }
+                        else
+                        {
+                            // 블럭 원위치
                             otherBlock.col -= 1;
                             col += 1;
 
@@ -476,66 +360,28 @@ namespace XR_3MatchGame_Object
 
                             GM.GameStateUpdate(GameState.Play);
                         }
-                        else
-                        {
-                            // OtherBlock에 매칭되는 블럭이 존재
-                            GM.isStart = true;
-                        }
-                    }
-                    else
-                    {
-                        // 현재 블럭과 매칭되는 블럭이 존재
-                        GM.isStart = true;
                     }
                     break;
 
                 case SwipeDir.Right:
-                    for (int i = 0; i < blocks.Count; i++)
+                    if (board.BlockCheck(this, null, swipeDir))
                     {
-                        // Top
-                        if ((row + 1 == blocks[i].row || row + 2 == blocks[i].row) && col == blocks[i].col)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_T++;
-                            }
-                        }
-
-                        // Bottom
-                        if ((row - 1 == blocks[i].row || row - 2 == blocks[i].row) && col == blocks[i].col)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_B++;
-                            }
-                        }
-
-                        // Middle
-                        if ((row - 1 == blocks[i].row || row + 1 == blocks[i].row) && col == blocks[i].col)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_M++;
-                            }
-                        }
-
-                        // Right
-                        if ((col + 1 == blocks[i].col || col + 2 == blocks[i].col) && row == blocks[i].row)
-                        {
-                            if (blocks[i].blockType == blockType)
-                            {
-                                count_R++;
-                            }
-                        }
+                        // 블럭 매칭 시작
+                        GM.isStart = true;
                     }
-
-                    if (count_T < 2 && count_B < 2 && count_M < 2 && count_R < 2)
+                    else
                     {
                         yield return new WaitForSeconds(.2f);
 
-                        // OtherBlock 매칭 여부 판단
-                        if (OtherBlockCheck(count_T, count_B, count_M, count_L, count_R, blocks))
+                        // OtherBlock의 매칭 여부 판단
+                        if (board.BlockCheck(null, otherBlock, SwipeDir.None))
                         {
+                            // 블럭 매칭 시작
+                            GM.isStart = true;
+                        }
+                        else
+                        {
+                            // 블럭 원위치
                             otherBlock.col += 1;
                             col -= 1;
 
@@ -543,111 +389,11 @@ namespace XR_3MatchGame_Object
 
                             GM.GameStateUpdate(GameState.Play);
                         }
-                        else
-                        {
-                            // OtherBlock 매칭 시작
-                            GM.isStart = true;
-                        }
-                    }
-                    else
-                    {
-                        // 현재 블럭 매칭 시작
-                        GM.isStart = true;
                     }
                     break;
             }
 
             board.BlockUpdate();
-        }
-
-        /// <summary>
-        /// OtherBlock 매칭을 탐색해주는 메서드
-        /// </summary>
-        /// <param name="count_T">Top 개수</param>
-        /// <param name="count_B">Bottom 개수</param>
-        /// <param name="count_M">Middle 개수</param>
-        /// <param name="count_L">Left 개수</param>
-        /// <param name="count_R">Right 개수</param>
-        /// <returns></returns>
-        private bool OtherBlockCheck(int count_T, int count_B, int count_M, int count_L, int count_R, List<Block> blocks)
-        {
-            // 재사용하기 위해 0으로 초기화
-            count_T = 0;
-            count_B = 0;
-            count_M = 0;
-            var count_M2 = 0;
-            count_L = 0;
-            count_R = 0;
-
-            // OtherBlock 매칭 블럭 탐색 작업
-            for (int i = 0; i < blocks.Count; i++)
-            {
-                // Top
-                if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row + 2 == blocks[i].row) && otherBlock.col == blocks[i].col)
-                {
-                    if (otherBlock.blockType == blocks[i].blockType)
-                    {
-                        count_T++;
-                    }
-                }
-
-                // Horizontal Middle
-                if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col - 1 == blocks[i].col) && otherBlock.row == blocks[i].row)
-                {
-                    if (otherBlock.blockType == blocks[i].blockType)
-                    {
-                        count_M++;
-                    }
-                }
-
-                // Vertical Middle
-                // Horizontal에서 매칭되는 블럭이 없으므로 재사용
-                if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row - 1 == blocks[i].row) && otherBlock.col == blocks[i].col)
-                {
-                    if (otherBlock.blockType == blocks[i].blockType)
-                    {
-                        count_M2++;
-                    }
-                }
-
-                // Bottom
-                if ((otherBlock.row - 1 == blocks[i].row || otherBlock.row - 2 == blocks[i].row) && otherBlock.col == blocks[i].col)
-                {
-                    if (otherBlock.blockType == blocks[i].blockType)
-                    {
-                        count_B++;
-                    }
-                }
-
-                // Left
-                if ((otherBlock.col - 1 == blocks[i].col || otherBlock.col - 2 == blocks[i].col) && otherBlock.row == blocks[i].row)
-                {
-                    if (otherBlock.blockType == blocks[i].blockType)
-                    {
-                        count_L++;
-                    }
-                }
-
-                // Right
-                if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col + 2 == blocks[i].col) && otherBlock.row == blocks[i].row)
-                {
-                    if (otherBlock.blockType == blocks[i].blockType)
-                    {
-                        count_R++;
-                    }
-                }
-            }
-
-            if (count_T < 2 && count_M < 2 && count_M2 < 2 && count_B < 2 && count_L < 2 && count_R < 2)
-            {
-                // 매칭 발생 안함
-                return true;
-            }
-            else
-            {
-                // 매칭 발생
-                return false;
-            }
         }
     }
 }

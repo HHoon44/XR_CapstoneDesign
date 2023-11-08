@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.WindowsRuntime;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SocialPlatforms.Impl;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_InGame;
 using XR_3MatchGame_Resource;
 using XR_3MatchGame_Util;
+using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
 using static UnityEngine.PlayerLoop.EarlyUpdate;
 
 namespace XR_3MatchGame_Object
@@ -36,10 +39,13 @@ namespace XR_3MatchGame_Object
 
         private void Update()
         {
-            if (GM.isStart == true)
+            if (GM.GameState == GameState.Checking)
             {
-                GM.isStart = false;
-                StartCoroutine(BlockClear());
+                if (GM.isStart == true)
+                {
+                    GM.isStart = false;
+                    StartCoroutine(BlockClear());
+                }
             }
         }
 
@@ -78,7 +84,6 @@ namespace XR_3MatchGame_Object
         {
             var blocks = GM.blocks;
 
-            // 모든 블럭 탐색
             // Top = 6, Bottom = 0
             // Left = 0, Right = 6
             for (int i = 0; i < blocks.Count; i++)
@@ -158,248 +163,6 @@ namespace XR_3MatchGame_Object
             }
         }
 
-        /*
-        /// <summary>
-        /// 폭탄 여부를 체크하는 메서드
-        /// </summary>
-        /// <param name="blocks">블럭 모음</param>
-        /// <param name="curBlock">여부를 체크할 블럭</param>
-        public void BoomCheck(Block curBlock)
-        {
-            var blocks = GM.blocks;
-            var delBlocks = GM.delBlocks;
-
-            #region Col 체크 (3:0, 2:1, 1:2. 0:3)
-
-            // -1 -2 -3
-            if (curBlock.blockType != BlockType.Boom)
-            {
-                delBlocks.Clear();
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    if ((curBlock.col - 1 == blocks[i].col || curBlock.col - 2 == blocks[i].col || curBlock.col - 3 == blocks[i].col) && curBlock.row == blocks[i].row)
-                    {
-                        if (curBlock.blockType == blocks[i].blockType)
-                        {
-                            delBlocks.Add(blocks[i]);
-                        }
-                    }
-
-                    if (delBlocks.Count == 3)
-                    {
-                        curBlock.blockType = BlockType.Boom;
-                        curBlock.boomType = BoomType.ColBoom;
-
-                        // 마지막 자리에 폭탄 저장
-                        delBlocks.Add(curBlock);
-                        return;
-                    }
-                }
-            }
-
-            // -1 -2 +1
-            if (curBlock.blockType != BlockType.Boom)
-            {
-                delBlocks.Clear();
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    if ((curBlock.col - 1 == blocks[i].col || curBlock.col - 2 == blocks[i].col || curBlock.col + 1 == blocks[i].col) && curBlock.row == blocks[i].row)
-                    {
-                        if (curBlock.blockType == blocks[i].blockType)
-                        {
-                            delBlocks.Add(blocks[i]);
-                        }
-                    }
-
-                    if (delBlocks.Count == 3)
-                    {
-                        curBlock.blockType = BlockType.Boom;
-                        curBlock.boomType = BoomType.ColBoom;
-
-                        // 마지막 자리에 폭탄 저장
-                        delBlocks.Add(curBlock);
-                        return;
-                    }
-                }
-            }
-
-            // -1 +1 +2
-            if (curBlock.blockType != BlockType.Boom)
-            {
-                delBlocks.Clear();
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    if ((curBlock.col - 1 == blocks[i].col || curBlock.col + 1 == blocks[i].col || curBlock.col + 2 == blocks[i].col) && curBlock.row == blocks[i].row)
-                    {
-                        if (curBlock.blockType == blocks[i].blockType)
-                        {
-                            delBlocks.Add(blocks[i]);
-                        }
-                    }
-
-                    if (delBlocks.Count == 3)
-                    {
-                        curBlock.blockType = BlockType.Boom;
-                        curBlock.boomType = BoomType.ColBoom;
-
-                        // 마지막 자리에 폭탄을 저장
-                        delBlocks.Add(curBlock);
-                        return;
-                    }
-                }
-            }
-
-            // +1 +2 +3
-            if (curBlock.blockType != BlockType.Boom)
-            {
-                delBlocks.Clear();
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    if ((curBlock.col + 1 == blocks[i].col || curBlock.col + 2 == blocks[i].col || curBlock.col + 3 == blocks[i].col) && curBlock.row == blocks[i].row)
-                    {
-                        if (curBlock.blockType == blocks[i].blockType)
-                        {
-                            delBlocks.Add(blocks[i]);
-                        }
-                    }
-
-                    if (delBlocks.Count == 3)
-                    {
-                        curBlock.blockType = BlockType.Boom;
-                        curBlock.boomType = BoomType.ColBoom;
-
-                        // 마지막 자리에 폭탄을 저장
-                        delBlocks.Add(curBlock);
-                        return;
-                    }
-                }
-            }
-
-            #endregion
-
-            #region Row 체크 (3:0, 2:1, 1:2, 0:3)
-
-            if (curBlock.blockType != BlockType.Boom)
-            {
-                delBlocks.Clear();
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    // -1 -2 -3
-                    if ((curBlock.row - 1 == blocks[i].row || curBlock.row - 2 == blocks[i].row || curBlock.row - 3 == blocks[i].row) && curBlock.col == blocks[i].col)
-                    {
-                        if (curBlock.blockType == blocks[i].blockType)
-                        {
-                            delBlocks.Add(blocks[i]);
-                        }
-                    }
-
-                    if (delBlocks.Count == 3)
-                    {
-                        curBlock.blockType = BlockType.Boom;
-                        curBlock.boomType = BoomType.RowBoom;
-
-                        // 마지막 자리에 폭탄을 저장
-                        delBlocks.Add(curBlock);
-                        return;
-                    }
-                }
-            }
-
-            if (curBlock.blockType != BlockType.Boom)
-            {
-                delBlocks.Clear();
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    // -1 -2 +1
-                    if ((curBlock.row - 1 == blocks[i].row || curBlock.row - 2 == blocks[i].row || curBlock.row + 1 == blocks[i].row) && curBlock.col == blocks[i].col)
-                    {
-                        if (curBlock.blockType == blocks[i].blockType)
-                        {
-                            delBlocks.Add(blocks[i]);
-                        }
-                    }
-
-                    if (delBlocks.Count == 3)
-                    {
-                        curBlock.blockType = BlockType.Boom;
-                        curBlock.boomType = BoomType.RowBoom;
-
-                        // 마지막 자리에 폭탄을 저장
-                        delBlocks.Add(curBlock);
-                        return;
-                    }
-                }
-            }
-
-            if (curBlock.blockType != BlockType.Boom)
-            {
-                delBlocks.Clear();
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    //-1 +1 +2
-                    if ((curBlock.row - 1 == blocks[i].row || curBlock.row + 1 == blocks[i].row || curBlock.row + 2 == blocks[i].row) && curBlock.col == blocks[i].col)
-                    {
-                        if (curBlock.blockType == blocks[i].blockType)
-                        {
-                            delBlocks.Add(blocks[i]);
-                        }
-                    }
-
-                    if (delBlocks.Count == 3)
-                    {
-                        curBlock.blockType = BlockType.Boom;
-                        curBlock.boomType = BoomType.RowBoom;
-
-                        // 마지막 자리에 폭탄을 저장
-                        delBlocks.Add(curBlock);
-                        return;
-                    }
-                }
-            }
-
-            if (curBlock.blockType != BlockType.Boom)
-            {
-                delBlocks.Clear();
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    // +1 +2 +3
-                    if ((curBlock.row + 1 == blocks[i].row || curBlock.row + 2 == blocks[i].row || curBlock.row + 3 == blocks[i].row) && curBlock.col == blocks[i].col)
-                    {
-                        if (curBlock.blockType == blocks[i].blockType)
-                        {
-                            delBlocks.Add(blocks[i]);
-                        }
-                    }
-
-                    if (delBlocks.Count == 3)
-                    {
-                        curBlock.blockType = BlockType.Boom;
-                        curBlock.boomType = BoomType.RowBoom;
-
-                        // 마지막 자리에 폭탄을 저장
-                        delBlocks.Add(curBlock);
-                        return;
-                    }
-                }
-            }
-
-            #endregion
-        }
-        */
-
-        public IEnumerator BlockCheck(Block curBlock)
-        {
-            yield return null;
-        }
-
         /// <summary>
         /// 블럭 클리어 및 블럭 생성을 담당하는 메서드
         /// </summary>
@@ -414,217 +177,6 @@ namespace XR_3MatchGame_Object
             var delBlocks = GM.delBlocks;
             var downBlocks = GM.downBlocks;
 
-            /*
-            // 폭탄 검사 작업
-            for (int i = 0; i < blocks.Count; i++)
-            {
-                if (delBlocks.Count != 4)
-                {
-                    BoomCheck(blocks[i]);
-                }
-            }
-            */
-
-
-            /*
-            // 폭탄 작업 
-            if (delBlocks.Count != 0)
-            {
-                if (delBlocks[delBlocks.Count - 1].blockType == BlockType.Boom)
-                {
-                    // 폭탄은 마지막 인덱스에 존재
-                    curBlock = delBlocks[delBlocks.Count - 1];
-                    curBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, curBlock.blockType.ToString());
-
-                    yield return new WaitForSeconds(.4f);
-
-                    switch (curBlock.boomType)
-                    {
-                        case BoomType.ColBoom:
-                            var col_0 = delBlocks[0].col;
-                            var col_1 = delBlocks[1].col;
-                            var col_2 = delBlocks[2].col;
-
-                            var row_B = delBlocks[0].row;
-
-                            // 풀에 반환
-                            for (int i = 0; i < delBlocks.Count - 1; i++)
-                            {
-                                blockPool.ReturnPoolableObject(delBlocks[i]);
-
-                                // 점수 작업
-                                GM.ScoreUpdate(delBlocks[i].BlockScore);
-                            }
-
-                            yield return new WaitForSeconds(.4f);
-
-                            // 삭제한 블럭들 위에 존재하는 블럭들 찾기
-                            if (row_B != (GM.BoardSize.y - 1))
-                            {
-                                for (int i = 0; i < blocks.Count; i++)
-                                {
-                                    if ((col_0 == blocks[i].col || col_1 == blocks[i].col || col_2 == blocks[i].col) && row_B < blocks[i].row)
-                                    {
-                                        // 내릴 블럭을 저장
-                                        downBlocks.Add(blocks[i]);
-                                    }
-                                }
-                            }
-
-                            // 블럭 내려주는 작업
-                            for (int i = 0; i < downBlocks.Count; i++)
-                            {
-                                var targetRow = downBlocks[i].row -= 1;
-
-                                if (Mathf.Abs(targetRow - downBlocks[i].transform.position.y) > .1f)
-                                {
-                                    Vector2 tempPosition = new Vector2(downBlocks[i].transform.position.x, targetRow);
-                                    downBlocks[i].transform.position = Vector2.Lerp(downBlocks[i].transform.position, tempPosition, .05f);
-                                }
-                            }
-
-                            BlockUpdate();
-
-                            blocks.Remove(delBlocks[0]);
-                            blocks.Remove(delBlocks[1]);
-                            blocks.Remove(delBlocks[2]);
-
-                            // 생성 블럭들의 베이스가 될 Col, Row 값
-                            var row_NewNum = downBlocks.Count > 0 ? downBlocks[downBlocks.Count - 1].row + 1 : GM.BoardSize.y - 1;
-
-                            yield return new WaitForSeconds(.4f);
-
-                            var newBlock_0 = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-                            newBlock_0.transform.position = new Vector3(col_0, row_NewNum, 0);
-                            newBlock_0.gameObject.SetActive(true);
-                            newBlock_0.Initialize(col_0, row_NewNum);
-                            blocks.Add(newBlock_0);
-
-                            var newBlock_1 = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-                            newBlock_1.transform.position = new Vector3(col_1, row_NewNum, 0);
-                            newBlock_1.gameObject.SetActive(true);
-                            newBlock_1.Initialize(col_1, row_NewNum);
-                            blocks.Add(newBlock_1);
-
-                            var newBlock_2 = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-                            newBlock_2.transform.position = new Vector3(col_2, row_NewNum, 0);
-                            newBlock_2.gameObject.SetActive(true);
-                            newBlock_2.Initialize(col_2, row_NewNum);
-                            blocks.Add(newBlock_2);
-
-                            delBlocks.Clear();
-                            downBlocks.Clear();
-                            BlockUpdate();
-                            break;
-
-                        case BoomType.RowBoom:
-                            var row_0 = delBlocks[0].row;    // 1
-                            var row_1 = delBlocks[1].row;    // 2
-                            var row_2 = delBlocks[2].row;    // 4
-                            var row_3 = delBlocks[3].row;    // 3 폭탄 row
-
-                            var col_B = delBlocks[0].col;
-
-                            // 풀에 반환
-                            for (int i = 0; i < delBlocks.Count - 1; i++)
-                            {
-                                blockPool.ReturnPoolableObject(delBlocks[i]);
-
-                                GM.ScoreUpdate(delBlocks[i].BlockScore);
-                            }
-
-                            yield return new WaitForSeconds(.4f);
-
-                            // 폭탄 내리는 작업
-                            // 폭탄이 맨 아래 블럭인지 확인
-                            if (row_3 > row_0)
-                            {
-                                var boomTargetRow = delBlocks[3].row = row_0;
-
-                                if (Mathf.Abs(boomTargetRow - delBlocks[3].transform.position.y) > .1f)
-                                {
-                                    Vector2 tempPosition = new Vector2(delBlocks[3].transform.position.x, boomTargetRow);
-                                    delBlocks[3].transform.position = Vector2.Lerp(delBlocks[3].transform.position, tempPosition, .05f);
-                                }
-                            }
-
-                            // 맨 위 블럭이 아니라면 내릴 블럭 찾기 실행
-                            if (row_3 != 6 && row_2 != 6)
-                            {
-                                if (row_2 > row_3)
-                                {
-                                    // 일반 블럭이 폭탄 블럭 보다 위에 있는 경우
-                                    for (int i = 0; i < blocks.Count; i++)
-                                    {
-                                        // Row는 커야하고 Col은 같아야 한다
-                                        if (row_2 < blocks[i].row && col_B == blocks[i].col)
-                                        {
-                                            downBlocks.Add(blocks[i]);
-                                        }
-                                    }
-
-                                }
-                                else if (row_2 < row_3)
-                                {
-                                    // 폭탄 블럭이 일본 블럭 보다 위에 있는 경우
-                                    for (int i = 0; i < blocks.Count; i++)
-                                    {
-                                        // Row는 커야하고 Col은 같아야 한단
-                                        if (row_3 < blocks[i].row && col_B == blocks[i].col)
-                                        {
-                                            downBlocks.Add(blocks[i]);
-                                        }
-                                    }
-                                }
-                            }
-
-                            for (int i = 0; i < downBlocks.Count; i++)
-                            {
-                                var targetRow = downBlocks[i].row -= 3;
-
-                                if (Mathf.Abs(targetRow - downBlocks[i].transform.position.y) > .1f)
-                                {
-                                    Vector2 tempPosition = new Vector2(downBlocks[i].transform.position.x, targetRow);
-                                    downBlocks[i].transform.position = Vector2.Lerp(downBlocks[i].transform.position, tempPosition, .05f);
-                                }
-                            }
-
-                            blocks.Remove(delBlocks[0]);
-                            blocks.Remove(delBlocks[1]);
-                            blocks.Remove(delBlocks[2]);
-
-                            yield return new WaitForSeconds(.4f);
-
-                            // 새로운 Row 값
-                            var newRow = downBlocks.Count > 0 ? downBlocks[downBlocks.Count - 1].row + 1 : delBlocks[3].row + 1;
-                            var emptyBlockCount = size - blocks.Count;
-
-                            for (int i = 0; i < emptyBlockCount; i++)
-                            {
-                                if (newRow < GM.BoardSize.y)
-                                {
-                                    var newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-                                    newBlock.transform.position = new Vector3(col_B, newRow, 0);
-                                    newBlock.gameObject.SetActive(true);
-                                    newBlock.Initialize(col_B, newRow);
-                                    blocks.Add(newBlock);
-
-                                    newRow++;
-                                }
-                            }
-
-                            BlockUpdate();
-                            delBlocks.Clear();
-                            downBlocks.Clear();
-                            break;
-                    }
-                }
-            }
-            */
-
-            yield return new WaitForSeconds(.4f);
-
-            // 일반 블럭 작업
             for (int i = 0; i < blocks.Count; i++)
             {
                 curBlock = blocks[i];
@@ -632,10 +184,10 @@ namespace XR_3MatchGame_Object
                 // Left, Right
                 if (curBlock.leftBlock != null && curBlock.rightBlock != null)
                 {
-                    // 체크할 블럭
-
                     if (curBlock.leftBlock.blockType == curBlock.blockType && curBlock.rightBlock.blockType == curBlock.blockType)
                     {
+                        yield return new WaitForSeconds(.2f);
+
                         // 삭제할 블럭들 삭제 저장소에 저장
                         delBlocks.Add(curBlock);
                         delBlocks.Add(curBlock.leftBlock);
@@ -717,9 +269,6 @@ namespace XR_3MatchGame_Object
                         delBlocks.Clear();
                         downBlocks.Clear();
                         BlockUpdate();
-
-                        // Left, Right 블럭 매칭이 끝나면 한번더 0부터 시작 -> 여기 한번 점검
-                        /// i = 0;
                     }
                 }
 
@@ -728,7 +277,8 @@ namespace XR_3MatchGame_Object
                 {
                     if (curBlock.topBlock.blockType == curBlock.blockType && curBlock.bottomBlock.blockType == curBlock.blockType)
                     {
-                        // curBlock = blocks[i];
+                        yield return new WaitForSeconds(.2f);
+
                         delBlocks.Add(curBlock.topBlock);
                         delBlocks.Add(curBlock.bottomBlock);
                         delBlocks.Add(curBlock);
@@ -797,30 +347,299 @@ namespace XR_3MatchGame_Object
                         delBlocks.Clear();
                         downBlocks.Clear();
                         BlockUpdate();
-
-                        // Top, Bottom 블럭 매칭이 끝나면 한번더 0부터 시작
-                        /// i = 0;
                     }
                 }
             }
 
             yield return new WaitForSeconds(.4f);
 
-            // 체크 종료
-            GM.GameStateUpdate(GameState.Play);
+            if (BlockCheck())
+            {
+                GM.isStart = true;
+                GM.GameStateUpdate(GameState.Checking);
+            }
+            else
+            {
+                GM.GameStateUpdate(GameState.Play);
+            }
+        }
 
-            /*
-            // 게임 클리어 조건
-            if (GM.Score >= 100)
+        public bool BlockCheck(Block checkBlock = null, Block otherBlock = null, SwipeDir swipeDir = SwipeDir.None)
+        {
+            var blocks = GM.blocks;
+
+            if (checkBlock != null || otherBlock != null)
+            {
+                // 같은 블럭 개수
+                var count_T = 0;
+                var count_B = 0;
+                var count_M = 0;
+                var count_L = 0;
+                var count_R = 0;
+                var count_M2 = 0;
+
+                switch (swipeDir)
+                {
+                    case SwipeDir.None:
+                        // OtherBlock 매칭 블럭 탐색 작업
+                        for (int i = 0; i < blocks.Count; i++)
+                        {
+                            // Top
+                            if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row + 2 == blocks[i].row) && otherBlock.col == blocks[i].col)
+                            {
+                                if (otherBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_T++;
+                                }
+                            }
+
+                            // Horizontal Middle
+                            if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col - 1 == blocks[i].col) && otherBlock.row == blocks[i].row)
+                            {
+                                if (otherBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_M++;
+                                }
+                            }
+
+                            // Vertical Middle
+                            // Horizontal에서 매칭되는 블럭이 없으므로 재사용
+                            if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row - 1 == blocks[i].row) && otherBlock.col == blocks[i].col)
+                            {
+                                if (otherBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_M2++;
+                                }
+                            }
+
+                            // Bottom
+                            if ((otherBlock.row - 1 == blocks[i].row || otherBlock.row - 2 == blocks[i].row) && otherBlock.col == blocks[i].col)
+                            {
+                                if (otherBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_B++;
+                                }
+                            }
+
+                            // Left
+                            if ((otherBlock.col - 1 == blocks[i].col || otherBlock.col - 2 == blocks[i].col) && otherBlock.row == blocks[i].row)
+                            {
+                                if (otherBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_L++;
+                                }
+                            }
+
+                            // Right
+                            if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col + 2 == blocks[i].col) && otherBlock.row == blocks[i].row)
+                            {
+                                if (otherBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_R++;
+                                }
+                            }
+                        }
+                        break;
+
+                    case SwipeDir.Top:
+                        for (int i = 0; i < blocks.Count; i++)
+                        {
+                            // Top
+                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_T++;
+                                }
+                            }
+
+                            // Middle
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_M++;
+                                }
+                            }
+
+                            // Left
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_L++;
+                                }
+                            }
+
+                            // Right
+                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_R++;
+                                }
+                            }
+                        }
+                        break;
+
+                    case SwipeDir.Bottom:
+                        for (int i = 0; i < blocks.Count; i++)
+                        {
+                            // Bottom
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_B++;
+                                }
+                            }
+
+                            // Middle
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_M++;
+                                }
+                            }
+
+                            // Left
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_L++;
+                                }
+                            }
+
+                            //Right
+                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_R++;
+                                }
+                            }
+                        }
+                        break;
+
+                    case SwipeDir.Left:
+                        for (int i = 0; i < blocks.Count; i++)
+                        {
+                            // Top
+                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_T++;
+                                }
+                            }
+
+                            // Bottom
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_B++;
+                                }
+                            }
+
+                            // Middle
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row + 1 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_M++;
+                                }
+                            }
+
+                            // Left
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            {
+                                if (checkBlock.blockType == blocks[i].blockType)
+                                {
+                                    count_L++;
+                                }
+                            }
+                        }
+                        break;
+
+                    case SwipeDir.Right:
+                        for (int i = 0; i < blocks.Count; i++)
+                        {
+                            // Top
+                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            {
+                                if (blocks[i].blockType == checkBlock.blockType)
+                                {
+                                    count_T++;
+                                }
+                            }
+
+                            // Bottom
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            {
+                                if (blocks[i].blockType == checkBlock.blockType)
+                                {
+                                    count_B++;
+                                }
+                            }
+
+                            // Middle
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row + 1 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            {
+                                if (blocks[i].blockType == checkBlock.blockType)
+                                {
+                                    count_M++;
+                                }
+                            }
+
+                            // Right
+                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            {
+                                if (blocks[i].blockType == checkBlock.blockType)
+                                {
+                                    count_R++;
+                                }
+                            }
+                        }
+                        break;
+                }
+
+                // 매칭 되는 블럭 존재
+                if (count_T >= 2 || count_B >= 2 || count_M >= 2 || count_L >= 2 || count_R >= 2 || count_M2 >= 2)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
             {
                 for (int i = 0; i < blocks.Count; i++)
                 {
-                    blockPool.ReturnPoolableObject(blocks[i]);
+                    if (blocks[i].leftBlock != null && blocks[i].rightBlock != null)
+                    {
+                        if (blocks[i].blockType == blocks[i].leftBlock.blockType && blocks[i].blockType == blocks[i].rightBlock.blockType)
+                        {
+                            return true;
+                        }
+                    }
+
+                    if (blocks[i].topBlock != null && blocks[i].bottomBlock != null)
+                    {
+                        if (blocks[i].blockType == blocks[i].topBlock.blockType &&
+                            blocks[i].blockType == blocks[i].bottomBlock.blockType)
+                        {
+                            return true;
+                        }
+                    }
                 }
 
-                GM.GameStateUpdate(GameState.End);
+                return false;
             }
-            */
         }
     }
 }

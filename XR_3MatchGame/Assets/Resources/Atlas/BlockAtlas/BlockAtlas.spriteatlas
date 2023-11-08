@@ -50,7 +50,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: dbbc0bad406921e4f8a2d8fe17fe3e03, type: 3}
   - {fileID: 21300000, guid: 3f2c683e465702f468ed6531871c2522, type: 3}
   m_PackedSpriteNamesToIndex:
-  - Water
+  - Ice
   - Tree
   - Light
   - Fire

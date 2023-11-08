@@ -1,19 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.Net.Sockets;
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.SocialPlatforms;
-using UnityEngine.UIElements;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Object;
-using XR_3MatchGame_Resource;
-using XR_3MatchGame_Util;
+using XR_3MatchGame_UI;
 
 namespace XR_3MatchGame_InGame
 {
@@ -44,15 +33,7 @@ namespace XR_3MatchGame_InGame
         public List<Block> downBlocks = new List<Block>();           // 내릴 블럭을 담아놓을 리스트
         public List<Block> delBlocks = new List<Block>();            // 삭제할 블럭을 담아놓을 리스트
 
-        #region Public
-
-        public bool isStart = false;                                // 블럭 체크를 실행할것인가?
-
-        #endregion
-
-        #region Private
-
-        #endregion
+        public bool isStart = false;                                 // 블럭 체크를 실행할것인가?
 
         public Vector2Int BoardSize
         {
@@ -92,6 +73,7 @@ namespace XR_3MatchGame_InGame
         public void ScoreUpdate(int score)
         {
             Score += score;
+            UIWindowManager.Instance.GetWindow<UIDetail>().SetScore(score);
         }
 
         public void GameStateUpdate(GameState gameState)
