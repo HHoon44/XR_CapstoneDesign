@@ -6,8 +6,6 @@ namespace XR_3MatchGame_UI
     {
         public virtual void Start()
         {
-            Debug.Log("UIWindow");
-
             UIWindowManager.Instance.AddUIWindow(this);
         }
 

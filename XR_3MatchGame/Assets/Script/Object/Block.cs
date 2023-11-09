@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_InGame;
@@ -19,6 +17,15 @@ namespace XR_3MatchGame_Object
             {
                 int blockScore = 5;
                 return blockScore;
+            }
+        }
+
+        public float ElementValue
+        {
+            get
+            {
+                float elementValue = .05f;
+                return elementValue;
             }
         }
 
@@ -45,14 +52,14 @@ namespace XR_3MatchGame_Object
         private GameManager GM;
         private Board board;                    // 블럭이 존재하는 보드
 
-        public BlockType blockType = BlockType.None;        // 현재 블럭의 타입
+        public ElementType elementType = ElementType.None;        // 현재 블럭의 타입
         private SwipeDir swipeDir = SwipeDir.None;
 
         [Header("Test")]
-        public BlockType Top_T = BlockType.None;
-        public BlockType Bottom_T = BlockType.None;
-        public BlockType Left_T = BlockType.None;
-        public BlockType Right_T = BlockType.None;
+        public ElementType Top_T = ElementType.None;
+        public ElementType Bottom_T = ElementType.None;
+        public ElementType Left_T = ElementType.None;
+        public ElementType Right_T = ElementType.None;
 
         /// <summary>
         /// 블럭 초기 세팅 메서드
@@ -71,34 +78,34 @@ namespace XR_3MatchGame_Object
             // 랜덤으로 블럭의 스프라이트를 설정
             switch (blockNum)
             {
-                case (int)BlockType.Dark:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Dark.ToString());
-                    blockType = BlockType.Dark;
+                case (int)ElementType.Dark:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Dark.ToString());
+                    elementType = ElementType.Dark;
                     break;
 
-                case (int)BlockType.Fire:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Fire.ToString());
-                    blockType = BlockType.Fire;
+                case (int)ElementType.Fire:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Fire.ToString());
+                    elementType = ElementType.Fire;
                     break;
 
-                case (int)BlockType.Light:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Light.ToString());
-                    blockType = BlockType.Light;
+                case (int)ElementType.Light:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Light.ToString());
+                    elementType = ElementType.Light;
                     break;
 
-                case (int)BlockType.Lightning:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Lightning.ToString());
-                    blockType = BlockType.Lightning;
+                case (int)ElementType.Lightning:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Lightning.ToString());
+                    elementType = ElementType.Lightning;
                     break;
 
-                case (int)BlockType.Ice:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Ice.ToString());
-                    blockType = BlockType.Ice;
+                case (int)ElementType.Ice:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Ice.ToString());
+                    elementType = ElementType.Ice;
                     break;
 
-                case (int)BlockType.Tree:
-                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, BlockType.Tree.ToString());
-                    blockType = BlockType.Tree;
+                case (int)ElementType.Grass:
+                    spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Grass.ToString());
+                    elementType = ElementType.Grass;
                     break;
             }
 
@@ -136,7 +143,7 @@ namespace XR_3MatchGame_Object
         private void CalculateAngle()
         {
             // 체크중 일땐 입력 막기
-            if (GM.GameState == GameState.Checking)
+            if (GM.GameState != GameState.Play)
             {
                 return;
             }
@@ -181,7 +188,7 @@ namespace XR_3MatchGame_Object
         /// </summary>
         private void BlockMove()
         {
-            GM.GameStateUpdate(GameState.Checking);
+            GM.SetGameState(GameState.Checking);
 
             // Top
             if ((swipeAngle > 45 && swipeAngle <= 135) && row < GM.BoardSize.y)
@@ -300,7 +307,7 @@ namespace XR_3MatchGame_Object
 
                             yield return new WaitForSeconds(.4f);
 
-                            GM.GameStateUpdate(GameState.Play);
+                            GM.SetGameState(GameState.Play);
                         }
                     }
                     break;
@@ -329,7 +336,7 @@ namespace XR_3MatchGame_Object
 
                             yield return new WaitForSeconds(.4f);
 
-                            GM.GameStateUpdate(GameState.Play);
+                            GM.SetGameState(GameState.Play);
                         }
                     }
                     break;
@@ -358,7 +365,7 @@ namespace XR_3MatchGame_Object
 
                             yield return new WaitForSeconds(.4f);
 
-                            GM.GameStateUpdate(GameState.Play);
+                            GM.SetGameState(GameState.Play);
                         }
                     }
                     break;
@@ -387,7 +394,7 @@ namespace XR_3MatchGame_Object
 
                             yield return new WaitForSeconds(.4f);
 
-                            GM.GameStateUpdate(GameState.Play);
+                            GM.SetGameState(GameState.Play);
                         }
                     }
                     break;

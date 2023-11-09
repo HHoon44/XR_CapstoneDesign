@@ -12,7 +12,7 @@ namespace XR_3MatchGame.Util
 
     public enum GameState
     {
-        None, Play, Checking, End
+        None, Play, Checking, Skill, End
     }
 
     public enum AtlasType
@@ -20,23 +20,13 @@ namespace XR_3MatchGame.Util
         None, BlockAtlas
     }
 
-    public enum BlockType
-    {
-        None, Dark, Fire, Light, Lightning, Tree, Ice
-    }
-
     public enum SwipeDir
     {
         None, Top, Bottom, Left, Right
     }
 
-    public enum StageIcon
+    public enum ElementType
     { 
-        None, Fire, Ice, Tree
-    }
-
-    public enum Portrait
-    { 
-        None, Fire, Ice, Tree
+        None, Fire, Ice, Grass, Dark, Light, Lightning
     }
 }

@@ -13,10 +13,19 @@ namespace XR_3MatchGame_InGame
         /// <summary>
         /// 현재 게임 상태 프로퍼티
         /// </summary>
-        //public GameState GameState { get; private set; }
+        public GameState GameState { get; private set; }
 
-        // Test
-        public GameState GameState;
+        /// <summary>
+        /// 기본 원소 프로퍼티
+        /// </summary>
+        //public ElementType ElementType { get; private set; }
+
+        public ElementType ElementType = ElementType.Fire;
+
+        // 유저가 선택한 3가지 원소
+        public ElementType SelectElement_0;
+        public ElementType SelectElement_1;
+        public ElementType SelectElement_2;
 
         /// <summary>
         /// 현재 게임의 점수 프로퍼티
@@ -34,6 +43,8 @@ namespace XR_3MatchGame_InGame
         public List<Block> delBlocks = new List<Block>();            // 삭제할 블럭을 담아놓을 리스트
 
         public bool isStart = false;                                 // 블럭 체크를 실행할것인가?
+
+        private UIWindowManager UM;
 
         public Vector2Int BoardSize
         {
@@ -60,10 +71,14 @@ namespace XR_3MatchGame_InGame
 
         public void Initialize(Board board)
         {
+            // 나중에 게임 매니저 옮기면 따로 처리 해줘야할듯
+            SetElementType(ElementType.Fire);
+
             // 게임 시작
             GameState = GameState.Play;
             Board = board;
             XR_3MatchGame_Resource.ResourceManager.Instance.Initialize();
+            UM = UIWindowManager.Instance;
         }
 
         /// <summary>
@@ -73,12 +88,22 @@ namespace XR_3MatchGame_InGame
         public void ScoreUpdate(int score)
         {
             Score += score;
-            UIWindowManager.Instance.GetWindow<UIDetail>().SetScore(score);
+            UIWindowManager.Instance.GetWindow<UIDetail>().SetScore(Score);
         }
 
-        public void GameStateUpdate(GameState gameState)
+        public void SkillGaugeUpdate(float value)
+        {
+            UM.GetWindow<UIElement>().SetSkillAmount(value);
+        }
+
+        public void SetGameState(GameState gameState)
         {
             GameState = gameState;
+        }
+
+        public void SetElementType(ElementType elementType)
+        {
+            ElementType = elementType;
         }
     }
 }

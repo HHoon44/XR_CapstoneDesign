@@ -51,7 +51,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 3f2c683e465702f468ed6531871c2522, type: 3}
   m_PackedSpriteNamesToIndex:
   - Ice
-  - Tree
+  - Grass
   - Light
   - Fire
   - Lightning

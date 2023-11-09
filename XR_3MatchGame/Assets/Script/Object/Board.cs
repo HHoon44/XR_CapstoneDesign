@@ -1,16 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using UnityEngine.SocialPlatforms.Impl;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_InGame;
-using XR_3MatchGame_Resource;
 using XR_3MatchGame_Util;
-using static UnityEditor.Experimental.AssetDatabaseExperimental.AssetDatabaseCounters;
-using static UnityEngine.PlayerLoop.EarlyUpdate;
 
 namespace XR_3MatchGame_Object
 {
@@ -47,6 +39,12 @@ namespace XR_3MatchGame_Object
                     StartCoroutine(BlockClear());
                 }
             }
+
+            // 게임 종료
+            if (GM.GameState == GameState.End)
+            {
+
+            }
         }
 
         /// <summary>
@@ -72,7 +70,7 @@ namespace XR_3MatchGame_Object
                 }
             }
 
-            GM.GameStateUpdate(GameState.Checking);
+            GM.SetGameState(GameState.Checking);
             BlockUpdate();
             StartCoroutine(BlockClear());
         }
@@ -94,7 +92,7 @@ namespace XR_3MatchGame_Object
                     if (blocks[i].row == 6)
                     {
                         blocks[i].topBlock = null;
-                        blocks[i].Top_T = BlockType.None;
+                        blocks[i].Top_T = ElementType.None;
                     }
                     else
                     {
@@ -103,7 +101,7 @@ namespace XR_3MatchGame_Object
                             blocks[i].topBlock = blocks[j];
 
                             // Test
-                            blocks[i].Top_T = blocks[j].blockType;
+                            blocks[i].Top_T = blocks[j].elementType;
                         }
                     }
 
@@ -111,7 +109,7 @@ namespace XR_3MatchGame_Object
                     if (blocks[i].row == 0)
                     {
                         blocks[i].bottomBlock = null;
-                        blocks[i].Bottom_T = BlockType.None;
+                        blocks[i].Bottom_T = ElementType.None;
                     }
                     else
                     {
@@ -120,7 +118,7 @@ namespace XR_3MatchGame_Object
                             blocks[i].bottomBlock = blocks[j];
 
                             // Test
-                            blocks[i].Bottom_T = blocks[j].blockType;
+                            blocks[i].Bottom_T = blocks[j].elementType;
                         }
                     }
 
@@ -129,7 +127,7 @@ namespace XR_3MatchGame_Object
                     {
                         // 현재 블럭은 Col = 0에 존재하는 블럭
                         blocks[i].leftBlock = null;
-                        blocks[i].Left_T = BlockType.None;
+                        blocks[i].Left_T = ElementType.None;
                     }
                     else
                     {
@@ -138,7 +136,7 @@ namespace XR_3MatchGame_Object
                             blocks[i].leftBlock = blocks[j];
 
                             // Test
-                            blocks[i].Left_T = blocks[j].blockType;
+                            blocks[i].Left_T = blocks[j].elementType;
                         }
                     }
 
@@ -147,7 +145,7 @@ namespace XR_3MatchGame_Object
                     {
                         // 현재 블럭은 Col = 6에 존재하는 블럭
                         blocks[i].rightBlock = null;
-                        blocks[i].Right_T = BlockType.None;
+                        blocks[i].Right_T = ElementType.None;
                     }
                     else
                     {
@@ -156,7 +154,7 @@ namespace XR_3MatchGame_Object
                             blocks[i].rightBlock = blocks[j];
 
                             // Test
-                            blocks[i].Right_T = blocks[j].blockType;
+                            blocks[i].Right_T = blocks[j].elementType;
                         }
                     }
                 }
@@ -184,7 +182,7 @@ namespace XR_3MatchGame_Object
                 // Left, Right
                 if (curBlock.leftBlock != null && curBlock.rightBlock != null)
                 {
-                    if (curBlock.leftBlock.blockType == curBlock.blockType && curBlock.rightBlock.blockType == curBlock.blockType)
+                    if (curBlock.leftBlock.elementType == curBlock.elementType && curBlock.rightBlock.elementType == curBlock.elementType)
                     {
                         yield return new WaitForSeconds(.2f);
 
@@ -203,6 +201,7 @@ namespace XR_3MatchGame_Object
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
                             GM.ScoreUpdate(delBlocks[j].BlockScore);
+                            GM.SkillGaugeUpdate(delBlocks[j].ElementValue);
                             blocks.Remove(delBlocks[j]);
                         }
 
@@ -275,7 +274,7 @@ namespace XR_3MatchGame_Object
                 // Top, Bottom
                 if (curBlock.topBlock != null && curBlock.bottomBlock != null)
                 {
-                    if (curBlock.topBlock.blockType == curBlock.blockType && curBlock.bottomBlock.blockType == curBlock.blockType)
+                    if (curBlock.topBlock.elementType == curBlock.elementType && curBlock.bottomBlock.elementType == curBlock.elementType)
                     {
                         yield return new WaitForSeconds(.2f);
 
@@ -356,11 +355,11 @@ namespace XR_3MatchGame_Object
             if (BlockCheck())
             {
                 GM.isStart = true;
-                GM.GameStateUpdate(GameState.Checking);
+                GM.SetGameState(GameState.Checking);
             }
             else
             {
-                GM.GameStateUpdate(GameState.Play);
+                GM.SetGameState(GameState.Play);
             }
         }
 
@@ -387,7 +386,7 @@ namespace XR_3MatchGame_Object
                             // Top
                             if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row + 2 == blocks[i].row) && otherBlock.col == blocks[i].col)
                             {
-                                if (otherBlock.blockType == blocks[i].blockType)
+                                if (otherBlock.elementType == blocks[i].elementType)
                                 {
                                     count_T++;
                                 }
@@ -396,7 +395,7 @@ namespace XR_3MatchGame_Object
                             // Horizontal Middle
                             if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col - 1 == blocks[i].col) && otherBlock.row == blocks[i].row)
                             {
-                                if (otherBlock.blockType == blocks[i].blockType)
+                                if (otherBlock.elementType == blocks[i].elementType)
                                 {
                                     count_M++;
                                 }
@@ -406,7 +405,7 @@ namespace XR_3MatchGame_Object
                             // Horizontal에서 매칭되는 블럭이 없으므로 재사용
                             if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row - 1 == blocks[i].row) && otherBlock.col == blocks[i].col)
                             {
-                                if (otherBlock.blockType == blocks[i].blockType)
+                                if (otherBlock.elementType == blocks[i].elementType)
                                 {
                                     count_M2++;
                                 }
@@ -415,7 +414,7 @@ namespace XR_3MatchGame_Object
                             // Bottom
                             if ((otherBlock.row - 1 == blocks[i].row || otherBlock.row - 2 == blocks[i].row) && otherBlock.col == blocks[i].col)
                             {
-                                if (otherBlock.blockType == blocks[i].blockType)
+                                if (otherBlock.elementType == blocks[i].elementType)
                                 {
                                     count_B++;
                                 }
@@ -424,7 +423,7 @@ namespace XR_3MatchGame_Object
                             // Left
                             if ((otherBlock.col - 1 == blocks[i].col || otherBlock.col - 2 == blocks[i].col) && otherBlock.row == blocks[i].row)
                             {
-                                if (otherBlock.blockType == blocks[i].blockType)
+                                if (otherBlock.elementType == blocks[i].elementType)
                                 {
                                     count_L++;
                                 }
@@ -433,7 +432,7 @@ namespace XR_3MatchGame_Object
                             // Right
                             if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col + 2 == blocks[i].col) && otherBlock.row == blocks[i].row)
                             {
-                                if (otherBlock.blockType == blocks[i].blockType)
+                                if (otherBlock.elementType == blocks[i].elementType)
                                 {
                                     count_R++;
                                 }
@@ -447,7 +446,7 @@ namespace XR_3MatchGame_Object
                             // Top
                             if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_T++;
                                 }
@@ -456,7 +455,7 @@ namespace XR_3MatchGame_Object
                             // Middle
                             if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) && checkBlock.row == blocks[i].row)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_M++;
                                 }
@@ -465,7 +464,7 @@ namespace XR_3MatchGame_Object
                             // Left
                             if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_L++;
                                 }
@@ -474,7 +473,7 @@ namespace XR_3MatchGame_Object
                             // Right
                             if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_R++;
                                 }
@@ -488,7 +487,7 @@ namespace XR_3MatchGame_Object
                             // Bottom
                             if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_B++;
                                 }
@@ -497,7 +496,7 @@ namespace XR_3MatchGame_Object
                             // Middle
                             if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) && checkBlock.row == blocks[i].row)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_M++;
                                 }
@@ -506,7 +505,7 @@ namespace XR_3MatchGame_Object
                             // Left
                             if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_L++;
                                 }
@@ -515,7 +514,7 @@ namespace XR_3MatchGame_Object
                             //Right
                             if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_R++;
                                 }
@@ -529,7 +528,7 @@ namespace XR_3MatchGame_Object
                             // Top
                             if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_T++;
                                 }
@@ -538,7 +537,7 @@ namespace XR_3MatchGame_Object
                             // Bottom
                             if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_B++;
                                 }
@@ -547,7 +546,7 @@ namespace XR_3MatchGame_Object
                             // Middle
                             if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row + 1 == blocks[i].row) && checkBlock.col == blocks[i].col)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_M++;
                                 }
@@ -556,7 +555,7 @@ namespace XR_3MatchGame_Object
                             // Left
                             if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
                             {
-                                if (checkBlock.blockType == blocks[i].blockType)
+                                if (checkBlock.elementType == blocks[i].elementType)
                                 {
                                     count_L++;
                                 }
@@ -570,7 +569,7 @@ namespace XR_3MatchGame_Object
                             // Top
                             if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
                             {
-                                if (blocks[i].blockType == checkBlock.blockType)
+                                if (blocks[i].elementType == checkBlock.elementType)
                                 {
                                     count_T++;
                                 }
@@ -579,7 +578,7 @@ namespace XR_3MatchGame_Object
                             // Bottom
                             if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
                             {
-                                if (blocks[i].blockType == checkBlock.blockType)
+                                if (blocks[i].elementType == checkBlock.elementType)
                                 {
                                     count_B++;
                                 }
@@ -588,7 +587,7 @@ namespace XR_3MatchGame_Object
                             // Middle
                             if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row + 1 == blocks[i].row) && checkBlock.col == blocks[i].col)
                             {
-                                if (blocks[i].blockType == checkBlock.blockType)
+                                if (blocks[i].elementType == checkBlock.elementType)
                                 {
                                     count_M++;
                                 }
@@ -597,7 +596,7 @@ namespace XR_3MatchGame_Object
                             // Right
                             if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
                             {
-                                if (blocks[i].blockType == checkBlock.blockType)
+                                if (blocks[i].elementType == checkBlock.elementType)
                                 {
                                     count_R++;
                                 }
@@ -622,7 +621,7 @@ namespace XR_3MatchGame_Object
                 {
                     if (blocks[i].leftBlock != null && blocks[i].rightBlock != null)
                     {
-                        if (blocks[i].blockType == blocks[i].leftBlock.blockType && blocks[i].blockType == blocks[i].rightBlock.blockType)
+                        if (blocks[i].elementType == blocks[i].leftBlock.elementType && blocks[i].elementType == blocks[i].rightBlock.elementType)
                         {
                             return true;
                         }
@@ -630,8 +629,8 @@ namespace XR_3MatchGame_Object
 
                     if (blocks[i].topBlock != null && blocks[i].bottomBlock != null)
                     {
-                        if (blocks[i].blockType == blocks[i].topBlock.blockType &&
-                            blocks[i].blockType == blocks[i].bottomBlock.blockType)
+                        if (blocks[i].elementType == blocks[i].topBlock.elementType &&
+                            blocks[i].elementType == blocks[i].bottomBlock.elementType)
                         {
                             return true;
                         }
