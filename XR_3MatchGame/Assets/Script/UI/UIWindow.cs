@@ -8,6 +8,5 @@ namespace XR_3MatchGame_UI
         {
             UIWindowManager.Instance.AddUIWindow(this);
         }
-
     }
 }

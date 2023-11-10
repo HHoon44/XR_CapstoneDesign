@@ -2,7 +2,7 @@ namespace XR_3MatchGame.Util
 {
     public enum SceneType
     {
-        None, Main, InGame, Lobby, Select
+        None, Main, InGame, Lobby, Select, Loading, FirstLoading
     }
 
     public enum PoolType
@@ -26,7 +26,19 @@ namespace XR_3MatchGame.Util
     }
 
     public enum ElementType
-    { 
+    {
         None, Fire, Ice, Grass, Dark, Light, Lightning
     }
+
+    public enum IntroPhase
+    { 
+        None, Start, Resource, UI, Complete
+    }
+
+    public class StringName
+    {
+        public const string HighScore_0 = "HighScore_0";
+        public const string HighScore_1 = "HighScore_1";
+    }
+
 }

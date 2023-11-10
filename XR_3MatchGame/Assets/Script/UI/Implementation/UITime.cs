@@ -27,8 +27,9 @@ namespace XR_3MatchGame_UI
         {
             if (GameManager.Instance.GameState == GameState.Play)
             {
-                if (gaugeFill.fillAmount <= 0)
+                if (gaugeFill.fillAmount <= .05f)
                 {
+                    gaugeFill.fillAmount = 0;
                     GameManager.Instance.SetGameState(GameState.End);
                 }
                 else

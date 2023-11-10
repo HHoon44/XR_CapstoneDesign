@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 
 namespace XR_3MatchGame_UI
 {
@@ -23,6 +21,11 @@ namespace XR_3MatchGame_UI
             string key = typeof(T).Name;
 
             return (T)totalUIWindow[key];
+        }
+
+        public void Initialzie()
+        { 
+
         }
     }
 }

@@ -1,28 +1,37 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Data.Common;
 using UnityEngine;
 using XR_3MatchGame.Util;
+using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
+using XR_3MatchGame_UI;
 using XR_3MatchGame_Util;
 
 namespace XR_3MatchGame_Object
 {
     public class Board : MonoBehaviour
     {
-        #region public
+        [Header("Blocks")]
+        public List<Block> blocks = new List<Block>();               // 인 게임 블럭 리스트
+        public List<Block> downBlocks = new List<Block>();           // 아래 이동 블럭 리스트
+        public List<Block> delBlocks = new List<Block>();            // 삭제 블럭 리스트
 
-
-
-        #endregion
-
-        #region private 
+        [SerializeField]
+        private UIEnd uiEnd;
 
         private GameManager GM;
-
-        #endregion
+        private DataManager DM;
 
         private void Start()
         {
+            if (uiEnd.gameObject.activeSelf)
+            {
+                uiEnd.gameObject.SetActive(false);
+            }
+
             GM = GameManager.Instance;
+            DM = DataManager.Instance;
             GM.Initialize(this);
 
             // 블럭을 화면에 세팅
@@ -43,7 +52,18 @@ namespace XR_3MatchGame_Object
             // 게임 종료
             if (GM.GameState == GameState.End)
             {
+                // UIEnd 활성화 후 자신 비활성화
+                uiEnd.gameObject.SetActive(true);
+                this.gameObject.SetActive(false);
 
+                var pool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    pool.ReturnPoolableObject(blocks[i]);
+                }
+
+                blocks.Clear();
             }
         }
 
@@ -66,7 +86,7 @@ namespace XR_3MatchGame_Object
                     block.gameObject.SetActive(true);
 
                     // GM에 저장
-                    GM.blocks.Add(block);
+                    blocks.Add(block);
                 }
             }
 
@@ -80,8 +100,6 @@ namespace XR_3MatchGame_Object
         /// </summary>
         public void BlockUpdate()
         {
-            var blocks = GM.blocks;
-
             // Top = 6, Bottom = 0
             // Left = 0, Right = 6
             for (int i = 0; i < blocks.Count; i++)
@@ -171,10 +189,6 @@ namespace XR_3MatchGame_Object
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var size = (GM.BoardSize.x * GM.BoardSize.y);
 
-            var blocks = GM.blocks;
-            var delBlocks = GM.delBlocks;
-            var downBlocks = GM.downBlocks;
-
             for (int i = 0; i < blocks.Count; i++)
             {
                 curBlock = blocks[i];
@@ -200,7 +214,7 @@ namespace XR_3MatchGame_Object
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
-                            GM.ScoreUpdate(delBlocks[j].BlockScore);
+                            DM.ScoreUpdate(delBlocks[j].BlockScore);
                             GM.SkillGaugeUpdate(delBlocks[j].ElementValue);
                             blocks.Remove(delBlocks[j]);
                         }
@@ -285,7 +299,7 @@ namespace XR_3MatchGame_Object
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
-                            GM.ScoreUpdate(delBlocks[j].BlockScore);
+                            DM.ScoreUpdate(delBlocks[j].BlockScore);
                             blocks.Remove(delBlocks[j]);
                         }
 
@@ -365,8 +379,6 @@ namespace XR_3MatchGame_Object
 
         public bool BlockCheck(Block checkBlock = null, Block otherBlock = null, SwipeDir swipeDir = SwipeDir.None)
         {
-            var blocks = GM.blocks;
-
             if (checkBlock != null || otherBlock != null)
             {
                 // 같은 블럭 개수

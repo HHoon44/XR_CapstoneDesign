@@ -1,5 +1,10 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using XR_3MatchGame;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Object;
 using XR_3MatchGame_UI;
@@ -28,23 +33,12 @@ namespace XR_3MatchGame_InGame
         public ElementType SelectElement_2;
 
         /// <summary>
-        /// 현재 게임의 점수 프로퍼티
-        /// </summary>
-        public int Score { get; private set; }
-
-        /// <summary>
         /// 보드 컴포넌트 프로퍼티
         /// </summary>
         public Board Board { get; private set; }
 
-        [Header("Blocks")]
-        public List<Block> blocks = new List<Block>();               // 인 게임 내에서 모든 블럭을 담아놓을 리스트
-        public List<Block> downBlocks = new List<Block>();           // 내릴 블럭을 담아놓을 리스트
-        public List<Block> delBlocks = new List<Block>();            // 삭제할 블럭을 담아놓을 리스트
-
         public bool isStart = false;                                 // 블럭 체크를 실행할것인가?
-
-        private UIWindowManager UM;
+        public float loadProgress;
 
         public Vector2Int BoardSize
         {
@@ -67,43 +61,88 @@ namespace XR_3MatchGame_InGame
             }
 
             DontDestroyOnLoad(this);
+
+            // 게임 시작
+            var StartController = FindObjectOfType<StartController>();
+            StartController?.Initialize();
+
+            GameState = GameState.Play;
+            SetElementType(ElementType.Fire);
         }
 
         public void Initialize(Board board)
         {
-            // 나중에 게임 매니저 옮기면 따로 처리 해줘야할듯
-            SetElementType(ElementType.Fire);
-
-            // 게임 시작
-            GameState = GameState.Play;
             Board = board;
-            XR_3MatchGame_Resource.ResourceManager.Instance.Initialize();
-            UM = UIWindowManager.Instance;
         }
 
         /// <summary>
-        /// 스코어를 업데이트 하는 메서드
+        /// 스킬 게이지 업데이트 메서드
         /// </summary>
-        /// <param name="score">스코어</param>
-        public void ScoreUpdate(int score)
-        {
-            Score += score;
-            UIWindowManager.Instance.GetWindow<UIDetail>().SetScore(Score);
-        }
-
+        /// <param name="value"></param>
         public void SkillGaugeUpdate(float value)
         {
-            UM.GetWindow<UIElement>().SetSkillAmount(value);
+            // 이거 UI 엘리멘트에서 설정하는게 나을듯
+            UIWindowManager.Instance.GetWindow<UIElement>().SetSkillAmount(value);
         }
 
+        /// <summary>
+        /// 현재 게임 상태 세팅 메서드
+        /// </summary>
+        /// <param name="gameState"></param>
         public void SetGameState(GameState gameState)
         {
             GameState = gameState;
         }
 
+        /// <summary>
+        /// 현재 캐릭터 속성 세팅 메서드
+        /// </summary>
+        /// <param name="elementType"></param>
         public void SetElementType(ElementType elementType)
         {
             ElementType = elementType;
+        }
+
+        public void LoadScene(SceneType sceneName, IEnumerator loadCoroutine = null, Action loadComplete = null)
+        {
+            StartCoroutine(WaitForLoad());
+
+            IEnumerator WaitForLoad()
+            {
+                loadProgress = 0;
+
+                yield return SceneManager.LoadSceneAsync(SceneType.Loading.ToString());
+
+                // 요청한 씬을 가져와서 비활성화
+                var asyncOper = SceneManager.LoadSceneAsync(sceneName.ToString(), LoadSceneMode.Additive);
+                asyncOper.allowSceneActivation = false;
+
+                if (loadCoroutine != null)
+                {
+                    yield return StartCoroutine(loadCoroutine);
+                }
+
+                while (!asyncOper.isDone)
+                {
+                    if (loadProgress >= .9f)
+                    {
+                        loadProgress = 1f;
+
+                        yield return new WaitForSeconds(1f);
+
+                        // 작업이 끝났으면 활성화
+                        asyncOper.allowSceneActivation = true;
+                    }
+                    else
+                    {
+                        loadProgress = asyncOper.progress;
+                    }
+                }
+
+                yield return SceneManager.UnloadSceneAsync(SceneType.Loading.ToString());
+
+                loadComplete?.Invoke();
+            }
         }
     }
 }

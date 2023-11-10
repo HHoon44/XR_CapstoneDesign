@@ -137,9 +137,9 @@ namespace XR_3MatchGame_UI
 
         private IEnumerator ElementSkill(ElementType type)
         {
-            var blocks = GM.blocks;
-            var downBlocks = GM.downBlocks;
-            var delBlocks = GM.delBlocks;
+            var blocks = GM.Board.blocks;
+            var downBlocks = GM.Board.downBlocks;
+            var delBlocks = GM.Board.delBlocks;
             var pool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var size = (GM.BoardSize.x * GM.BoardSize.y);
 

@@ -190,17 +190,19 @@ namespace XR_3MatchGame_Object
         {
             GM.SetGameState(GameState.Checking);
 
+            var blocks = GM.Board.blocks;
+
             // Top
             if ((swipeAngle > 45 && swipeAngle <= 135) && row < GM.BoardSize.y)
             {
-                for (int i = 0; i < GM.blocks.Count; i++)
+                for (int i = 0; i < blocks.Count; i++)
                 {
-                    if (GM.blocks[i].col == col &&
-                        GM.blocks[i].row == row + 1)
+                    if (blocks[i].col == col &&
+                        blocks[i].row == row + 1)
                     {
                         // 위쪽 이동이므로 목표 블럭은 -1 이동
                         // 위쪽 이동이므로 이동 블럭은 +1 이동
-                        otherBlock = GM.blocks[i];
+                        otherBlock = blocks[i];
                         otherBlock.row -= 1;
                         row += 1;
 
@@ -213,14 +215,14 @@ namespace XR_3MatchGame_Object
             // Bottom
             else if ((swipeAngle < -45 && swipeAngle >= -135) && row > 0)
             {
-                for (int i = 0; i < GM.blocks.Count; i++)
+                for (int i = 0; i < blocks.Count; i++)
                 {
-                    if (GM.blocks[i].col == col &&
-                        GM.blocks[i].row == row - 1)
+                    if (blocks[i].col == col &&
+                        blocks[i].row == row - 1)
                     {
                         // 아래쪽 이동이므로 목표 블럭은 + 1 이동
                         // 아래쪽 이동이므로 이동 블럭은 - 1 이동
-                        otherBlock = GM.blocks[i];
+                        otherBlock = blocks[i];
                         otherBlock.row += 1;
                         row -= 1;
 
@@ -233,14 +235,14 @@ namespace XR_3MatchGame_Object
             // Left
             else if ((swipeAngle > 135 || swipeAngle <= -135) && col > 0)
             {
-                for (int i = 0; i < GM.blocks.Count; i++)
+                for (int i = 0; i < blocks.Count; i++)
                 {
-                    if (GM.blocks[i].col == col - 1 &&
-                        GM.blocks[i].row == row)
+                    if (blocks[i].col == col - 1 &&
+                        blocks[i].row == row)
                     {
                         // 왼쪽 이동이므로 목표 블럭은 + 1 이동
                         // 왼쪽 이동이므로 이동 블럭은 - 1 이동
-                        otherBlock = GM.blocks[i];
+                        otherBlock = blocks[i];
                         otherBlock.col += 1;
                         col -= 1;
 
@@ -253,14 +255,14 @@ namespace XR_3MatchGame_Object
             // Right
             else if ((swipeAngle > -45 && swipeAngle <= 45) && col < GM.BoardSize.x)
             {
-                for (int i = 0; i < GM.blocks.Count; i++)
+                for (int i = 0; i < blocks.Count; i++)
                 {
-                    if (GM.blocks[i].col == col + 1 &&
-                        GM.blocks[i].row == row)
+                    if (blocks[i].col == col + 1 &&
+                        blocks[i].row == row)
                     {
                         // 오른쪽 이동이므로 목표 블럭은 - 1 이동
                         // 오른쪽 이동이므로 이동 블럭은 + 1 이동
-                        otherBlock = GM.blocks[i];
+                        otherBlock = blocks[i];
                         otherBlock.col -= 1;
                         col += 1;
 
