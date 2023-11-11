@@ -491,9 +491,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ElementType: 0
-  SelectElement_0: 0
-  SelectElement_1: 0
-  SelectElement_2: 0
+  selectType: 
   isStart: 0
   loadProgress: 0
 --- !u!4 &750526931
@@ -1003,6 +1001,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1776146997}
+  - component: {fileID: 1776146998}
   m_Layer: 0
   m_Name: StageManager
   m_TagString: Untagged
@@ -1025,6 +1024,18 @@ Transform:
   m_Father: {fileID: 750526931}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1776146998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1776146996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 432be53d53a4ca84db6071b5c5592867, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1875354519
 GameObject:
   m_ObjectHideFlags: 0

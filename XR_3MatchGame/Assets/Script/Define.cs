@@ -17,7 +17,7 @@ namespace XR_3MatchGame.Util
 
     public enum AtlasType
     {
-        None, BlockAtlas
+        None, BlockAtlas, IconAtlas
     }
 
     public enum SwipeDir
@@ -27,7 +27,7 @@ namespace XR_3MatchGame.Util
 
     public enum ElementType
     {
-        None, Fire, Ice, Grass, Dark, Light, Lightning
+        None, Fire, Ice, Grass, Dark, Light, Lightning, Balance
     }
 
     public enum IntroPhase

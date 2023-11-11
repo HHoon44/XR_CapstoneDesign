@@ -35,6 +35,9 @@ namespace XR_3MatchGame_Resource
         {
             var blockAtlas = Resources.LoadAll<SpriteAtlas>("Atlas/BlockAtlas");
             SpriteLoader.SetAtlas(blockAtlas);
+
+            var iconAtlas = Resources.LoadAll<SpriteAtlas>("Atlas/IconAtlas");
+            SpriteLoader.SetAtlas(iconAtlas);
         }
 
         /// <summary>

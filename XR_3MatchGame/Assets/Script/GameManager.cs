@@ -28,9 +28,7 @@ namespace XR_3MatchGame_InGame
         public ElementType ElementType = ElementType.Fire;
 
         // 유저가 선택한 3가지 원소
-        public ElementType SelectElement_0;
-        public ElementType SelectElement_1;
-        public ElementType SelectElement_2;
+        public List<ElementType> selectType = new List<ElementType>();
 
         /// <summary>
         /// 보드 컴포넌트 프로퍼티

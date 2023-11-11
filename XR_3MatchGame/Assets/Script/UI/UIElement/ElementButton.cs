@@ -15,20 +15,20 @@ namespace XR_3MatchGame_UI
             GM = GameManager.Instance;
 
             // 현재 오브젝트의 인덱스에 따라서 원소 타입 설정
-            switch (transform.GetSiblingIndex())
-            {
-                case 0:
-                    SelectElement = GM.SelectElement_0;
-                    break;
+            //switch (transform.GetSiblingIndex())
+            //{
+            //    case 0:
+            //        SelectElement = GM.SelectElement_0;
+            //        break;
 
-                case 1:
-                    SelectElement = GM.SelectElement_1;
-                    break;
+            //    case 1:
+            //        SelectElement = GM.SelectElement_1;
+            //        break;
 
-                case 2:
-                    SelectElement = GM.SelectElement_2;
-                    break;
-            }
+            //    case 2:
+            //        SelectElement = GM.SelectElement_2;
+            //        break;
+            //}
 
             // 여기서 스프라이트 설정 하면 될듯
         }
