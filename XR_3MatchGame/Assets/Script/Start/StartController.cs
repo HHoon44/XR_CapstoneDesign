@@ -1,7 +1,9 @@
 using System.Collections;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using XR_3MatchGame.Util;
+using XR_3MatchGame_Data;
 using XR_3MatchGame_UI;
 using ResourceManager = XR_3MatchGame_Resource.ResourceManager;
 
@@ -72,10 +74,13 @@ namespace XR_3MatchGame
                     LoadComplete = true;
                     break;
 
+                case IntroPhase.Data:
+                    DataManager.Instance.Initialize();
+                    LoadComplete = true;
+                    break;
+
                 case IntroPhase.Complete:
                     SceneManager.LoadScene(SceneType.Lobby.ToString());
-                    
-
                     allLoaded = true;
                     LoadComplete = true;
                     break;

@@ -1,11 +1,12 @@
 ﻿ using UnityEngine;
-using System.Collections;
+using UnityEngine.UI;
 
 namespace UIHealthAlchemy
 {
     [ExecuteInEditMode]
     public class MaterialHealhBar : HealthBarLogic
     {
+        public Image fillGauge;
 
         [SerializeField] protected Material mat;
         protected float _Value;

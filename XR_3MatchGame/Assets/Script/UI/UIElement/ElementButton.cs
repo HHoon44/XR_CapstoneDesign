@@ -53,7 +53,7 @@ namespace XR_3MatchGame_UI
             GM.ElementType = SelectElement;
 
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
-            uiElement.OnElementGauge(GM.ElementType);
+            uiElement.SetGauge();
         }
     }
 }

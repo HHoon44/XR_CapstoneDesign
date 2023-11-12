@@ -31,8 +31,8 @@ namespace XR_3MatchGame.Util
     }
 
     public enum IntroPhase
-    { 
-        None, Start, Resource, UI, Complete
+    {
+        None, Start, Resource, Data, UI, Complete
     }
 
     public class StringName

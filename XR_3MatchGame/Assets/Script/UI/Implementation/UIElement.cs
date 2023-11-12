@@ -1,7 +1,9 @@
 using System.Collections;
 using UIHealthAlchemy;
 using UnityEngine;
+using UnityEngine.UI;
 using XR_3MatchGame.Util;
+using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
 using XR_3MatchGame_Object;
 using XR_3MatchGame_Util;
@@ -35,34 +37,41 @@ namespace XR_3MatchGame_UI
 
         #endregion
 
-        private MaterialHealhBar skillGauge;
         private GameManager GM;
 
-        private float skillValue;           // 스킬 게이지 값
+        public float TEST;
+
+        private Image fillGauge;
 
         public override void Start()
         {
             base.Start();
-
             GM = GameManager.Instance;
 
-            // 원소 게이지 활성화
-            OnElementGauge(GM.ElementType);
-
-            skillValue = 0;
+            Initialize();
         }
 
         /// <summary>
-        /// 요청 받은 원소 타입에 따라 스킬 게이지를 활성화 해주는 메서드
+        /// UI 초기화 메서드
         /// </summary>
-        /// <param name="type">원소 타입</param>
-        public void OnElementGauge(ElementType type)
+        public void Initialize()
         {
+            TEST = 0;
+            SetGauge();
+        }
+
+        /// <summary>
+        /// 스킬 게이지 활성화 메서드
+        /// </summary>
+        public void SetGauge()
+        {
+            var type = GameManager.Instance.ElementType;
+
             switch (type)
             {
                 case ElementType.Fire:
 
-                    // 불 스킬 게이지 활성화
+                    // 불 활성화
                     fireGauge.SetActive(true);
 
                     if (iceGauge.activeSelf)
@@ -74,13 +83,12 @@ namespace XR_3MatchGame_UI
                         grassGauge.SetActive(false);
                     }
 
-                    skillGauge = fireGauge.GetComponent<MaterialHealhBar>();
-                    skillGauge.Value = skillValue;
+                    fillGauge = fireGauge.GetComponent<MaterialHealhBar>().fillGauge;
                     break;
 
                 case ElementType.Ice:
 
-                    // 얼음 스킬 게이지 활성화
+                    // 얼음 활성화
                     iceGauge.SetActive(true);
 
                     if (fireGauge.activeSelf)
@@ -92,13 +100,12 @@ namespace XR_3MatchGame_UI
                         grassGauge.SetActive(false);
                     }
 
-                    skillGauge = iceGauge.GetComponent<MaterialHealhBar>();
-                    skillGauge.Value = skillValue;
+                    fillGauge = fireGauge.GetComponent<MaterialHealhBar>().fillGauge;
                     break;
 
                 case ElementType.Grass:
 
-                    // 풀 스킬 게이지 활성화
+                    // 풀 활성화
                     grassGauge.SetActive(true);
 
                     if (fireGauge.activeSelf)
@@ -110,10 +117,12 @@ namespace XR_3MatchGame_UI
                         iceGauge.SetActive(false);
                     }
 
-                    skillGauge = grassGauge.GetComponent<MaterialHealhBar>();
-                    skillGauge.Value = skillValue;
+                    fillGauge = fireGauge.GetComponent<MaterialHealhBar>().fillGauge;
                     break;
             }
+
+            // 게이지 값 설정
+            fillGauge.fillAmount = TEST;
         }
 
         /// <summary>
@@ -122,14 +131,17 @@ namespace XR_3MatchGame_UI
         /// <param name="value">값</param>
         public void SetSkillAmount(float value)
         {
-            if (skillGauge.Value >= 1f)
+
+            if (fillGauge.fillAmount >= 1f)
             {
-                skillGauge.Value = 1f;
+                TEST = 1f;
+                fillGauge.fillAmount = TEST;
                 return;
             }
 
-            skillValue += value;
-            skillGauge.Value += skillValue;
+            TEST += value;
+            fillGauge.fillAmount = TEST;
+            Debug.Log(TEST);
         }
 
         /// <summary>
@@ -138,9 +150,8 @@ namespace XR_3MatchGame_UI
         public void SkillBtn()
         {
             // 스킬 시전
-            if (skillGauge.Value >= 1f && GM.GameState == GameState.Play)
+            if (fillGauge.fillAmount >= 1f && GM.GameState == GameState.Play)
             {
-                fireSkill.SetActive(true);
                 switch (GM.ElementType)
                 {
                     case ElementType.Fire:
@@ -165,20 +176,20 @@ namespace XR_3MatchGame_UI
                         break;
                 }
 
-                skillValue = 0;
-                skillGauge.Value = skillValue;
+                TEST = 0;
+                fillGauge.fillAmount = TEST;
 
                 GM.SetGameState(GameState.Skill);
-
                 StartCoroutine(SkillStart(GM.ElementType));
             }
         }
 
         private IEnumerator SkillStart(ElementType type)
         {
-            var blocks = GM.Board.blocks;
-            var downBlocks = GM.Board.downBlocks;
-            var delBlocks = GM.Board.delBlocks;
+            var blocks = GameManager.Instance.Board.blocks;
+            var delBlocks = GameManager.Instance.Board.delBlocks;
+            var downBlocks = GameManager.Instance.Board.downBlocks;
+
             var pool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var size = (GM.BoardSize.x * GM.BoardSize.y);
 
@@ -206,6 +217,9 @@ namespace XR_3MatchGame_UI
                     {
                         pool.ReturnPoolableObject(delBlocks[i]);
                         blocks.Remove(delBlocks[i]);
+
+                        // 점수 업데이트
+                        DataManager.Instance.SetScore(delBlocks[i].BlockScore);
                     }
 
                     // 내릴 블럭 찾기

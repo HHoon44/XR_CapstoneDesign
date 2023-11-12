@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Data.Common;
 using UnityEngine;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Data;
@@ -18,24 +17,18 @@ namespace XR_3MatchGame_Object
         public List<Block> delBlocks = new List<Block>();            // 삭제 블럭 리스트
 
         [SerializeField]
-        private UIEnd uiEnd;
+        private GameObject uiEnd;
 
         private GameManager GM;
         private DataManager DM;
 
         private void Start()
         {
-            if (uiEnd.gameObject.activeSelf)
-            {
-                uiEnd.gameObject.SetActive(false);
-            }
-
             GM = GameManager.Instance;
             DM = DataManager.Instance;
             GM.Initialize(this);
 
-            // 블럭을 화면에 세팅
-            StartSpawn();
+            StartCoroutine(SpawnBlock());
         }
 
         private void Update()
@@ -54,7 +47,6 @@ namespace XR_3MatchGame_Object
             {
                 // UIEnd 활성화 후 자신 비활성화
                 uiEnd.gameObject.SetActive(true);
-                this.gameObject.SetActive(false);
 
                 var pool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
 
@@ -64,18 +56,21 @@ namespace XR_3MatchGame_Object
                 }
 
                 blocks.Clear();
+
+                gameObject.SetActive(false);
             }
         }
 
-        /// <summary>
-        /// 게임 시작 시 블럭을 화면에 세팅하는 메서드
-        /// </summary>
-        private void StartSpawn()
+        public IEnumerator SpawnBlock()
         {
-            var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
-            var size = GM.BoardSize;
+            GM.SetGameState(GameState.Checking);
 
-            //// 블럭 세팅 작업
+            yield return new WaitForSeconds(.5f);
+
+            var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+            var size = GameManager.Instance.BoardSize;
+
+            // 블럭 세팅 작업
             for (int row = 0; row < size.y; row++)
             {
                 for (int col = 0; col < size.x; col++)
@@ -90,7 +85,12 @@ namespace XR_3MatchGame_Object
                 }
             }
 
-            GM.SetGameState(GameState.Checking);
+            if (!gameObject.activeSelf)
+            {
+                gameObject.SetActive(true);
+                uiEnd.gameObject.SetActive(false);
+            }
+
             BlockUpdate();
             StartCoroutine(BlockClear());
         }
@@ -188,6 +188,7 @@ namespace XR_3MatchGame_Object
             Block curBlock = null;
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var size = (GM.BoardSize.x * GM.BoardSize.y);
+            var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
             for (int i = 0; i < blocks.Count; i++)
             {
@@ -214,8 +215,8 @@ namespace XR_3MatchGame_Object
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
-                            DM.ScoreUpdate(delBlocks[j].BlockScore);
-                            GM.SkillGaugeUpdate(delBlocks[j].ElementValue);
+                            DM.SetScore(delBlocks[j].BlockScore);
+                            uiElement.SetSkillAmount(delBlocks[j].ElementValue);
                             blocks.Remove(delBlocks[j]);
                         }
 
@@ -299,7 +300,8 @@ namespace XR_3MatchGame_Object
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
-                            DM.ScoreUpdate(delBlocks[j].BlockScore);
+                            DM.SetScore(delBlocks[j].BlockScore);
+                            uiElement.SetSkillAmount(delBlocks[j].ElementValue);
                             blocks.Remove(delBlocks[j]);
                         }
 

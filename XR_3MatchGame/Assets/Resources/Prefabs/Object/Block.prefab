@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 5397802744972761918}
   - component: {fileID: 5397802744972761857}
   - component: {fileID: 8954822408381937660}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Block
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -98,12 +98,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 778ff2e1e7e34fd48b433f49c15d2a58, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 0}
   col: 0
   row: 0
-  nextCol: 0
-  nextRow: 0
-  blockType: 0
-  otherBlock: {fileID: 0}
+  targetCol: 0
+  targetRow: 0
+  topBlock: {fileID: 0}
+  bottomBlock: {fileID: 0}
+  leftBlock: {fileID: 0}
+  rightBlock: {fileID: 0}
+  elementType: 0
+  Top_T: 0
+  Bottom_T: 0
+  Left_T: 0
+  Right_T: 0
 --- !u!61 &8954822408381937660
 BoxCollider2D:
   m_ObjectHideFlags: 0

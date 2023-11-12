@@ -1,10 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.TextCore.Text;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using XR_3MatchGame;
 using XR_3MatchGame.Util;
+using XR_3MatchGame_Data;
 using XR_3MatchGame_Object;
 using XR_3MatchGame_UI;
 
@@ -36,6 +38,9 @@ namespace XR_3MatchGame_InGame
 
         public bool isStart = false;                                 // 블럭 체크를 실행할것인가?
         public float loadProgress;
+
+        public string stageName;
+        public ElementType stageType;
 
         public Vector2Int BoardSize
         {
@@ -73,16 +78,6 @@ namespace XR_3MatchGame_InGame
         }
 
         /// <summary>
-        /// 스킬 게이지 업데이트 메서드
-        /// </summary>
-        /// <param name="value"></param>
-        public void SkillGaugeUpdate(float value)
-        {
-            // 이거 UI 엘리멘트에서 설정하는게 나을듯
-            UIWindowManager.Instance.GetWindow<UIElement>().SetSkillAmount(value);
-        }
-
-        /// <summary>
         /// 현재 게임 상태 세팅 메서드
         /// </summary>
         /// <param name="gameState"></param>
@@ -98,6 +93,14 @@ namespace XR_3MatchGame_InGame
         public void SetElementType(ElementType elementType)
         {
             ElementType = elementType;
+        }
+
+        public void ReStart()
+        {
+            StartCoroutine(Board.SpawnBlock());                             // 블럭
+            UIWindowManager.Instance.GetWindow<UITime>().SetTime();         // 시간
+            UIWindowManager.Instance.GetWindow<UIElement>().Initialize();   // 스킬 게이지
+            DataManager.Instance.SetScore(0);                               // 스코어
         }
 
         public void LoadScene(SceneType sceneName, IEnumerator loadCoroutine = null, Action loadComplete = null)

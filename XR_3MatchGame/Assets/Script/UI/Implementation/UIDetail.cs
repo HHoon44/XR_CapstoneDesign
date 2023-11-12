@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using XR_3MatchGame.Util;
+using XR_3MatchGame_InGame;
 using XR_3MatchGame_Resource;
 using XR_3MatchGame_Util;
 
@@ -22,9 +23,14 @@ namespace XR_3MatchGame_UI
         {
             base.Start();
 
-            var stageIcon = SpriteLoader.GetSprite(AtlasType.IconAtlas, StageManager.Instance.stageType.ToString());
+            SetStageDetail();
+        }
+
+        public void SetStageDetail()
+        {
+            var stageIcon = SpriteLoader.GetSprite(AtlasType.IconAtlas, GameManager.Instance.stageType.ToString());
             icon.sprite = stageIcon;
-            detail.text = StageManager.Instance.stageName + "의 시련";
+            detail.text = GameManager.Instance.stageName + "의 시련";
         }
 
         public void SetScore(int score)

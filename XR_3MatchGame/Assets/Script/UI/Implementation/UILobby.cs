@@ -1,9 +1,7 @@
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Data;
-using XR_3MatchGame_InGame;
 
 namespace XR_3MatchGame_UI
 {
@@ -23,26 +21,9 @@ namespace XR_3MatchGame_UI
 
         private void Start()
         {
-            /// 임의로 테스트 하는거임
-            PlayerPrefs.DeleteAll();
-
-            DataManager.Instance.SetPlayerName("조형훈");
-            DataManager.Instance.SetPlayerCoin(1000);
-
-            DataManager.Instance.SaveUserData(DataManager.Instance.PlayerName);
-
-            /// 임의로 점수 체크 할려고 만든거임
-            PlayerPrefs.SetString(StringName.HighScore_0, StringName.HighScore_0);
-            PlayerPrefs.SetInt(StringName.HighScore_0, 100);
-
-            PlayerPrefs.SetString(StringName.HighScore_1, StringName.HighScore_1);
-            PlayerPrefs.SetInt(StringName.HighScore_1, 50);
-
             ProfilUpdate();
             CoinUpdate();
             HighScoreUpdate();
-
-            /// 나중가서 유저가 선택했던 원소 3가지도 저장되면 좋을듯
         }
 
         /// <summary>

@@ -102,8 +102,8 @@ namespace XR_3MatchGame
             stageDetail.gameObject.SetActive(true);
 
             stageDetail.Initialize("불");
-            StageManager.Instance.stageType = ElementType.Fire;
-            StageManager.Instance.stageName = "불";
+            GameManager.Instance.stageType = ElementType.Fire;
+            GameManager.Instance.stageName = "불";
         }
 
         public void IceStageButton()
@@ -111,8 +111,8 @@ namespace XR_3MatchGame
             stageDetail.gameObject.SetActive(true);
 
             stageDetail.Initialize("얼음");
-            StageManager.Instance.stageType = ElementType.Ice;
-            StageManager.Instance.stageName = "얼음";
+            GameManager.Instance.stageType = ElementType.Ice;
+            GameManager.Instance.stageName = "얼음";
         }
 
         public void GrassStageButton()
@@ -120,8 +120,8 @@ namespace XR_3MatchGame
             stageDetail.gameObject.SetActive(true);
 
             stageDetail.Initialize("풀");
-            StageManager.Instance.stageType = ElementType.Grass;
-            StageManager.Instance.stageName = "풀";
+            GameManager.Instance.stageType = ElementType.Grass;
+            GameManager.Instance.stageName = "풀";
         }
 
         public void FireSelectButton()

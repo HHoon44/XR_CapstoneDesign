@@ -279,13 +279,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 62800615}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: GrassSkill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &62800615
 Transform:
   m_ObjectHideFlags: 0
@@ -607,6 +607,22 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1093046843632554, guid: a254b3acae321af4db700d32a584642d, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114068900258383514, guid: a254b3acae321af4db700d32a584642d, type: 3}
+      propertyPath: m_Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114068900258383514, guid: a254b3acae321af4db700d32a584642d, type: 3}
+      propertyPath: m_FillAmount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114068900258383514, guid: a254b3acae321af4db700d32a584642d, type: 3}
+      propertyPath: m_FillMethod
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 114834785832449806, guid: a254b3acae321af4db700d32a584642d, type: 3}
       propertyPath: Min
       value: 0
@@ -615,6 +631,10 @@ PrefabInstance:
       propertyPath: value
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114834785832449806, guid: a254b3acae321af4db700d32a584642d, type: 3}
+      propertyPath: fillGauge
+      value: 
+      objectReference: {fileID: 222045921}
     - target: {fileID: 224058696714891886, guid: a254b3acae321af4db700d32a584642d, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 58.69995
@@ -722,6 +742,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 224070991626093876, guid: a254b3acae321af4db700d32a584642d, type: 3}
   m_PrefabInstance: {fileID: 222045919}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &222045921 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114068900258383514, guid: a254b3acae321af4db700d32a584642d, type: 3}
+  m_PrefabInstance: {fileID: 222045919}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &222701909
 GameObject:
   m_ObjectHideFlags: 0
@@ -1006,7 +1037,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 473651665}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: FireSkill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1255,7 +1286,7 @@ GameObject:
   m_Component:
   - component: {fileID: 754052013}
   - component: {fileID: 754052014}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkillCutScene
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1317,7 +1348,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: 0eb6e304d9384584f94279a5525254cd, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -1338,7 +1369,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 785647849}
-  - component: {fileID: 785647850}
   m_Layer: 5
   m_Name: UIPortrait
   m_TagString: Untagged
@@ -1368,18 +1398,6 @@ RectTransform:
   m_AnchoredPosition: {x: -100, y: -35}
   m_SizeDelta: {x: 700, y: 700}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &785647850
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 785647848}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6241c260c60c43b47b16d5167356b610, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &806218051
 GameObject:
   m_ObjectHideFlags: 0
@@ -1916,6 +1934,22 @@ PrefabInstance:
       propertyPath: value
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114708657251320160, guid: 6399005270330cc4f9c5639bdbe6fcde, type: 3}
+      propertyPath: fillGauge
+      value: 
+      objectReference: {fileID: 977502162}
+    - target: {fileID: 114876781142618918, guid: 6399005270330cc4f9c5639bdbe6fcde, type: 3}
+      propertyPath: m_Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114876781142618918, guid: 6399005270330cc4f9c5639bdbe6fcde, type: 3}
+      propertyPath: m_FillAmount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114876781142618918, guid: 6399005270330cc4f9c5639bdbe6fcde, type: 3}
+      propertyPath: m_FillMethod
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 224661335890814020, guid: 6399005270330cc4f9c5639bdbe6fcde, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -2019,6 +2053,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 224661335890814020, guid: 6399005270330cc4f9c5639bdbe6fcde, type: 3}
   m_PrefabInstance: {fileID: 977502160}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &977502162 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114876781142618918, guid: 6399005270330cc4f9c5639bdbe6fcde, type: 3}
+  m_PrefabInstance: {fileID: 977502160}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1010506706 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1061261484285272, guid: a254b3acae321af4db700d32a584642d, type: 3}
@@ -2310,6 +2355,7 @@ MonoBehaviour:
   fireSkill: {fileID: 473651664}
   iceSkill: {fileID: 0}
   grassSkill: {fileID: 0}
+  TEST: 0
 --- !u!1 &1105161830
 GameObject:
   m_ObjectHideFlags: 0
@@ -2543,7 +2589,7 @@ GameObject:
   - component: {fileID: 1127073992}
   - component: {fileID: 1127073994}
   - component: {fileID: 1127073993}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkillEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7353,7 +7399,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1154899521}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: SkillFrame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -7478,7 +7524,7 @@ MonoBehaviour:
   blocks: []
   downBlocks: []
   delBlocks: []
-  uiEnd: {fileID: 1200338929}
+  uiEnd: {fileID: 1200338927}
 --- !u!1 &1176846234
 GameObject:
   m_ObjectHideFlags: 0
@@ -9414,13 +9460,13 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1983624158}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: IceSkill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1983624158
 Transform:
   m_ObjectHideFlags: 0
@@ -9443,6 +9489,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1086909412}
     m_Modifications:
+    - target: {fileID: 1099209140175914, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 1832551968079586, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
       propertyPath: m_Name
       value: Fire
@@ -9451,6 +9501,18 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114112608434566316, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
+      propertyPath: m_Type
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114112608434566316, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
+      propertyPath: m_FillAmount
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114112608434566316, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
+      propertyPath: m_FillMethod
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 114134018633921742, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
       propertyPath: Min
       value: 0
@@ -9458,6 +9520,14 @@ PrefabInstance:
     - target: {fileID: 114134018633921742, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
       propertyPath: value
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114134018633921742, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
+      propertyPath: fillGauge
+      value: 
+      objectReference: {fileID: 2018790642}
+    - target: {fileID: 114134018633921742, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 224483342616206950, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
       propertyPath: m_AnchoredPosition.y
@@ -9558,6 +9628,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 224810336844168936, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
   m_PrefabInstance: {fileID: 2018790640}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2018790642 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 114112608434566316, guid: e6f0136627d49b3439aa449d168c42c6, type: 3}
+  m_PrefabInstance: {fileID: 2018790640}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2092326554
 GameObject:
   m_ObjectHideFlags: 0
