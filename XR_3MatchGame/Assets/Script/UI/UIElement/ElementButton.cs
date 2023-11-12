@@ -48,8 +48,6 @@ namespace XR_3MatchGame_UI
                 return;
             }
 
-            Debug.Log("원소 변경");
-
             GM.ElementType = SelectElement;
 
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();

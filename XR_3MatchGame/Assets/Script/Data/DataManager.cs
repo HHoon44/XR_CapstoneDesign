@@ -21,6 +21,8 @@ namespace XR_3MatchGame_Data
         /// </summary>
         public int PlayerCoin { get; private set; }
 
+        public float saveGauge;
+
         public void Initialize()
         {
             SetName("Á¶ÇüÈÆ");

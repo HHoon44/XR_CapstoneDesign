@@ -39,8 +39,6 @@ namespace XR_3MatchGame_UI
 
         private GameManager GM;
 
-        public float TEST;
-
         private Image fillGauge;
 
         public override void Start()
@@ -56,7 +54,7 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void Initialize()
         {
-            TEST = 0;
+            DataManager.Instance.saveGauge = 0;
             SetGauge();
         }
 
@@ -84,6 +82,7 @@ namespace XR_3MatchGame_UI
                     }
 
                     fillGauge = fireGauge.GetComponent<MaterialHealhBar>().fillGauge;
+                    fillGauge.fillAmount = DataManager.Instance.saveGauge;
                     break;
 
                 case ElementType.Ice:
@@ -100,7 +99,8 @@ namespace XR_3MatchGame_UI
                         grassGauge.SetActive(false);
                     }
 
-                    fillGauge = fireGauge.GetComponent<MaterialHealhBar>().fillGauge;
+                    fillGauge = iceGauge.GetComponent<MaterialHealhBar>().fillGauge;
+                    fillGauge.fillAmount = DataManager.Instance.saveGauge;
                     break;
 
                 case ElementType.Grass:
@@ -117,12 +117,10 @@ namespace XR_3MatchGame_UI
                         iceGauge.SetActive(false);
                     }
 
-                    fillGauge = fireGauge.GetComponent<MaterialHealhBar>().fillGauge;
+                    fillGauge = grassGauge.GetComponent<MaterialHealhBar>().fillGauge;
+                    fillGauge.fillAmount = DataManager.Instance.saveGauge;
                     break;
             }
-
-            // 게이지 값 설정
-            fillGauge.fillAmount = TEST;
         }
 
         /// <summary>
@@ -134,14 +132,13 @@ namespace XR_3MatchGame_UI
 
             if (fillGauge.fillAmount >= 1f)
             {
-                TEST = 1f;
-                fillGauge.fillAmount = TEST;
+                DataManager.Instance.saveGauge = 1f;
+                fillGauge.fillAmount = DataManager.Instance.saveGauge;
                 return;
             }
 
-            TEST += value;
-            fillGauge.fillAmount = TEST;
-            Debug.Log(TEST);
+            DataManager.Instance.saveGauge += value;
+            fillGauge.fillAmount = DataManager.Instance.saveGauge;
         }
 
         /// <summary>
@@ -176,8 +173,8 @@ namespace XR_3MatchGame_UI
                         break;
                 }
 
-                TEST = 0;
-                fillGauge.fillAmount = TEST;
+                DataManager.Instance.saveGauge = 0;
+                fillGauge.fillAmount = DataManager.Instance.saveGauge;
 
                 GM.SetGameState(GameState.Skill);
                 StartCoroutine(SkillStart(GM.ElementType));
@@ -234,7 +231,7 @@ namespace XR_3MatchGame_UI
                         }
                     }
 
-                    yield return new WaitForSeconds(1f);
+                    yield return new WaitForSeconds(1.5f);
 
                     // 블럭 내리기
                     for (int i = 0; i < downBlocks.Count; i++)
@@ -304,11 +301,9 @@ namespace XR_3MatchGame_UI
                     break;
             }
 
-            yield return new WaitForSeconds(1f);
-
             fireSkill.SetActive(false);
 
-            yield return new WaitForSeconds(.1f);
+            yield return new WaitForSeconds(.4f);
 
             // 블럭 업데이트
             GM.Board.BlockUpdate();

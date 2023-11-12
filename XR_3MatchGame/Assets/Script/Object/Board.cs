@@ -80,7 +80,6 @@ namespace XR_3MatchGame_Object
                     block.Initialize(col, row);
                     block.gameObject.SetActive(true);
 
-                    // GMø° ¿˙¿Â
                     blocks.Add(block);
                 }
             }
