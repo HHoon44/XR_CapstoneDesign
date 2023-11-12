@@ -5,6 +5,7 @@ using UnityEngine.Video;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_InGame;
 using XR_3MatchGame_Resource;
+using XR_3MatchGame_Util;
 
 namespace XR_3MatchGame
 {
@@ -84,7 +85,11 @@ namespace XR_3MatchGame
 
         public void StartButton()
         {
-            GM.LoadScene(SceneType.InGame);
+            // 원소 3개 고르면 게임 시작
+            if (GM.selectType.Count == 3)
+            {
+                GM.LoadScene(SceneType.InGame);
+            }
         }
 
         public void ReturnButton()
@@ -97,6 +102,8 @@ namespace XR_3MatchGame
             stageDetail.gameObject.SetActive(true);
 
             stageDetail.Initialize("불");
+            StageManager.Instance.stageType = ElementType.Fire;
+            StageManager.Instance.stageName = "불";
         }
 
         public void IceStageButton()
@@ -104,6 +111,8 @@ namespace XR_3MatchGame
             stageDetail.gameObject.SetActive(true);
 
             stageDetail.Initialize("얼음");
+            StageManager.Instance.stageType = ElementType.Ice;
+            StageManager.Instance.stageName = "얼음";
         }
 
         public void GrassStageButton()
@@ -111,12 +120,12 @@ namespace XR_3MatchGame
             stageDetail.gameObject.SetActive(true);
 
             stageDetail.Initialize("풀");
+            StageManager.Instance.stageType = ElementType.Grass;
+            StageManager.Instance.stageName = "풀";
         }
 
         public void FireSelectButton()
         {
-            /// 모든 원소는 비어있는곳에 들어가야한다
-            /// 중복이 되서는 안된다
             var same = false;
 
             // 중복된 원소를 찾는 작업

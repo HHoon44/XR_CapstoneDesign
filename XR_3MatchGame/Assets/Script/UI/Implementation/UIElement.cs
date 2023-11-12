@@ -10,17 +10,30 @@ namespace XR_3MatchGame_UI
 {
     public class UIElement : UIWindow
     {
+        #region GaugeObj
         [SerializeField]
-        private GameObject fire;            // 불 원소 스킬 게이지
+        private GameObject fireGauge;            // 불 원소 스킬 게이지
 
         [SerializeField]
-        private GameObject ice;             // 얼음 원소 스킬 게이지
+        private GameObject iceGauge;             // 얼음 원소 스킬 게이지
 
         [SerializeField]
-        private GameObject grass;           // 풀 원소 스킬 게이지
+        private GameObject grassGauge;           // 풀 원소 스킬 게이지
+
+        #endregion
+
+        #region SkillObj
 
         [SerializeField]
-        private GameObject skillEffect;     // 스킬 컷씬
+        private GameObject fireSkill;         // 스킬 컷씬
+
+        [SerializeField]
+        private GameObject iceSkill;         // 스킬 컷씬
+
+        [SerializeField]
+        private GameObject grassSkill;         // 스킬 컷씬
+
+        #endregion
 
         private MaterialHealhBar skillGauge;
         private GameManager GM;
@@ -30,11 +43,13 @@ namespace XR_3MatchGame_UI
         public override void Start()
         {
             base.Start();
+
             GM = GameManager.Instance;
 
             // 원소 게이지 활성화
             OnElementGauge(GM.ElementType);
-            skillValue = skillGauge.Value;
+
+            skillValue = 0;
         }
 
         /// <summary>
@@ -48,54 +63,54 @@ namespace XR_3MatchGame_UI
                 case ElementType.Fire:
 
                     // 불 스킬 게이지 활성화
-                    fire.SetActive(true);
+                    fireGauge.SetActive(true);
 
-                    if (ice.activeSelf)
+                    if (iceGauge.activeSelf)
                     {
-                        ice.SetActive(false);
+                        iceGauge.SetActive(false);
                     }
-                    else if (grass.activeSelf)
+                    else if (grassGauge.activeSelf)
                     {
-                        grass.SetActive(false);
+                        grassGauge.SetActive(false);
                     }
 
-                    skillGauge = fire.GetComponent<MaterialHealhBar>();
+                    skillGauge = fireGauge.GetComponent<MaterialHealhBar>();
                     skillGauge.Value = skillValue;
                     break;
 
                 case ElementType.Ice:
 
                     // 얼음 스킬 게이지 활성화
-                    ice.SetActive(true);
+                    iceGauge.SetActive(true);
 
-                    if (fire.activeSelf)
+                    if (fireGauge.activeSelf)
                     {
-                        fire.SetActive(false);
+                        fireGauge.SetActive(false);
                     }
-                    else if (grass.activeSelf)
+                    else if (grassGauge.activeSelf)
                     {
-                        grass.SetActive(false);
+                        grassGauge.SetActive(false);
                     }
 
-                    skillGauge = ice.GetComponent<MaterialHealhBar>();
+                    skillGauge = iceGauge.GetComponent<MaterialHealhBar>();
                     skillGauge.Value = skillValue;
                     break;
 
                 case ElementType.Grass:
 
                     // 풀 스킬 게이지 활성화
-                    grass.SetActive(true);
+                    grassGauge.SetActive(true);
 
-                    if (fire.activeSelf)
+                    if (fireGauge.activeSelf)
                     {
-                        fire.SetActive(false);
+                        fireGauge.SetActive(false);
                     }
-                    else if (ice.activeSelf)
+                    else if (iceGauge.activeSelf)
                     {
-                        ice.SetActive(false);
+                        iceGauge.SetActive(false);
                     }
 
-                    skillGauge = grass.GetComponent<MaterialHealhBar>();
+                    skillGauge = grassGauge.GetComponent<MaterialHealhBar>();
                     skillGauge.Value = skillValue;
                     break;
             }
@@ -125,17 +140,41 @@ namespace XR_3MatchGame_UI
             // 스킬 시전
             if (skillGauge.Value >= 1f && GM.GameState == GameState.Play)
             {
-                skillEffect.SetActive(true);
+                fireSkill.SetActive(true);
+                switch (GM.ElementType)
+                {
+                    case ElementType.Fire:
+                        fireSkill.SetActive(true);
+                        break;
+
+                    case ElementType.Ice:
+                        iceSkill.SetActive(true);
+                        break;
+
+                    case ElementType.Grass:
+                        grassSkill.SetActive(true);
+                        break;
+
+                    case ElementType.Dark:
+                        break;
+
+                    case ElementType.Light:
+                        break;
+
+                    case ElementType.Lightning:
+                        break;
+                }
+
                 skillValue = 0;
                 skillGauge.Value = skillValue;
 
                 GM.SetGameState(GameState.Skill);
 
-                StartCoroutine(ElementSkill(GM.ElementType));
+                StartCoroutine(SkillStart(GM.ElementType));
             }
         }
 
-        private IEnumerator ElementSkill(ElementType type)
+        private IEnumerator SkillStart(ElementType type)
         {
             var blocks = GM.Board.blocks;
             var downBlocks = GM.Board.downBlocks;
@@ -181,7 +220,7 @@ namespace XR_3MatchGame_UI
                         }
                     }
 
-                    yield return new WaitForSeconds(.3f);
+                    yield return new WaitForSeconds(1f);
 
                     // 블럭 내리기
                     for (int i = 0; i < downBlocks.Count; i++)
@@ -253,7 +292,7 @@ namespace XR_3MatchGame_UI
 
             yield return new WaitForSeconds(1f);
 
-            skillEffect.SetActive(false);
+            fireSkill.SetActive(false);
 
             yield return new WaitForSeconds(.1f);
 

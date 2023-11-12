@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using XR_3MatchGame;
@@ -135,6 +134,9 @@ namespace XR_3MatchGame_InGame
                     {
                         loadProgress = asyncOper.progress;
                     }
+
+                    // 메인 로직 실행을 위해서 null
+                    yield return null;
                 }
 
                 yield return SceneManager.UnloadSceneAsync(SceneType.Loading.ToString());

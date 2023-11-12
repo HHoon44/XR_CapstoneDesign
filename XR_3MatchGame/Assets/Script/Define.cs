@@ -17,7 +17,7 @@ namespace XR_3MatchGame.Util
 
     public enum AtlasType
     {
-        None, BlockAtlas, IconAtlas
+        None, BlockAtlas, IconAtlas, ClockAtlas
     }
 
     public enum SwipeDir

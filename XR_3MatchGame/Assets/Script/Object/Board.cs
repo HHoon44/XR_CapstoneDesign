@@ -12,7 +12,7 @@ namespace XR_3MatchGame_Object
 {
     public class Board : MonoBehaviour
     {
-        [Header("Blocks")]
+        [Header("InGame Blocks")]
         public List<Block> blocks = new List<Block>();               // 인 게임 블럭 리스트
         public List<Block> downBlocks = new List<Block>();           // 아래 이동 블럭 리스트
         public List<Block> delBlocks = new List<Block>();            // 삭제 블럭 리스트
@@ -75,7 +75,7 @@ namespace XR_3MatchGame_Object
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var size = GM.BoardSize;
 
-            // 블럭 세팅 작업
+            //// 블럭 세팅 작업
             for (int row = 0; row < size.y; row++)
             {
                 for (int col = 0; col < size.x; col++)

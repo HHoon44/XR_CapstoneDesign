@@ -1,18 +1,24 @@
 using System.Collections;
-using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
+using XR_3MatchGame.Util;
+using XR_3MatchGame_InGame;
+using XR_3MatchGame_Object;
 
-public class StageManager : MonoBehaviour
+namespace XR_3MatchGame_Util
 {
-    // Start is called before the first frame update
-    void Start()
+    public class StageManager : Singleton<StageManager>
     {
-        
-    }
+        public string stageName;
+        public ElementType stageType;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        public IEnumerator SpawnBlock()
+        {
+            var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+            var size = GameManager.Instance.BoardSize;
+            var blocks = GameManager.Instance.Board.blocks;
+
+            yield return null;
+        }
     }
 }

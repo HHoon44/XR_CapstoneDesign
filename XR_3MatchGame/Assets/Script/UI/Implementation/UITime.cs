@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_InGame;
+using XR_3MatchGame_Resource;
+using XR_3MatchGame_Util;
 
 namespace XR_3MatchGame_UI
 {
@@ -43,6 +45,8 @@ namespace XR_3MatchGame_UI
         {
             // 시계 이미지 변경
             // 게이지 색상 변경
+            var clockName = StageManager.Instance.stageName + "Clock";
+            clock.sprite = SpriteLoader.GetSprite(AtlasType.ClockAtlas, clockName);
         }
     }
 }
