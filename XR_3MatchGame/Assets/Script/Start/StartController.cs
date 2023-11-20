@@ -57,6 +57,7 @@ namespace XR_3MatchGame
             else
             {
                 uiStart.loadFillGauge.fillAmount = 1f;
+                // MyDelay();
             }
 
             switch (phase)
@@ -97,6 +98,16 @@ namespace XR_3MatchGame
                 yield return new WaitForSeconds(1f);
                 LoadComplete = false;
                 OnPhase(++introPhase);
+            }
+        }
+
+        private void MyDelay()
+        {
+            StartCoroutine(WaitForSeconds());
+
+            IEnumerator WaitForSeconds()
+            {
+                yield return new WaitForSeconds(5f);
             }
         }
     }

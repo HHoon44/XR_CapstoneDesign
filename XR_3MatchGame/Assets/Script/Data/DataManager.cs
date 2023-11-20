@@ -21,11 +21,11 @@ namespace XR_3MatchGame_Data
         /// </summary>
         public int PlayerCoin { get; private set; }
 
-        public float saveGauge;
+        public float saveValue;
 
         public void Initialize()
         {
-            SetName("조형훈");
+            SetName("마법사");
             SetCoin(1000);
 
             if (!PlayerPrefs.HasKey(StringName.HighScore_0))

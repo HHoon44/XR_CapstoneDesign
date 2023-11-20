@@ -2,6 +2,7 @@ using System.Collections;
 using UIHealthAlchemy;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
@@ -13,6 +14,7 @@ namespace XR_3MatchGame_UI
     public class UIElement : UIWindow
     {
         #region GaugeObj
+
         [SerializeField]
         private GameObject fireGauge;            // 불 원소 스킬 게이지
 
@@ -39,7 +41,7 @@ namespace XR_3MatchGame_UI
 
         private GameManager GM;
 
-        private Image fillGauge;
+        private MaterialHealhBar fillGauge;
 
         public override void Start()
         {
@@ -54,7 +56,7 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void Initialize()
         {
-            DataManager.Instance.saveGauge = 0;
+            DataManager.Instance.saveValue = 0;
             SetGauge();
         }
 
@@ -81,8 +83,8 @@ namespace XR_3MatchGame_UI
                         grassGauge.SetActive(false);
                     }
 
-                    fillGauge = fireGauge.GetComponent<MaterialHealhBar>().fillGauge;
-                    fillGauge.fillAmount = DataManager.Instance.saveGauge;
+                    fillGauge = fireGauge.GetComponent<MaterialHealhBar>();
+                    fillGauge.Value = DataManager.Instance.saveValue;
                     break;
 
                 case ElementType.Ice:
@@ -99,8 +101,8 @@ namespace XR_3MatchGame_UI
                         grassGauge.SetActive(false);
                     }
 
-                    fillGauge = iceGauge.GetComponent<MaterialHealhBar>().fillGauge;
-                    fillGauge.fillAmount = DataManager.Instance.saveGauge;
+                    fillGauge = iceGauge.GetComponent<MaterialHealhBar>();
+                    fillGauge.Value = DataManager.Instance.saveValue;
                     break;
 
                 case ElementType.Grass:
@@ -117,8 +119,8 @@ namespace XR_3MatchGame_UI
                         iceGauge.SetActive(false);
                     }
 
-                    fillGauge = grassGauge.GetComponent<MaterialHealhBar>().fillGauge;
-                    fillGauge.fillAmount = DataManager.Instance.saveGauge;
+                    fillGauge = grassGauge.GetComponent<MaterialHealhBar>();
+                    fillGauge.Value = DataManager.Instance.saveValue;
                     break;
             }
         }
@@ -129,16 +131,15 @@ namespace XR_3MatchGame_UI
         /// <param name="value">값</param>
         public void SetSkillAmount(float value)
         {
-
-            if (fillGauge.fillAmount >= 1f)
+            if (fillGauge.Value >= 1f)
             {
-                DataManager.Instance.saveGauge = 1f;
-                fillGauge.fillAmount = DataManager.Instance.saveGauge;
+                DataManager.Instance.saveValue = 1f;
+                fillGauge.Value = DataManager.Instance.saveValue;
                 return;
             }
 
-            DataManager.Instance.saveGauge += value;
-            fillGauge.fillAmount = DataManager.Instance.saveGauge;
+            DataManager.Instance.saveValue += value;
+            fillGauge.Value = DataManager.Instance.saveValue;
         }
 
         /// <summary>
@@ -146,8 +147,10 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void SkillBtn()
         {
+            Debug.Log("스킬 버튼이 눌렸습니다");
+
             // 스킬 시전
-            if (fillGauge.fillAmount >= 1f && GM.GameState == GameState.Play)
+            if (fillGauge.Value >= 1f && GM.GameState == GameState.Play)
             {
                 switch (GM.ElementType)
                 {
@@ -173,8 +176,8 @@ namespace XR_3MatchGame_UI
                         break;
                 }
 
-                DataManager.Instance.saveGauge = 0;
-                fillGauge.fillAmount = DataManager.Instance.saveGauge;
+                DataManager.Instance.saveValue = 0;
+                fillGauge.Value = DataManager.Instance.saveValue;
 
                 GM.SetGameState(GameState.Skill);
                 StartCoroutine(SkillStart(GM.ElementType));
@@ -282,6 +285,12 @@ namespace XR_3MatchGame_UI
 
                     delBlocks.Clear();
                     downBlocks.Clear();
+
+                    // 불 스킬 패널티
+                    // 5초간 블럭 이동 금지
+                    yield return new WaitForSeconds(5f);
+
+                    fireSkill.SetActive(false);
                     break;
 
                 case ElementType.Ice:
@@ -294,14 +303,99 @@ namespace XR_3MatchGame_UI
 
                     UIWindowManager.Instance.GetWindow<UITime>().timeStop = false;
                     GM.SetGameState(GameState.Skill);
+
+                    iceSkill.SetActive(false);
                     break;
 
                 case ElementType.Grass:
                     Debug.Log("풀 원소 스킬 발동");
+
+                    // 블럭 찾기
+                    for (int i = 0; i < blocks.Count; i++)
+                    {
+                        if (blocks[i].row == 0 || blocks[i].row == 1)
+                        {
+                            delBlocks.Add(blocks[i]);
+                        }
+                    }
+
+                    // 블럭 삭제
+                    for (int i = 0; i < delBlocks.Count; i++)
+                    {
+                        pool.ReturnPoolableObject(delBlocks[i]);
+                        blocks.Remove(delBlocks[i]);
+
+                        // 점수 업데이트
+                        DataManager.Instance.SetScore(delBlocks[i].BlockScore);
+                    }
+
+                    yield return new WaitForSeconds(1.5f);
+
+                    // 내릴 블럭 찾기
+                    for (int i = 0; i < blocks.Count; i++)
+                    {
+                        if (blocks[i].row > 1)
+                        {
+                            downBlocks.Add(blocks[i]);
+                        }
+                    }
+
+                    // 블럭 내리기
+                    for (int i = 0; i < downBlocks.Count; i++)
+                    {
+                        var targetRow = (downBlocks[i].row -= 2);
+
+                        if (Mathf.Abs(targetRow - downBlocks[i].transform.position.y) > .1f)
+                        {
+                            Vector2 tempPosition = new Vector2(downBlocks[i].transform.position.x, targetRow);
+                            downBlocks[i].transform.position = Vector2.Lerp(downBlocks[i].transform.position, tempPosition, .05f);
+                        }
+                    }
+
+                    // 빈자리에 블럭 생성하기
+                    emptyCount = size - blocks.Count;
+                    colValue = 0;
+                    rowValue = downBlocks[downBlocks.Count - 1].row + 1;
+
+                    for (int i = 0; i < emptyCount; i++)
+                    {
+                        if (rowValue < GM.BoardSize.y)
+                        {
+                            // 새로운 블럭 생성 로직 작성
+                            var newBlock = pool.GetPoolableObject(obj => obj.CanRecycle);
+                            newBlock.transform.position = new Vector3(colValue, GM.BoardSize.y, 0);
+                            newBlock.gameObject.SetActive(true);
+                            newBlock.Initialize(colValue, GM.BoardSize.y);
+                            blocks.Add(newBlock);
+
+                            // 위에서 아래로 내려가는 것처럼
+                            var targetRow = (newBlock.row = rowValue);
+
+                            if (Mathf.Abs(targetRow - newBlock.transform.position.y) > .1f)
+                            {
+                                Vector2 tempPosition = new Vector2(newBlock.transform.position.x, targetRow);
+                                newBlock.transform.position = Vector2.Lerp(newBlock.transform.position, tempPosition, .05f);
+                            }
+
+                            colValue++;
+
+                            if (colValue > 6)
+                            {
+                                colValue = 0;
+                                rowValue++;
+                            }
+                        }
+                    }
+
+                    delBlocks.Clear();
+                    downBlocks.Clear();
+
+                    // 풀 원소는 20퍼센트 정도의 스킬 게이지를 돌려받는다
+                    SetSkillAmount(.2f);
+
+                    grassSkill.SetActive(false);
                     break;
             }
-
-            fireSkill.SetActive(false);
 
             yield return new WaitForSeconds(.4f);
 
