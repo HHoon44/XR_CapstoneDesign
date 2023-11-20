@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UIHealthAlchemy;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,11 +9,15 @@ using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
 using XR_3MatchGame_Object;
 using XR_3MatchGame_Util;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace XR_3MatchGame_UI
 {
     public class UIElement : UIWindow
     {
+        [SerializeField]
+        private TextMeshProUGUI stateText;
+
         #region GaugeObj
 
         [SerializeField]
@@ -147,8 +152,6 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void SkillBtn()
         {
-            Debug.Log("스킬 버튼이 눌렸습니다");
-
             // 스킬 시전
             if (fillGauge.Value >= 1f && GM.GameState == GameState.Play)
             {
@@ -234,8 +237,6 @@ namespace XR_3MatchGame_UI
                         }
                     }
 
-                    yield return new WaitForSeconds(1.5f);
-
                     // 블럭 내리기
                     for (int i = 0; i < downBlocks.Count; i++)
                     {
@@ -247,6 +248,8 @@ namespace XR_3MatchGame_UI
                             downBlocks[i].transform.position = Vector2.Lerp(downBlocks[i].transform.position, tempPosition, .05f);
                         }
                     }
+
+                    yield return new WaitForSeconds(.5f);
 
                     // 빈자리에 블럭 생성하기
                     var emptyCount = size - blocks.Count;
@@ -286,25 +289,110 @@ namespace XR_3MatchGame_UI
                     delBlocks.Clear();
                     downBlocks.Clear();
 
+                    fireSkill.SetActive(false);
+
                     // 불 스킬 패널티
                     // 5초간 블럭 이동 금지
+                    stateText.gameObject.SetActive(true);
+                    stateText.text = "스킬 후유증으로 5초간 블럭 이동 금지!";
                     yield return new WaitForSeconds(5f);
-
-                    fireSkill.SetActive(false);
+                    stateText.gameObject.SetActive(false);
                     break;
 
                 case ElementType.Ice:
                     Debug.Log("얼음 원소 스킬 발동");
-                    UIWindowManager.Instance.GetWindow<UITime>().timeStop = true;
-                    GM.SetGameState(GameState.Play);
 
-                    // 10초정도 시간을 멈춘다
-                    yield return new WaitForSeconds(10f);
+                    // 블럭 찾기
+                    for (int i = 0; i < blocks.Count; i++)
+                    {
+                        if (blocks[i].row == 0 || blocks[i].row == 1)
+                        {
+                            delBlocks.Add(blocks[i]);
+                        }
+                    }
 
-                    UIWindowManager.Instance.GetWindow<UITime>().timeStop = false;
-                    GM.SetGameState(GameState.Skill);
+                    // 블럭 삭제
+                    for (int i = 0; i < delBlocks.Count; i++)
+                    {
+                        pool.ReturnPoolableObject(delBlocks[i]);
+                        blocks.Remove(delBlocks[i]);
+
+                        // 점수 업데이트
+                        DataManager.Instance.SetScore(delBlocks[i].BlockScore);
+                    }
+
+                    yield return new WaitForSeconds(1.5f);
+
+                    // 내릴 블럭 찾기
+                    for (int i = 0; i < blocks.Count; i++)
+                    {
+                        if (blocks[i].row > 1)
+                        {
+                            downBlocks.Add(blocks[i]);
+                        }
+                    }
+
+                    // 블럭 내리기
+                    for (int i = 0; i < downBlocks.Count; i++)
+                    {
+                        var targetRow = (downBlocks[i].row -= 2);
+
+                        if (Mathf.Abs(targetRow - downBlocks[i].transform.position.y) > .1f)
+                        {
+                            Vector2 tempPosition = new Vector2(downBlocks[i].transform.position.x, targetRow);
+                            downBlocks[i].transform.position = Vector2.Lerp(downBlocks[i].transform.position, tempPosition, .05f);
+                        }
+                    }
+
+                    // 빈자리에 블럭 생성하기
+                    emptyCount = size - blocks.Count;
+                    colValue = 0;
+                    rowValue = downBlocks[downBlocks.Count - 1].row + 1;
+
+                    for (int i = 0; i < emptyCount; i++)
+                    {
+                        if (rowValue < GM.BoardSize.y)
+                        {
+                            // 새로운 블럭 생성 로직 작성
+                            var newBlock = pool.GetPoolableObject(obj => obj.CanRecycle);
+                            newBlock.transform.position = new Vector3(colValue, GM.BoardSize.y, 0);
+                            newBlock.gameObject.SetActive(true);
+                            newBlock.Initialize(colValue, GM.BoardSize.y);
+                            blocks.Add(newBlock);
+
+                            // 위에서 아래로 내려가는 것처럼
+                            var targetRow = (newBlock.row = rowValue);
+
+                            if (Mathf.Abs(targetRow - newBlock.transform.position.y) > .1f)
+                            {
+                                Vector2 tempPosition = new Vector2(newBlock.transform.position.x, targetRow);
+                                newBlock.transform.position = Vector2.Lerp(newBlock.transform.position, tempPosition, .05f);
+                            }
+
+                            colValue++;
+
+                            if (colValue > 6)
+                            {
+                                colValue = 0;
+                                rowValue++;
+                            }
+                        }
+                    }
+
+                    delBlocks.Clear();
+                    downBlocks.Clear();
 
                     iceSkill.SetActive(false);
+
+                    // 10초정도 시간을 멈춘다
+                    stateText.gameObject.SetActive(true);
+                    stateText.text = "스킬 효과로 10초동안 시간 정지!";
+                    UIWindowManager.Instance.GetWindow<UITime>().timeStop = true;
+                    GM.SetGameState(GameState.Play);
+                    yield return new WaitForSeconds(10f);
+                    UIWindowManager.Instance.GetWindow<UITime>().timeStop = false;
+                    stateText.gameObject.SetActive(false);
+                    GM.SetGameState(GameState.Skill);
                     break;
 
                 case ElementType.Grass:
@@ -390,14 +478,14 @@ namespace XR_3MatchGame_UI
                     delBlocks.Clear();
                     downBlocks.Clear();
 
+                    grassSkill.SetActive(false);
+
                     // 풀 원소는 20퍼센트 정도의 스킬 게이지를 돌려받는다
                     SetSkillAmount(.2f);
-
-                    grassSkill.SetActive(false);
                     break;
             }
 
-            yield return new WaitForSeconds(.4f);
+            yield return new WaitForSeconds(.5f);
 
             // 블럭 업데이트
             GM.Board.BlockUpdate();
