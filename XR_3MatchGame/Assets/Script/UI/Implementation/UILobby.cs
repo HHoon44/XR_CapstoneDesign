@@ -19,11 +19,30 @@ namespace XR_3MatchGame_UI
         [SerializeField]
         private GameObject userScore_1;         // 최대 점수 오브젝트
 
+        [SerializeField]
+        private GameObject optionObj;           // 옵션 오브젝트
+
         private void Start()
         {
             ProfilUpdate();
             CoinUpdate();
             HighScoreUpdate();
+        }
+
+        /// <summary>
+        /// 옵션 버튼에 바인딩할 메서드
+        /// </summary>
+        public void OptionButton()
+        {
+            optionObj.SetActive(true);
+        }
+
+        /// <summary>
+        /// 옵션 창 닫기 버튼에 바인딩할 메서드
+        /// </summary>
+        public void CloseButton()
+        {
+            optionObj.SetActive(false);
         }
 
         /// <summary>

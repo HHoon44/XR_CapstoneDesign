@@ -1,10 +1,13 @@
+using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 using XR_3MatchGame.Util;
+using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
 using XR_3MatchGame_Resource;
-using XR_3MatchGame_Util;
+using Image = UnityEngine.UI.Image;
 
 namespace XR_3MatchGame_UI
 {
@@ -24,6 +27,7 @@ namespace XR_3MatchGame_UI
             base.Start();
 
             SetStageDetail();
+            SetScore();
         }
 
         public void SetStageDetail()
@@ -33,9 +37,9 @@ namespace XR_3MatchGame_UI
             detail.text = GameManager.Instance.stageName + "ÀÇ ½Ã·Ã";
         }
 
-        public void SetScore(int score)
+        public void SetScore()
         {
-            this.score.text = score.ToString();
+            score.text = DataManager.Instance.PlayerScore.ToString();
         }
     }
 }

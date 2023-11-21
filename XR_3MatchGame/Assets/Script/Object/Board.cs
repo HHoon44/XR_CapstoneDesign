@@ -1,3 +1,4 @@
+using Mono.Cecil.Cil;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +23,8 @@ namespace XR_3MatchGame_Object
         private GameManager GM;
         private DataManager DM;
 
+        public bool isReStart;
+
         private void Start()
         {
             GM = GameManager.Instance;
@@ -45,8 +48,9 @@ namespace XR_3MatchGame_Object
             // 게임 종료
             if (GM.GameState == GameState.End)
             {
-                // UIEnd 활성화 후 자신 비활성화
                 uiEnd.gameObject.SetActive(true);
+
+                uiEnd.GetComponent<UIEnd>().Initialize();
 
                 var pool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
 
@@ -58,6 +62,14 @@ namespace XR_3MatchGame_Object
                 blocks.Clear();
 
                 gameObject.SetActive(false);
+            }
+
+            // 게임 재시작
+            if (isReStart == true)
+            {
+                isReStart = false;
+
+                StartCoroutine(SpawnBlock());
             }
         }
 

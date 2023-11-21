@@ -19,8 +19,11 @@ namespace XR_3MatchGame_UI
 
             image = GetComponent<Image>();
 
+            // 이름에 있는 숫자를 사용
+            var index = int.Parse(name.Split('_')[2]);
+
             // 현재 오브젝트의 인덱스에 따라서 원소 타입 설정
-            switch (transform.GetSiblingIndex())
+            switch (index)
             {
                 case 0:
                     SelectElement = GM.selectType[0];

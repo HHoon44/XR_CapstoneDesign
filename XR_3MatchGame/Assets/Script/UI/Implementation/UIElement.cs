@@ -51,7 +51,6 @@ namespace XR_3MatchGame_UI
         public override void Start()
         {
             base.Start();
-            GM = GameManager.Instance;
 
             Initialize();
         }
@@ -61,6 +60,7 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void Initialize()
         {
+            GM = GameManager.Instance;
             DataManager.Instance.saveValue = 0;
             SetGauge();
         }

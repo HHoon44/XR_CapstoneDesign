@@ -46,7 +46,7 @@ namespace XR_3MatchGame_Data
         public void SetScore(int score)
         {
             PlayerScore += score;
-            UIWindowManager.Instance.GetWindow<UIDetail>().SetScore(PlayerScore);
+            UIWindowManager.Instance.GetWindow<UIDetail>().SetScore();
         }
 
         /// <summary>

@@ -10,8 +10,13 @@ namespace XR_3MatchGame_UI
         private Dictionary<string, UIWindow> totalUIWindow = new Dictionary<string, UIWindow>();
 
         public void AddUIWindow(UIWindow uiWindow)
-        { 
+        {
             var key = uiWindow.GetType().Name;
+
+            if (totalUIWindow.ContainsKey(key))
+            {
+                return;
+            }
 
             totalUIWindow.Add(key, uiWindow);
         }
@@ -21,11 +26,6 @@ namespace XR_3MatchGame_UI
             string key = typeof(T).Name;
 
             return (T)totalUIWindow[key];
-        }
-
-        public void Initialzie()
-        { 
-
         }
     }
 }

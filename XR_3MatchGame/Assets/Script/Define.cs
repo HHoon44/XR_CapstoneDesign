@@ -35,6 +35,11 @@ namespace XR_3MatchGame.Util
         None, Start, Resource, Data, UI, Complete
     }
 
+    public enum ItemType 
+    {
+        None, Boom, Time, Skill
+    }
+
     public class StringName
     {
         public const string HighScore_0 = "HighScore_0";

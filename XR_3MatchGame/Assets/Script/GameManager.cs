@@ -18,7 +18,8 @@ namespace XR_3MatchGame_InGame
         /// <summary>
         /// 현재 게임 상태 프로퍼티
         /// </summary>
-        public GameState GameState { get; private set; }
+        // public GameState GameState { get; private set; }
+        public GameState GameState;
 
         /// <summary>
         /// 기본 원소 프로퍼티
@@ -92,14 +93,6 @@ namespace XR_3MatchGame_InGame
         public void SetElementType(ElementType elementType)
         {
             ElementType = elementType;
-        }
-
-        public void ReStart()
-        {
-            StartCoroutine(Board.SpawnBlock());                             // 블럭
-            UIWindowManager.Instance.GetWindow<UITime>().SetTime();         // 시간
-            UIWindowManager.Instance.GetWindow<UIElement>().Initialize();   // 스킬 게이지
-            DataManager.Instance.SetScore(0);                               // 스코어
         }
 
         public void LoadScene(SceneType sceneName, IEnumerator loadCoroutine = null, Action loadComplete = null)

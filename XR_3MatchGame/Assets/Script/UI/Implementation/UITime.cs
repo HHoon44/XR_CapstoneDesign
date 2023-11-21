@@ -16,19 +16,19 @@ namespace XR_3MatchGame_UI
 
         public bool timeStop;
 
-        public override void Start()
-        {
-            base.Start();
-
-            SetTime();
-        }
-
         private void Update()
         {
             if (!timeStop)
             {
                 TimeUpdate();
             }
+        }
+
+        public override void Start()
+        {
+            base.Start();
+
+            SetTime();
         }
 
         public void SetTime()
@@ -58,7 +58,7 @@ namespace XR_3MatchGame_UI
 
         private void TimeUpdate()
         {
-            if (GameManager.Instance.GameState == GameState.Play)
+            if (GameManager.Instance.GameState != GameState.Checking)
             {
                 if (gaugeFill.fillAmount <= .05f)
                 {
