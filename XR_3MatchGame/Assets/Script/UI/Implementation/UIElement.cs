@@ -2,14 +2,11 @@ using System.Collections;
 using TMPro;
 using UIHealthAlchemy;
 using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.UIElements;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
 using XR_3MatchGame_Object;
 using XR_3MatchGame_Util;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace XR_3MatchGame_UI
 {
@@ -295,7 +292,9 @@ namespace XR_3MatchGame_UI
                     // 5초간 블럭 이동 금지
                     stateText.gameObject.SetActive(true);
                     stateText.text = "스킬 후유증으로 5초간 블럭 이동 금지!";
+
                     yield return new WaitForSeconds(5f);
+
                     stateText.gameObject.SetActive(false);
                     break;
 

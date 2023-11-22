@@ -390,6 +390,13 @@ namespace XR_3MatchGame_Object
             }
         }
 
+        /// <summary>
+        /// 블럭 주위에 같은 블럭이 있는지 체크하는 메서드
+        /// </summary>
+        /// <param name="checkBlock"></param>
+        /// <param name="otherBlock"></param>
+        /// <param name="swipeDir"></param>
+        /// <returns></returns>
         public bool BlockCheck(Block checkBlock = null, Block otherBlock = null, SwipeDir swipeDir = SwipeDir.None)
         {
             if (checkBlock != null || otherBlock != null)

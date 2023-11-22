@@ -71,5 +71,19 @@ namespace XR_3MatchGame_UI
                 }
             }
         }
+
+        /// <summary>
+        /// 시간을 더하는 메서드
+        /// </summary>
+        public void SetTimeAmount(float value)
+        {
+            if (gaugeFill.fillAmount >= 1f)
+            {
+                gaugeFill.fillAmount = 1f;
+                return;
+            }
+
+            gaugeFill.fillAmount += value;
+        }
     }
 }
