@@ -29,7 +29,8 @@ namespace XR_3MatchGame_Object
             }
         }
 
-        public SpriteRenderer spriteRenderer;
+        private ParticleSystem blockParticle;
+        private SpriteRenderer spriteRenderer;
 
         public int col;     // 현재 블럭의 X 값
         public int row;     // 현재 블럭의 Y 값
@@ -61,6 +62,11 @@ namespace XR_3MatchGame_Object
         public ElementType Left_T = ElementType.None;
         public ElementType Right_T = ElementType.None;
 
+        public void BlockParticle()
+        {
+            blockParticle.Play();
+        }
+
         /// <summary>
         /// 블럭 초기 세팅 메서드
         /// </summary>
@@ -68,6 +74,8 @@ namespace XR_3MatchGame_Object
         /// <param name="row">Y 값</param>
         public void Initialize(int col, int row)
         {
+            blockParticle = transform.GetChild(0).GetComponent<ParticleSystem>();
+
             spriteRenderer = GetComponent<SpriteRenderer>();
 
             GM = GameManager.Instance;

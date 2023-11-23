@@ -222,6 +222,13 @@ namespace XR_3MatchGame_Object
                         var col_R = curBlock.rightBlock.col;
                         var row_M = curBlock.row;
 
+                        // 파티클 실행
+                        curBlock.BlockParticle();
+                        curBlock.leftBlock.BlockParticle();
+                        curBlock.rightBlock.BlockParticle();
+
+                        yield return new WaitForSeconds(.4f);
+
                         // 풀 반환 및 점수 업데이트
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
@@ -307,6 +314,13 @@ namespace XR_3MatchGame_Object
                         delBlocks.Add(curBlock.topBlock);
                         delBlocks.Add(curBlock.bottomBlock);
                         delBlocks.Add(curBlock);
+
+                        // 파티클 실행
+                        curBlock.BlockParticle();
+                        curBlock.topBlock.BlockParticle();
+                        curBlock.bottomBlock.BlockParticle();
+
+                        yield return new WaitForSeconds(.4f);
 
                         for (int j = 0; j < delBlocks.Count; j++)
                         {

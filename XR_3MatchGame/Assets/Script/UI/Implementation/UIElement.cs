@@ -1,4 +1,6 @@
 using System.Collections;
+using System.ComponentModel;
+using System.Linq.Expressions;
 using TMPro;
 using UIHealthAlchemy;
 using UnityEngine;
@@ -30,19 +32,22 @@ namespace XR_3MatchGame_UI
 
         #region SkillObj
 
-        [SerializeField]
-        private GameObject fireSkill;         // 스킬 컷씬
+        [Header("Fire Skill")]
+        public GameObject fireCircle;
+        public GameObject fireEffect;
 
-        [SerializeField]
-        private GameObject iceSkill;         // 스킬 컷씬
 
-        [SerializeField]
-        private GameObject grassSkill;         // 스킬 컷씬
+        [Header("Ice Skill")]
+        public GameObject iceCircle;
+        public GameObject iceEffect;
+
+        [Header("Grass Skill")]
+        public GameObject grassCircle;
+        public GameObject grassEffect;
 
         #endregion
 
         private GameManager GM;
-
         private MaterialHealhBar fillGauge;
 
         public override void Start()
@@ -155,15 +160,18 @@ namespace XR_3MatchGame_UI
                 switch (GM.ElementType)
                 {
                     case ElementType.Fire:
-                        fireSkill.SetActive(true);
+                        // 스킬 이펙트 실행
+                        fireCircle.SetActive(true);
                         break;
 
                     case ElementType.Ice:
-                        iceSkill.SetActive(true);
+                        // 스킬 이펙트 실행
+                        iceCircle.SetActive(true);
                         break;
 
                     case ElementType.Grass:
-                        grassSkill.SetActive(true);
+                        // 스킬 이펙트 실행
+                        grassCircle.SetActive(true);
                         break;
 
                     case ElementType.Dark:
@@ -186,6 +194,8 @@ namespace XR_3MatchGame_UI
 
         private IEnumerator SkillStart(ElementType type)
         {
+            yield return new WaitForSeconds(.5f);
+
             var blocks = GameManager.Instance.Board.blocks;
             var delBlocks = GameManager.Instance.Board.delBlocks;
             var downBlocks = GameManager.Instance.Board.downBlocks;
@@ -199,6 +209,8 @@ namespace XR_3MatchGame_UI
                 case ElementType.Fire:
                     Debug.Log("불 원소 스킬 발동");
 
+                    fireEffect.SetActive(true);
+
                     // 범위는 1 ~ 5
                     // 파괴할 블럭 찾기
                     for (int i = 0; i < blocks.Count; i++)
@@ -211,6 +223,14 @@ namespace XR_3MatchGame_UI
                             }
                         }
                     }
+
+                    // 파티클 실행
+                    for (int i = 0; i < delBlocks.Count; i++)
+                    {
+                        delBlocks[i].BlockParticle();
+                    }
+
+                    yield return new WaitForSeconds(.4f);
 
                     // 블럭 파괴
                     for (int i = 0; i < delBlocks.Count; i++)
@@ -286,8 +306,6 @@ namespace XR_3MatchGame_UI
                     delBlocks.Clear();
                     downBlocks.Clear();
 
-                    fireSkill.SetActive(false);
-
                     // 불 스킬 패널티
                     // 5초간 블럭 이동 금지
                     stateText.gameObject.SetActive(true);
@@ -296,10 +314,16 @@ namespace XR_3MatchGame_UI
                     yield return new WaitForSeconds(5f);
 
                     stateText.gameObject.SetActive(false);
+
+                    // 이펙트 비활성화
+                    fireCircle.SetActive(false);
+                    fireEffect.SetActive(false);
                     break;
 
                 case ElementType.Ice:
                     Debug.Log("얼음 원소 스킬 발동");
+
+                    iceEffect.SetActive(true);
 
                     // 블럭 찾기
                     for (int i = 0; i < blocks.Count; i++)
@@ -309,6 +333,14 @@ namespace XR_3MatchGame_UI
                             delBlocks.Add(blocks[i]);
                         }
                     }
+
+                    // 파티클 실행
+                    for (int i = 0; i < delBlocks.Count; i++)
+                    {
+                        delBlocks[i].BlockParticle();
+                    }
+
+                    yield return new WaitForSeconds(.4f);
 
                     // 블럭 삭제
                     for (int i = 0; i < delBlocks.Count; i++)
@@ -320,7 +352,7 @@ namespace XR_3MatchGame_UI
                         DataManager.Instance.SetScore(delBlocks[i].BlockScore);
                     }
 
-                    yield return new WaitForSeconds(1.5f);
+                    yield return new WaitForSeconds(.4f);
 
                     // 내릴 블럭 찾기
                     for (int i = 0; i < blocks.Count; i++)
@@ -381,8 +413,6 @@ namespace XR_3MatchGame_UI
                     delBlocks.Clear();
                     downBlocks.Clear();
 
-                    iceSkill.SetActive(false);
-
                     // 10초정도 시간을 멈춘다
                     stateText.gameObject.SetActive(true);
                     stateText.text = "스킬 효과로 10초동안 시간 정지!";
@@ -392,6 +422,10 @@ namespace XR_3MatchGame_UI
                     UIWindowManager.Instance.GetWindow<UITime>().timeStop = false;
                     stateText.gameObject.SetActive(false);
                     GM.SetGameState(GameState.Skill);
+
+                    // 이펙트 비활성화
+                    iceCircle.SetActive(false);
+                    iceEffect.SetActive(false);
                     break;
 
                 case ElementType.Grass:
@@ -406,6 +440,14 @@ namespace XR_3MatchGame_UI
                         }
                     }
 
+                    // 파티클 실행
+                    for (int i = 0; i < delBlocks.Count; i++)
+                    {
+                        delBlocks[i].BlockParticle();
+                    }
+
+                    yield return new WaitForSeconds(.4f);
+
                     // 블럭 삭제
                     for (int i = 0; i < delBlocks.Count; i++)
                     {
@@ -476,8 +518,6 @@ namespace XR_3MatchGame_UI
 
                     delBlocks.Clear();
                     downBlocks.Clear();
-
-                    grassSkill.SetActive(false);
 
                     // 풀 원소는 20퍼센트 정도의 스킬 게이지를 돌려받는다
                     SetSkillAmount(.2f);
