@@ -15,7 +15,7 @@ namespace XR_3MatchGame_Object
         {
             get
             {
-                int blockScore = 5;
+                int blockScore = 10;
                 return blockScore;
             }
         }
@@ -157,8 +157,7 @@ namespace XR_3MatchGame_Object
             }
 
             // 마우스 드래그 각도를 계산합니다
-            swipeAngle = Mathf.Atan2(finalTouchPosition.y - firstTouchPosition.y,
-                finalTouchPosition.x - firstTouchPosition.x) * 180 / Mathf.PI;
+            swipeAngle = Mathf.Atan2(finalTouchPosition.y - firstTouchPosition.y, finalTouchPosition.x - firstTouchPosition.x) * 180 / Mathf.PI;
 
             BlockMove();
         }

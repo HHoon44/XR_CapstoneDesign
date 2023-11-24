@@ -36,7 +36,7 @@ namespace XR_3MatchGame_Object
 
         private void Update()
         {
-            if (GM.GameState == GameState.Checking)
+            if (GM.GameState == GameState.Checking || GM.GameState == GameState.SKill)
             {
                 if (GM.isStart == true)
                 {
@@ -213,7 +213,10 @@ namespace XR_3MatchGame_Object
                 {
                     if (curBlock.leftBlock.elementType == curBlock.elementType && curBlock.rightBlock.elementType == curBlock.elementType)
                     {
-                        yield return new WaitForSeconds(.2f);
+                        // yield return new WaitForSeconds(.2f);
+
+                        delBlocks.Clear();
+                        downBlocks.Clear();
 
                         // 삭제할 블럭들 삭제 저장소에 저장
                         delBlocks.Add(curBlock);
@@ -230,14 +233,14 @@ namespace XR_3MatchGame_Object
                         curBlock.leftBlock.BlockParticle();
                         curBlock.rightBlock.BlockParticle();
 
-                        yield return new WaitForSeconds(.4f);
+                        yield return new WaitForSeconds(.3f);
 
                         // 풀 반환 및 점수 업데이트
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
                             DM.SetScore(delBlocks[j].BlockScore);
-                            uiElement.SetSkillAmount(delBlocks[j].ElementValue);
+                            uiElement.currentGauge.SetSkillAmount(delBlocks[j].ElementValue);
                             blocks.Remove(delBlocks[j]);
                         }
 
@@ -312,7 +315,10 @@ namespace XR_3MatchGame_Object
                 {
                     if (curBlock.topBlock.elementType == curBlock.elementType && curBlock.bottomBlock.elementType == curBlock.elementType)
                     {
-                        yield return new WaitForSeconds(.2f);
+                        // yield return new WaitForSeconds(.2f);
+
+                        delBlocks.Clear();
+                        downBlocks.Clear();
 
                         delBlocks.Add(curBlock.topBlock);
                         delBlocks.Add(curBlock.bottomBlock);
@@ -323,13 +329,13 @@ namespace XR_3MatchGame_Object
                         curBlock.topBlock.BlockParticle();
                         curBlock.bottomBlock.BlockParticle();
 
-                        yield return new WaitForSeconds(.4f);
+                        yield return new WaitForSeconds(.3f);
 
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
                             DM.SetScore(delBlocks[j].BlockScore);
-                            uiElement.SetSkillAmount(delBlocks[j].ElementValue);
+                            uiElement.currentGauge.SetSkillAmount(delBlocks[j].ElementValue);
                             blocks.Remove(delBlocks[j]);
                         }
 
@@ -394,16 +400,27 @@ namespace XR_3MatchGame_Object
                 }
             }
 
-            yield return new WaitForSeconds(.4f);
-
+            // 다시 한번더 체크
             if (BlockCheck())
             {
                 GM.isStart = true;
-                GM.SetGameState(GameState.Checking);
+
+                if (GM.GameState != GameState.SKill)
+                {
+                    GM.SetGameState(GameState.Checking);
+                }
             }
             else
             {
-                GM.SetGameState(GameState.Play);
+                // 불 스킬을 사용중일땐 안들어가도록
+                if (GM.GameState == GameState.SKill && GM.ElementType == ElementType.Fire)
+                {
+                    Debug.Log("안됩니다.");
+                }
+                else
+                {
+                    GM.SetGameState(GameState.Play);
+                }
             }
         }
 

@@ -38,9 +38,6 @@ namespace XR_3MatchGame_Resource
 
             var iconAtlas = Resources.LoadAll<SpriteAtlas>("Atlas/IconAtlas");
             SpriteLoader.SetAtlas(iconAtlas);
-
-            var clocksAtlas = Resources.LoadAll<SpriteAtlas>("Atlas?ClockAtlas");
-            SpriteLoader.SetAtlas(clocksAtlas);
         }
 
         /// <summary>

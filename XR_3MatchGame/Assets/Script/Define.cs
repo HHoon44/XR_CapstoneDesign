@@ -12,12 +12,12 @@ namespace XR_3MatchGame.Util
 
     public enum GameState
     {
-        None, Play, Checking, Skill, End, Item
+        None, Play, Checking, SKill, End, Item
     }
 
     public enum AtlasType
     {
-        None, BlockAtlas, IconAtlas, ClockAtlas
+        None, BlockAtlas, IconAtlas
     }
 
     public enum SwipeDir
@@ -45,5 +45,4 @@ namespace XR_3MatchGame.Util
         public const string HighScore_0 = "HighScore_0";
         public const string HighScore_1 = "HighScore_1";
     }
-
 }

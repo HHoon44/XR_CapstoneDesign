@@ -46,15 +46,15 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void ChangeElement()
         {
-            if (GM.ElementType == SelectElement)
+            if (GM.ElementType == SelectElement || GM.GameState != GameState.Play)
             {
                 return;
             }
 
             GM.ElementType = SelectElement;
 
-            var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
-            uiElement.SetGauge();
+            // 스킬 게이지 변경
+            UIWindowManager.Instance.GetWindow<UIElement>().SetGauge(GM.ElementType);
         }
     }
 }

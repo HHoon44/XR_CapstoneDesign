@@ -16,6 +16,9 @@ public class Item : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI countText;
 
+    [SerializeField]
+    private ParticleSystem itemEffect;
+
     public bool isItem;
 
     private void Start()
@@ -65,12 +68,13 @@ public class Item : MonoBehaviour
             return;
         }
 
-
         if (GameManager.Instance.GameState == GameState.Play)
         {
             GameManager.Instance.SetGameState(GameState.Item);
 
             isItem = true;
+
+            itemEffect.Play();
 
             // 분기문에 따라 아이템 능력 사용
             switch (itemType)
@@ -90,6 +94,8 @@ public class Item : MonoBehaviour
 
                     IEnumerator BoomItem()
                     {
+                        yield return new WaitForSeconds(.5f);
+
                         var blocks = GameManager.Instance.Board.blocks;
                         var delBlocks = GameManager.Instance.Board.delBlocks;
                         var pool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
@@ -103,6 +109,14 @@ public class Item : MonoBehaviour
                                 delBlocks.Add(blocks[i]);
                             }
                         }
+
+                        // 파티클 실행
+                        for (int i = 0; i < delBlocks.Count; i++)
+                        {
+                            delBlocks[i].BlockParticle();
+                        }
+
+                        yield return new WaitForSeconds(.3f);
 
                         // 블럭 파괴
                         for (int i = 0; i < delBlocks.Count; i++)
@@ -177,7 +191,7 @@ public class Item : MonoBehaviour
                     countText.text = itemCount.ToString();
 
                     // 아이템 효과 -> 스킬 게이지를 채워준다
-                    UIWindowManager.Instance.GetWindow<UIElement>().SetSkillAmount(.2f);
+                    UIWindowManager.Instance.GetWindow<UIElement>().currentGauge.SetSkillAmount(.2f);
                     GameManager.Instance.SetGameState(GameState.Play);
                     isItem = false;
                     break;

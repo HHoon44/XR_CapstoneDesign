@@ -41,17 +41,14 @@ namespace XR_3MatchGame_UI
             {
                 case "불":
                     stageName = ElementType.Fire.ToString();
-                    clock.sprite = SpriteLoader.GetSprite(AtlasType.ClockAtlas, stageName.ToString() + "Clock");
                     break;
 
                 case "얼음":
                     stageName = ElementType.Ice.ToString();
-                    clock.sprite = SpriteLoader.GetSprite(AtlasType.ClockAtlas, stageName.ToString() + "Clock");
                     break;
 
                 case "풀":
                     stageName = ElementType.Grass.ToString();
-                    clock.sprite = SpriteLoader.GetSprite(AtlasType.ClockAtlas, stageName.ToString() + "Clock");
                     break;
             }
         }
@@ -63,7 +60,12 @@ namespace XR_3MatchGame_UI
                 if (gaugeFill.fillAmount <= .05f)
                 {
                     gaugeFill.fillAmount = 0;
-                    GameManager.Instance.SetGameState(GameState.End);
+
+                    if (GameManager.Instance.GameState == GameState.Play)
+                    {
+                        // 플레이 상태에서만 엔드로 들어가도록
+                        GameManager.Instance.SetGameState(GameState.End);
+                    }
                 }
                 else
                 {
