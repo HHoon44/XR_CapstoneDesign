@@ -196,11 +196,14 @@ namespace XR_3MatchGame_Object
         /// <returns></returns>
         public IEnumerator BlockClear()
         {
+            // 검사할 블럭
             Block curBlock = null;
+
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var size = (GM.BoardSize.x * GM.BoardSize.y);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
+            // 3X3 작업
             for (int i = 0; i < blocks.Count; i++)
             {
                 curBlock = blocks[i];
@@ -259,7 +262,7 @@ namespace XR_3MatchGame_Object
                         // 블럭을 내리는 작업
                         for (int j = 0; j < downBlocks.Count; j++)
                         {
-                            var targetRow = downBlocks[j].row -= 1;
+                            var targetRow = (downBlocks[j].row -= 1);
 
                             if (Mathf.Abs(targetRow - downBlocks[j].transform.position.y) > .1f)
                             {
@@ -353,7 +356,7 @@ namespace XR_3MatchGame_Object
                         // 블럭 내리는 작업
                         for (int j = 0; j < downBlocks.Count; j++)
                         {
-                            var targetRow = downBlocks[j].row -= 3;
+                            var targetRow = (downBlocks[j].row -= 3);
 
                             if (Mathf.Abs(targetRow - downBlocks[j].transform.position.y) > .1f)
                             {
