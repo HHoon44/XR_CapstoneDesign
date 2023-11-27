@@ -25,9 +25,6 @@ namespace XR_3MatchGame_Data
 
         public void Initialize()
         {
-            SetName("¸¶¹ý»ç");
-            SetCoin(1000);
-
             if (!PlayerPrefs.HasKey(StringName.HighScore_0))
             {
                 PlayerPrefs.SetInt(StringName.HighScore_0, 0);
