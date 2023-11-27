@@ -11,9 +11,6 @@ namespace XR_3MatchGame_UI
         [SerializeField]
         private Image gaugeFill;
 
-        [SerializeField]
-        private Image clock;
-
         public bool timeStop;
 
         private void Update()
@@ -28,44 +25,24 @@ namespace XR_3MatchGame_UI
         {
             base.Start();
 
-            SetTime();
+            Initialize();
         }
 
-        public void SetTime()
+        public void Initialize()
         {
             gaugeFill.fillAmount = 1f;
-
-            var stageName = string.Empty;
-
-            switch (GameManager.Instance.stageName)
-            {
-                case "불":
-                    stageName = ElementType.Fire.ToString();
-                    break;
-
-                case "얼음":
-                    stageName = ElementType.Ice.ToString();
-                    break;
-
-                case "풀":
-                    stageName = ElementType.Grass.ToString();
-                    break;
-            }
         }
 
         private void TimeUpdate()
         {
-            if (GameManager.Instance.GameState != GameState.Checking)
+            // 블럭 체킹중에는 시간이 멈추도록
+            if (GameManager.Instance.GameState == GameState.Play)
             {
                 if (gaugeFill.fillAmount <= .05f)
                 {
                     gaugeFill.fillAmount = 0;
 
-                    if (GameManager.Instance.GameState == GameState.Play)
-                    {
-                        // 플레이 상태에서만 엔드로 들어가도록
-                        GameManager.Instance.SetGameState(GameState.End);
-                    }
+                    GameManager.Instance.SetGameState(GameState.End);
                 }
                 else
                 {

@@ -27,7 +27,7 @@ SpriteAtlas:
       blockOffset: 1
       allowAlphaSplitting: 0
       enableRotation: 1
-      enableTightPacking: 1
+      enableTightPacking: 0
       enableAlphaDilation: 0
     secondaryTextureSettings: {}
     variantMultiplier: 1
@@ -39,15 +39,15 @@ SpriteAtlas:
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: 78288f711f515ad4b954be2557569ebb, type: 3}
+  - {fileID: 21300000, guid: 4f8efc528c209ae40843d2eeb61e9adf, type: 3}
   - {fileID: 21300000, guid: 5aa3f694979a841408880ed2c4d39c3d, type: 3}
-  - {fileID: 21300000, guid: 1c0c8f7786017854e97500dca8501a07, type: 3}
   - {fileID: 21300000, guid: 3c5ac918639d8914bb0b138a8904c4d7, type: 3}
   - {fileID: 21300000, guid: dbbc0bad406921e4f8a2d8fe17fe3e03, type: 3}
   - {fileID: 21300000, guid: 3f2c683e465702f468ed6531871c2522, type: 3}
   m_PackedSpriteNamesToIndex:
   - Ice
-  - Grass
   - Light
+  - Grass
   - Fire
   - Lightning
   - Dark

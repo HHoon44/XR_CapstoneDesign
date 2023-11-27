@@ -21,10 +21,9 @@ namespace XR_3MatchGame_Data
         /// </summary>
         public int PlayerCoin { get; private set; }
 
-        public float saveValue;
-
         public void Initialize()
         {
+            // 모두 처음에는 0으로 초기화
             if (!PlayerPrefs.HasKey(StringName.HighScore_0))
             {
                 PlayerPrefs.SetInt(StringName.HighScore_0, 0);
@@ -33,6 +32,11 @@ namespace XR_3MatchGame_Data
             if (!PlayerPrefs.HasKey(StringName.HighScore_1))
             {
                 PlayerPrefs.SetInt(StringName.HighScore_1, 0);
+            }
+
+            if (!PlayerPrefs.HasKey(StringName.HighScore_2))
+            {
+                PlayerPrefs.SetInt(StringName.HighScore_2, 0);
             }
         }
 

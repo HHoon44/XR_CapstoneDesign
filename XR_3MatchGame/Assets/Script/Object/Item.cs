@@ -191,7 +191,7 @@ public class Item : MonoBehaviour
                     countText.text = itemCount.ToString();
 
                     // 아이템 효과 -> 스킬 게이지를 채워준다
-                    UIWindowManager.Instance.GetWindow<UIElement>().currentGauge.SetSkillAmount(.2f);
+                    // UIWindowManager.Instance.GetWindow<UIElement>().currentGauge.SetSkillAmount(.2f);
                     GameManager.Instance.SetGameState(GameState.Play);
                     isItem = false;
                     break;

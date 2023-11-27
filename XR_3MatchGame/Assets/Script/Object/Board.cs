@@ -17,7 +17,7 @@ namespace XR_3MatchGame_Object
         public List<Block> delBlocks = new List<Block>();            // 삭제 블럭 리스트
 
         [SerializeField]
-        private GameObject uiEnd;
+        private InGameManager IGM;
 
         private GameManager GM;
         private DataManager DM;
@@ -44,23 +44,9 @@ namespace XR_3MatchGame_Object
                 }
             }
 
-            // 게임 종료
             if (GM.GameState == GameState.End)
             {
-                uiEnd.gameObject.SetActive(true);
-
-                uiEnd.GetComponent<UIEnd>().Initialize();
-
-                var pool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
-
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    pool.ReturnPoolableObject(blocks[i]);
-                }
-
-                blocks.Clear();
-
-                gameObject.SetActive(false);
+                IGM.Initiazlie();
             }
 
             // 게임 재시작
@@ -87,19 +73,31 @@ namespace XR_3MatchGame_Object
                 for (int col = 0; col < size.x; col++)
                 {
                     var block = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-                    block.transform.position = new Vector3(col, row, 0);
-                    block.Initialize(col, row);
+                    block.transform.position = new Vector3(col, 7, 0);
+                    block.Initialize(col, 7);
                     block.gameObject.SetActive(true);
 
                     blocks.Add(block);
+
+                    // 위에서 아래로 내려가는 것처럼
+                    var targetRow = (block.row = row);
+
+                    if (Mathf.Abs(targetRow - block.transform.position.y) > .1f)
+                    {
+                        Vector2 tempPosition = new Vector2(block.transform.position.x, targetRow);
+                        block.transform.position = Vector2.Lerp(block.transform.position, tempPosition, .05f);
+                    }
                 }
+
+                yield return new WaitForSeconds(.3f);
             }
 
-            if (!gameObject.activeSelf)
-            {
-                gameObject.SetActive(true);
-                uiEnd.gameObject.SetActive(false);
-            }
+            // 재시작 했을 경우
+            //if (!gameObject.activeSelf)
+            //{
+            //    gameObject.SetActive(true);
+            //    uiEnd.gameObject.SetActive(false);
+            //}
 
             BlockUpdate();
             StartCoroutine(BlockClear());
@@ -238,9 +236,17 @@ namespace XR_3MatchGame_Object
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
-                            DM.SetScore(delBlocks[j].BlockScore);
-                            uiElement.currentGauge.SetSkillAmount(delBlocks[j].ElementValue);
+                            uiElement.SetGauge(delBlocks[j].ElementValue);
                             blocks.Remove(delBlocks[j]);
+
+                            if (GM.isPlus)
+                            {
+                                DM.SetScore(delBlocks[j].BlockScore * 2);
+                            }
+                            else
+                            {
+                                DM.SetScore(delBlocks[j].BlockScore);
+                            }
                         }
 
                         // 맨 위에 있는 블럭인지 확인
@@ -333,9 +339,17 @@ namespace XR_3MatchGame_Object
                         for (int j = 0; j < delBlocks.Count; j++)
                         {
                             blockPool.ReturnPoolableObject(delBlocks[j]);
-                            DM.SetScore(delBlocks[j].BlockScore);
-                            uiElement.currentGauge.SetSkillAmount(delBlocks[j].ElementValue);
+                            uiElement.SetGauge(delBlocks[j].ElementValue);
                             blocks.Remove(delBlocks[j]);
+
+                            if (GM.isPlus)
+                            {
+                                DM.SetScore(delBlocks[j].BlockScore * 2);
+                            }
+                            else
+                            {
+                                DM.SetScore(delBlocks[j].BlockScore);
+                            }
                         }
 
                         var col_B = curBlock.col;

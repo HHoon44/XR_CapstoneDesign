@@ -44,5 +44,6 @@ namespace XR_3MatchGame.Util
     {
         public const string HighScore_0 = "HighScore_0";
         public const string HighScore_1 = "HighScore_1";
+        public const string HighScore_2 = "HighScore_2";
     }
 }

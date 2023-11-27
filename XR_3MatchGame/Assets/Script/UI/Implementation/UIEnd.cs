@@ -53,7 +53,6 @@ namespace XR_3MatchGame_UI
             GameManager.Instance.Board.gameObject.SetActive(true);
             DataManager.Instance.SetScore(-DataManager.Instance.PlayerScore);
             UIWindowManager.Instance.GetWindow<UIElement>().Initialize();
-            UIWindowManager.Instance.GetWindow<UITime>().SetTime();
             GameManager.Instance.SetGameState(GameState.Play);
 
             GameManager.Instance.Board.isReStart = true;

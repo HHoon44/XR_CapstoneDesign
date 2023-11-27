@@ -1,20 +1,20 @@
-using Unity.VisualScripting;
+using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.Video;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_InGame;
 using XR_3MatchGame_Resource;
-using XR_3MatchGame_Util;
 
 namespace XR_3MatchGame
 {
     public class UISelect : MonoBehaviour
     {
         [SerializeField]
-        public StageDetail stageDetail;
+        private GameObject stageFrame;
 
-        private GameManager GM;
+        [SerializeField]
+        private GameObject backButton;
 
         [SerializeField]
         private Image firstSelect;
@@ -25,12 +25,14 @@ namespace XR_3MatchGame
         [SerializeField]
         private Image threeSelect;
 
+        private GameManager GM;
+
         private void Start()
         {
             GM = GameManager.Instance;
         }
 
-        public void UpdateImage()
+        private void UpdateImage()
         {
             if (GM.selectType.Count != 0)
             {
@@ -89,40 +91,103 @@ namespace XR_3MatchGame
             if (GM.selectType.Count == 3)
             {
                 GM.LoadScene(SceneType.InGame);
+                backButton.SetActive(true);
             }
         }
 
         public void ReturnButton()
         {
-            stageDetail.gameObject.SetActive(false);
+            stageFrame.SetActive(false);
+            backButton.SetActive(true);
         }
+
+        public void BackButton()
+        {
+            SceneManager.LoadScene(SceneType.Lobby.ToString());
+        }
+
+        #endregion
+
+        #region StageButtonFun
 
         public void FireStageButton()
         {
-            stageDetail.gameObject.SetActive(true);
+            stageFrame.SetActive(true);
 
+            backButton.SetActive(false);
+
+            // 스테이지 정보 세팅
+            var stageDetail = stageFrame.transform.GetChild(0).GetComponent<StageDetail>();
             stageDetail.Initialize("불");
+
+            var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+
+            if (GM.selectType.Count == 3)
+            {
+                detail.text = "3가지 원소를 고르셨으니 게임을 시작해주세요!";
+            }
+            else
+            {
+                detail.text = "원소를 선택해주세요!";
+            }
+
             GameManager.Instance.stageType = ElementType.Fire;
             GameManager.Instance.stageName = "불";
         }
 
         public void IceStageButton()
         {
-            stageDetail.gameObject.SetActive(true);
+            stageFrame.SetActive(true);
 
+            backButton.SetActive(false);
+
+            // 스테이지 정보 세팅
+            var stageDetail = stageFrame.transform.GetChild(0).GetComponent<StageDetail>();
             stageDetail.Initialize("얼음");
+
+            var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+
+            if (GM.selectType.Count == 3)
+            {
+                detail.text = "3가지 원소를 고르셨으니 게임을 시작해주세요!";
+            }
+            else
+            {
+                detail.text = "원소를 선택해주세요!";
+            }
+
             GameManager.Instance.stageType = ElementType.Ice;
             GameManager.Instance.stageName = "얼음";
         }
 
         public void GrassStageButton()
         {
-            stageDetail.gameObject.SetActive(true);
+            stageFrame.SetActive(true);
 
+            backButton.SetActive(false);
+
+            // 스테이지 정보 세팅
+            var stageDetail = stageFrame.transform.GetChild(0).GetComponent<StageDetail>();
             stageDetail.Initialize("풀");
+
+            var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+
+            if (GM.selectType.Count == 3)
+            {
+                detail.text = "3가지 원소를 고르셨으니 게임을 시작해주세요!";
+            }
+            else
+            {
+                detail.text = "원소를 선택해주세요!";
+            }
+
             GameManager.Instance.stageType = ElementType.Grass;
             GameManager.Instance.stageName = "풀";
         }
+
+        #endregion
+
+        #region ElementSelectButton
 
         public void FireSelectButton()
         {
@@ -146,6 +211,14 @@ namespace XR_3MatchGame
             if (same == false)
             {
                 GM.selectType.Add(ElementType.Fire);
+
+                var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+                detail.text = "불 원소를 선택 하셨습니다!";
+
+                if (GM.selectType.Count == 3)
+                {
+                    detail.text = "3가지 원소를 고르셨으니 게임을 시작해주세요!";
+                }
             }
 
             UpdateImage();
@@ -173,6 +246,14 @@ namespace XR_3MatchGame
             if (same == false)
             {
                 GM.selectType.Add(ElementType.Ice);
+
+                var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+                detail.text = "얼음 원소를 선택 하셨습니다!";
+
+                if (GM.selectType.Count == 3)
+                {
+                    detail.text = "3가지 원소를 고르셨으니 게임을 시작해주세요!";
+                }
             }
 
             UpdateImage();
@@ -200,6 +281,14 @@ namespace XR_3MatchGame
             if (same == false)
             {
                 GM.selectType.Add(ElementType.Grass);
+
+                var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+                detail.text = "풀 원소를 선택 하셨습니다!";
+
+                if (GM.selectType.Count == 3)
+                {
+                    detail.text = "3가지 원소를 고르셨으니 게임을 시작해주세요!";
+                }
             }
 
             UpdateImage();
@@ -207,18 +296,19 @@ namespace XR_3MatchGame
 
         public void DarkSelectButton()
         {
-            Debug.Log("어둠 원소를 선택");
         }
 
         public void LightSelectButton()
         {
-            Debug.Log("빛 원소를 선택");
         }
 
         public void LightningSelectButton()
         {
-            Debug.Log("번개 원소를 선택");
         }
+
+        #endregion
+
+        #region SelectButton
 
         public void FirstSelectButton()
         {
@@ -228,6 +318,12 @@ namespace XR_3MatchGame
                 GM.selectType.Remove(deleteType);
 
                 UpdateImage();
+
+                if (GM.selectType.Count != 3)
+                {
+                    var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+                    detail.text = "원소를 선택해주세요!";
+                }
             }
         }
 
@@ -235,13 +331,18 @@ namespace XR_3MatchGame
         {
             if (GM.selectType.Count != 0)
             {
-                // 이러면 카운트가 3일때 가운데가 안들어옴
                 if (GM.selectType.Count > 1)
                 {
                     var deleteType = GM.selectType[1];
                     GM.selectType.Remove(deleteType);
 
                     UpdateImage();
+
+                    if (GM.selectType.Count != 3)
+                    {
+                        var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+                        detail.text = "원소를 선택해주세요!";
+                    }
                 }
             }
         }
@@ -256,6 +357,12 @@ namespace XR_3MatchGame
                     GM.selectType.Remove(deleteType);
 
                     UpdateImage();
+
+                    if (GM.selectType.Count != 3)
+                    {
+                        var detail = stageFrame.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+                        detail.text = "원소를 선택해주세요!";
+                    }
                 }
             }
         }

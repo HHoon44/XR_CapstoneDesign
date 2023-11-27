@@ -1,23 +1,27 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using TMPro;
 using UIHealthAlchemy;
 using UnityEngine;
+using UnityEngine.UI;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
-using XR_3MatchGame_Object;
-using XR_3MatchGame_Util;
 
 namespace XR_3MatchGame_UI
 {
     public class UIElement : UIWindow
     {
-        public SkillGauge currentGauge;
-
         [SerializeField]
         private TextMeshProUGUI stateText;
+
+        [SerializeField]
+        private Image gaugeFill;
+
+        [SerializeField]
+        private GameObject fullEffect;
 
         private GameManager GM;
 
@@ -33,40 +37,32 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void Initialize()
         {
-            GM = GameManager.Instance;
+            if (fullEffect.activeSelf)
+            {
+                fullEffect.SetActive(false);
+            }
 
-            DataManager.Instance.saveValue = 0;
-
-            SetGauge(GM.ElementType);
+            gaugeFill.fillAmount = 0;
         }
 
         /// <summary>
-        /// 스킬 게이지 활성화 메서드
+        /// 게이지 값을 추가하는 메서드
         /// </summary>
-        public void SetGauge(ElementType type)
+        /// <param name="amount"></param>
+        public void SetGauge(float amount)
         {
-            if (currentGauge != null)
+            if (gaugeFill.fillAmount >= 1f)
             {
-                currentGauge.gameObject.SetActive(false);
+                if (!fullEffect.activeSelf)
+                {
+                    fullEffect.SetActive(true);
+                }
+
+                gaugeFill.fillAmount = 1f;
+                return;
             }
 
-            switch (type)
-            {
-                case ElementType.Fire:
-                    currentGauge = transform.GetChild(0).GetComponent<SkillGauge>();
-                    break;
-
-                case ElementType.Ice:
-                    currentGauge = transform.GetChild(1).GetComponent<SkillGauge>();
-                    break;
-
-                case ElementType.Grass:
-                    currentGauge = transform.GetChild(2).GetComponent<SkillGauge>();
-                    break;
-            }
-
-            currentGauge.gameObject.SetActive(true);
-            currentGauge.Initialize();
+            gaugeFill.fillAmount += amount;
         }
 
         /// <summary>

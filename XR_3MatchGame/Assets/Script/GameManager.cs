@@ -37,8 +37,10 @@ namespace XR_3MatchGame_InGame
         public Board Board { get; private set; }
 
         public bool isStart = false;                                 // 블럭 체크를 실행할것인가?
+        public bool isPlus = false;
         public float loadProgress;
 
+        // 스테이지 정보
         public string stageName;
         public ElementType stageType;
 
