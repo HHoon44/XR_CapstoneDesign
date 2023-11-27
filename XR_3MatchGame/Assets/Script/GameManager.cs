@@ -5,9 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using XR_3MatchGame;
 using XR_3MatchGame.Util;
-using XR_3MatchGame_Data;
 using XR_3MatchGame_Object;
-using XR_3MatchGame_UI;
 
 namespace XR_3MatchGame_InGame
 {

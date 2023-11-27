@@ -1,5 +1,6 @@
 using UnityEngine;
 using XR_3MatchGame.Util;
+using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
 using XR_3MatchGame_Object;
 using XR_3MatchGame_UI;
@@ -27,8 +28,6 @@ public class InGameManager : MonoBehaviour
 
             uiEnd.gameObject.SetActive(true);
 
-            uiEnd.GetComponent<UIEnd>().Initialize();
-
             for (int i = 0; i < blocks.Count; i++)
             {
                 //   blocks[i].BlockParticle();
@@ -41,30 +40,12 @@ public class InGameManager : MonoBehaviour
         }
     }
 
-    //private IEnumerator GameEnd()
-    //{
-    //    var GM = GameManager.Instance;
-    //    var blocks = GM.Board.blocks;
-    //    var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+    public void InputPlayerName()
+    {
+        // 이름 저장
+        DataManager.Instance.SetName(uiEnd.GetComponent<UIEnd>().nameField.text);
 
-    //    if (GM.GameState == GameState.End)
-    //    {
-    //        uiEnd.gameObject.SetActive(true);
-
-    //        uiEnd.GetComponent<UIEnd>().Initialize();
-
-    //        for (int i = 0; i < blocks.Count; i++)
-    //        {
-    //            blocks[i].BlockParticle();
-    //            blockPool.ReturnPoolableObject(blocks[i]);
-
-
-    //        }
-
-    //        blocks.Clear();
-
-    //        gameObject.SetActive(false);
-    //    }
-    //}
-
+        // 점수 갱신
+        uiEnd.GetComponent<UIEnd>().HighScore();
+    }
 }

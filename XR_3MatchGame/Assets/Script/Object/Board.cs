@@ -46,6 +46,7 @@ namespace XR_3MatchGame_Object
 
             if (GM.GameState == GameState.End)
             {
+                // 게임 끝 로직 실행
                 IGM.Initiazlie();
             }
 
@@ -92,12 +93,6 @@ namespace XR_3MatchGame_Object
                 yield return new WaitForSeconds(.3f);
             }
 
-            // 재시작 했을 경우
-            //if (!gameObject.activeSelf)
-            //{
-            //    gameObject.SetActive(true);
-            //    uiEnd.gameObject.SetActive(false);
-            //}
 
             BlockUpdate();
             StartCoroutine(BlockClear());
@@ -230,7 +225,7 @@ namespace XR_3MatchGame_Object
                         curBlock.leftBlock.BlockParticle();
                         curBlock.rightBlock.BlockParticle();
 
-                        yield return new WaitForSeconds(.3f);
+                        yield return new WaitForSeconds(.5f);
 
                         // 풀 반환 및 점수 업데이트
                         for (int j = 0; j < delBlocks.Count; j++)
@@ -334,7 +329,7 @@ namespace XR_3MatchGame_Object
                         curBlock.topBlock.BlockParticle();
                         curBlock.bottomBlock.BlockParticle();
 
-                        yield return new WaitForSeconds(.3f);
+                        yield return new WaitForSeconds(.5f);
 
                         for (int j = 0; j < delBlocks.Count; j++)
                         {

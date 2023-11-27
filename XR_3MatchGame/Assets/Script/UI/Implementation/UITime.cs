@@ -42,6 +42,7 @@ namespace XR_3MatchGame_UI
                 {
                     gaugeFill.fillAmount = 0;
 
+                    // ∞‘¿” ≥°
                     GameManager.Instance.SetGameState(GameState.End);
                 }
                 else

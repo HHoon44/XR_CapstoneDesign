@@ -18,13 +18,13 @@ namespace XR_3MatchGame_UI
         private Image icon;
 
         [SerializeField]
-        private GameObject skillEffectObj;
+        private GameObject skillEffectObj;      // 큰놈
 
         [SerializeField]
-        private ParticleSystem magicCircle;
+        private ParticleSystem magicCircle;     // 작은놈 1
 
         [SerializeField]
-        private ParticleSystem magicEffect;
+        private ParticleSystem magicEffect;     // 작은놈 2
 
         private void Start()
         {
@@ -104,16 +104,21 @@ namespace XR_3MatchGame_UI
 
         public void OnSkill()
         {
-            Debug.Log("스킬을 사용합니다!");
+            var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
-            // 스킬 게이지 0으로 초기화
-            UIWindowManager.Instance.GetWindow<UIElement>().Initialize();
+            if (uiElement.GetGauge() >= 1f)
+            {
+                Debug.Log("스킬을 사용합니다!");
 
-            var GM = GameManager.Instance;
-            GM.SetGameState(GameState.SKill);
+                // 스킬 게이지 0으로 초기화
+                uiElement.Initialize();
 
-            // 스킬을 시작합니다.
-            StartCoroutine(StartSkill());
+                var GM = GameManager.Instance;
+                GM.SetGameState(GameState.SKill);
+
+                // 스킬을 시작합니다.
+                StartCoroutine(StartSkill());
+            }
         }
 
         private IEnumerator StartSkill()
@@ -196,10 +201,6 @@ namespace XR_3MatchGame_UI
                         }
                     }
 
-                    // 빈 곳에 블럭 생성
-                    var emptyCount = (GM.BoardSize.x * GM.BoardSize.y) - blocks.Count;
-
-
                     // 빈자리에 블럭 채워넣기
                     for (int row = 4; row < GM.BoardSize.y; row++)
                     {
@@ -280,8 +281,6 @@ namespace XR_3MatchGame_UI
                         delBlocks[i].BlockParticle();
                     }
 
-                    // 블럭 파괴
-
                     yield return new WaitForSeconds(.3f);
 
                     // 블럭 파괴
@@ -307,7 +306,6 @@ namespace XR_3MatchGame_UI
 
                     yield return new WaitForSeconds(.4f);
 
-                    // 블럭 내리기
                     // 블럭을 내리는 작업
                     for (int i = 0; i < downBlocks.Count; i++)
                     {
@@ -319,10 +317,6 @@ namespace XR_3MatchGame_UI
                             downBlocks[i].transform.position = Vector2.Lerp(downBlocks[i].transform.position, tempPosition, .05f);
                         }
                     }
-
-                    // 빈 곳에 블럭 생성
-                    emptyCount = (GM.BoardSize.x * GM.BoardSize.y) - blocks.Count;
-
 
                     // 빈자리에 블럭 채워넣기
                     for (int row = 4; row < GM.BoardSize.y; row++)
@@ -442,9 +436,6 @@ namespace XR_3MatchGame_UI
                             downBlocks[i].transform.position = Vector2.Lerp(downBlocks[i].transform.position, tempPosition, .05f);
                         }
                     }
-
-                    // 빈 곳에 블럭 생성
-                    emptyCount = (GM.BoardSize.x * GM.BoardSize.y) - blocks.Count;
 
 
                     // 빈자리에 블럭 채워넣기

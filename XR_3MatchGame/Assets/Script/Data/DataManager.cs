@@ -9,34 +9,38 @@ namespace XR_3MatchGame_Data
         /// <summary>
         /// 유저 점수 프로퍼티
         /// </summary>
-        public int PlayerScore { get; private set; }
+        // public int PlayerScore { get; private set; }
+
+        public int PlayerScore;
 
         /// <summary>
         /// 유저 이름 프로퍼티
         /// </summary>
-        public string PlayerName { get; private set; }
+        // public string PlayerName { get; private set; }
 
-        /// <summary>
-        /// 유저 코인 프로퍼티
-        /// </summary>
-        public int PlayerCoin { get; private set; }
+        public string PlayerName;
 
         public void Initialize()
         {
+            // PlayerPrefs.DeleteAll();
+
             // 모두 처음에는 0으로 초기화
             if (!PlayerPrefs.HasKey(StringName.HighScore_0))
             {
                 PlayerPrefs.SetInt(StringName.HighScore_0, 0);
+                PlayerPrefs.SetString(StringName.HighScore_0, "유저이름");
             }
 
             if (!PlayerPrefs.HasKey(StringName.HighScore_1))
             {
                 PlayerPrefs.SetInt(StringName.HighScore_1, 0);
+                PlayerPrefs.SetString(StringName.HighScore_1, "유저이름");
             }
 
             if (!PlayerPrefs.HasKey(StringName.HighScore_2))
             {
                 PlayerPrefs.SetInt(StringName.HighScore_2, 0);
+                PlayerPrefs.SetString(StringName.HighScore_2, "유저이름");
             }
         }
 
@@ -57,15 +61,6 @@ namespace XR_3MatchGame_Data
         public void SetName(string name)
         {
             PlayerName = name;
-        }
-
-        /// <summary>
-        /// 소지한 금액 업데이트 메서드
-        /// </summary>
-        /// <param name="coin"></param>
-        public void SetCoin(int coin)
-        {
-            PlayerCoin = coin;
         }
     }
 }

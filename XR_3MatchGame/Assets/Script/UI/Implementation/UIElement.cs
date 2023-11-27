@@ -23,8 +23,6 @@ namespace XR_3MatchGame_UI
         [SerializeField]
         private GameObject fullEffect;
 
-        private GameManager GM;
-
         public override void Start()
         {
             base.Start();
@@ -63,6 +61,11 @@ namespace XR_3MatchGame_UI
             }
 
             gaugeFill.fillAmount += amount;
+        }
+
+        public float GetGauge()
+        {
+            return gaugeFill.fillAmount;
         }
 
         /// <summary>
