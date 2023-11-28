@@ -40,10 +40,14 @@ namespace XR_3MatchGame.Util
         None, Boom, Time, Skill
     }
 
-    public class StringName
+    public class HighScore
     {
-        public const string HighScore_0 = "HighScore_0";
-        public const string HighScore_1 = "HighScore_1";
-        public const string HighScore_2 = "HighScore_2";
+        public const string Score_0 = "Score_0";
+        public const string Score_1 = "Score_1";
+        public const string Score_2 = "Score_2";
+
+        public const string Name_0 = "Name_0";
+        public const string Name_1 = "Name_1";
+        public const string Name_2 = "Name_2";
     }
 }

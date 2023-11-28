@@ -37,50 +37,28 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void Initialize()
         {
+            // 내 점수 업데이트
             myScore.text = DataManager.Instance.PlayerScore.ToString();
-
-            #region User_0
-
-            // 프로필
-            var uesrProfil_0 = user_0.transform.GetChild(0).GetComponent<Image>();
-
-            // 유저 이름
-            var userName_0 = user_0.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
-            userName_0.text = PlayerPrefs.GetString(StringName.HighScore_0);
 
             // 점수
             var userScore_0 = user_0.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
-            userScore_0.text = PlayerPrefs.GetInt(StringName.HighScore_0).ToString();
+            userScore_0.text = PlayerPrefs.GetInt(HighScore.Score_0).ToString();
 
-            #endregion
-
-            #region User_1
-
-            var uesrProfil_1 = user_1.transform.GetChild(0).GetComponent<Image>();
-
-            // 유저 이름
-            var userName_1 = user_1.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
-            userName_1.text = PlayerPrefs.GetString(StringName.HighScore_1);
-
-            // 점수
             var userScore_1 = user_1.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
-            userScore_1.text = PlayerPrefs.GetInt(StringName.HighScore_1).ToString();
+            userScore_1.text = PlayerPrefs.GetInt(HighScore.Score_1).ToString();
 
-            #endregion
-
-            #region User_2
-
-            var uesrProfil_2 = user_2.transform.GetChild(0).GetComponent<Image>();
+            var userScore_2 = user_2.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+            userScore_2.text = PlayerPrefs.GetInt(HighScore.Score_2).ToString();
 
             // 유저 이름
+            var userName_0 = user_0.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+            userName_0.text = PlayerPrefs.GetString(HighScore.Name_0);
+
+            var userName_1 = user_1.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+            userName_1.text = PlayerPrefs.GetString(HighScore.Name_1);
+
             var userName_2 = user_2.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
-            userName_2.text = PlayerPrefs.GetString(StringName.HighScore_2);
-
-            // 점수
-            var userScore_2 = user_2.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
-            userScore_2.text = PlayerPrefs.GetInt(StringName.HighScore_2).ToString();
-
-            #endregion
+            userName_2.text = PlayerPrefs.GetString(HighScore.Name_2);
         }
 
         /// <summary>

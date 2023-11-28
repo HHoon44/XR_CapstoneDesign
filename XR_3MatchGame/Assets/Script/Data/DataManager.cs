@@ -22,27 +22,45 @@ namespace XR_3MatchGame_Data
 
         public void Initialize()
         {
-            // PlayerPrefs.DeleteAll();
+            #region 점수 공간 생성
 
-            // 모두 처음에는 0으로 초기화
-            if (!PlayerPrefs.HasKey(StringName.HighScore_0))
+            if (!PlayerPrefs.HasKey(HighScore.Score_0))
             {
-                PlayerPrefs.SetInt(StringName.HighScore_0, 0);
-                PlayerPrefs.SetString(StringName.HighScore_0, "유저이름");
+                PlayerPrefs.SetInt(HighScore.Score_0, 0);
             }
 
-            if (!PlayerPrefs.HasKey(StringName.HighScore_1))
+            if (!PlayerPrefs.HasKey(HighScore.Score_1))
             {
-                PlayerPrefs.SetInt(StringName.HighScore_1, 0);
-                PlayerPrefs.SetString(StringName.HighScore_1, "유저이름");
+                PlayerPrefs.SetInt(HighScore.Score_1, 0);
             }
 
-            if (!PlayerPrefs.HasKey(StringName.HighScore_2))
+            if (!PlayerPrefs.HasKey(HighScore.Score_2))
             {
-                PlayerPrefs.SetInt(StringName.HighScore_2, 0);
-                PlayerPrefs.SetString(StringName.HighScore_2, "유저이름");
+                PlayerPrefs.SetInt(HighScore.Score_2, 0);
             }
+
+            #endregion
+
+            #region 이름 공간 생성
+
+            if (!PlayerPrefs.HasKey(HighScore.Name_0))
+            {
+                PlayerPrefs.SetString(HighScore.Name_0, "마법사");
+            }
+
+            if (!PlayerPrefs.HasKey(HighScore.Name_1))
+            {
+                PlayerPrefs.SetString(HighScore.Name_1, "대마법사");
+            }
+
+            if (!PlayerPrefs.HasKey(HighScore.Name_2))
+            {
+                PlayerPrefs.SetString(HighScore.Name_2, "대대마법사");
+            }
+
+            #endregion
         }
+
 
         /// <summary>
         /// 스코어 업데이트 메서드

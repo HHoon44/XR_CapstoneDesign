@@ -21,68 +21,65 @@ namespace XR_3MatchGame_UI
             score.text = DataManager.Instance.PlayerScore.ToString();
         }
 
-        /// 게임 종료 후 최고 점수를 업데이트하는 작업
+        /// 게임 종료 후 최고 점수를 업데이트하는 메서드
         /// </summary>
         public void HighScore()
         {
+            // 점수
             var currentScore = DataManager.Instance.PlayerScore;
+            var score_0 = PlayerPrefs.GetInt(XR_3MatchGame.Util.HighScore.Score_0);
+            var score_1 = PlayerPrefs.GetInt(XR_3MatchGame.Util.HighScore.Score_1);
+            var score_2 = PlayerPrefs.GetInt(XR_3MatchGame.Util.HighScore.Score_2);
+
+            // 이름
             var currentName = DataManager.Instance.PlayerName;
-
-            Debug.Log(currentScore);
-
-            var score_0 = PlayerPrefs.GetInt(StringName.HighScore_0);
-            var name_0 = PlayerPrefs.GetString(StringName.HighScore_0);
-
-            var score_1 = PlayerPrefs.GetInt(StringName.HighScore_1);
-            var name_1 = PlayerPrefs.GetString(StringName.HighScore_1);
-
-            var score_2 = PlayerPrefs.GetInt(StringName.HighScore_2);
-            var name_2 = PlayerPrefs.GetString(StringName.HighScore_2);
+            var name_0 = PlayerPrefs.GetString(XR_3MatchGame.Util.HighScore.Name_0);
+            var name_1 = PlayerPrefs.GetString(XR_3MatchGame.Util.HighScore.Name_1);
+            var name_2 = PlayerPrefs.GetString(XR_3MatchGame.Util.HighScore.Name_2);
 
             if (currentScore > score_0)
             {
                 // 1등
-                PlayerPrefs.SetInt(StringName.HighScore_0, currentScore);
-                PlayerPrefs.SetString(StringName.HighScore_0, currentName);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_0, currentScore);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_0, currentName);
 
                 // 2등
-                PlayerPrefs.SetInt(StringName.HighScore_1, score_0);
-                PlayerPrefs.SetString(StringName.HighScore_1, name_0);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_1, score_0);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_1, name_0);
 
                 // 3등
-                PlayerPrefs.SetInt(StringName.HighScore_2, score_1);
-                PlayerPrefs.SetString(StringName.HighScore_2, name_1);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_2, score_1);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_2, name_1);
             }
             else if (currentScore > score_1)
             {
                 // 1등
-                PlayerPrefs.SetInt(StringName.HighScore_0, score_0);
-                PlayerPrefs.SetString(StringName.HighScore_0, name_0);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_0, score_0);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_0, name_0);
 
                 // 2등
-                PlayerPrefs.SetInt(StringName.HighScore_1, currentScore);
-                PlayerPrefs.SetString(StringName.HighScore_1, currentName);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_1, currentScore);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_1, currentName);
 
                 // 3등
-                PlayerPrefs.SetInt(StringName.HighScore_2, score_1);
-                PlayerPrefs.SetString(StringName.HighScore_2, name_1);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_2, score_1);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_2, name_1);
             }
             else if (currentScore > score_2)
             {
                 // 1등
-                PlayerPrefs.SetInt(StringName.HighScore_0, score_0);
-                PlayerPrefs.SetString(StringName.HighScore_0, name_0);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_0, score_0);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_0, name_0);
 
                 // 2등
-                PlayerPrefs.SetInt(StringName.HighScore_1, score_1);
-                PlayerPrefs.SetString(StringName.HighScore_1, name_1);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_1, score_1);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_1, name_1);
 
                 // 3등
-                PlayerPrefs.SetInt(StringName.HighScore_2, currentScore);
-                PlayerPrefs.SetString(StringName.HighScore_2, currentName);
+                PlayerPrefs.SetInt(XR_3MatchGame.Util.HighScore.Score_2, currentScore);
+                PlayerPrefs.SetString(XR_3MatchGame.Util.HighScore.Name_2, currentName);
             }
 
-            Debug.Log(PlayerPrefs.GetInt(StringName.HighScore_0));
         }
 
         public void ReStartBtn()

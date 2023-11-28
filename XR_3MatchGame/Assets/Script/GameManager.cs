@@ -70,6 +70,9 @@ namespace XR_3MatchGame_InGame
 
             GameState = GameState.Play;
             SetElementType(ElementType.Fire);
+
+            // 초기 설정
+            Application.targetFrameRate = 60;
         }
 
         public void Initialize(Board board)
