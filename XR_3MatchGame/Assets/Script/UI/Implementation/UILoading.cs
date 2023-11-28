@@ -10,7 +10,7 @@ namespace XR_3MatchGame_UI
         public TextMeshProUGUI loadStateDesc;
 
         private static string dot = string.Empty;
-        private static string loadStateDescription = "로딩중 입니다";
+        private static string loadStateDescription = "Loading";
 
         private void Update()
         {

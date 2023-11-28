@@ -57,7 +57,6 @@ namespace XR_3MatchGame
             else
             {
                 uiStart.loadFillGauge.fillAmount = 1f;
-                // MyDelay();
             }
 
             switch (phase)

@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,7 +7,7 @@ namespace XR_3MatchGame_UI
 {
     public class UIStart : MonoBehaviour
     {
-        public Text loadStateDesc;
+        public TextMeshProUGUI loadStateDesc;
         public Image loadFillGauge;
 
         /// <summary>

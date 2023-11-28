@@ -12,6 +12,9 @@ namespace XR_3MatchGame_UI
     public class UIEnd : MonoBehaviour
     {
         [SerializeField]
+        private GameObject backBlack;
+
+        [SerializeField]
         private TextMeshProUGUI score;
 
         public TMP_InputField nameField;
@@ -19,6 +22,9 @@ namespace XR_3MatchGame_UI
         private void Start()
         {
             score.text = DataManager.Instance.PlayerScore.ToString();
+
+            // 검은 배경 활성화
+            backBlack.SetActive(true);
         }
 
         /// 게임 종료 후 최고 점수를 업데이트하는 메서드
@@ -100,6 +106,8 @@ namespace XR_3MatchGame_UI
 
             GameManager.Instance.Board.isReStart = true;
 
+            // 검은 배경 비활성화
+            backBlack.SetActive(false);
             this.gameObject.SetActive(false);
         }
 
@@ -108,6 +116,9 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void ReturnBtn()
         {
+            // 검은 배경 비활성화
+            backBlack.SetActive(false);
+
             var GM = GameManager.Instance;
 
             // 로딩 창 띄우기
@@ -119,7 +130,6 @@ namespace XR_3MatchGame_UI
                 GM.selectType.Clear();
 
                 yield return null;
-
             }
         }
     }
