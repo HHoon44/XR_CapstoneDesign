@@ -30,6 +30,9 @@ namespace XR_3MatchGame
         private void Start()
         {
             GM = GameManager.Instance;
+
+            // 선택씬 BGM 설정
+            SoundManager.Instance.Initialize(SceneType.Select);
         }
 
         private void UpdateImage()
@@ -132,7 +135,7 @@ namespace XR_3MatchGame
             }
 
             GameManager.Instance.stageType = ElementType.Fire;
-            GameManager.Instance.stageName = "불";
+            GameManager.Instance.stageName = "Fire";
         }
 
         public void IceStageButton()
@@ -157,7 +160,7 @@ namespace XR_3MatchGame
             }
 
             GameManager.Instance.stageType = ElementType.Ice;
-            GameManager.Instance.stageName = "얼음";
+            GameManager.Instance.stageName = "Ice";
         }
 
         public void GrassStageButton()
@@ -182,7 +185,7 @@ namespace XR_3MatchGame
             }
 
             GameManager.Instance.stageType = ElementType.Grass;
-            GameManager.Instance.stageName = "풀";
+            GameManager.Instance.stageName = "Grass";
         }
 
         #endregion

@@ -15,7 +15,7 @@ namespace XR_3MatchGame_UI
 
         private void Update()
         {
-            if (!timeStop)
+            if (!timeStop && GameManager.Instance.GameState != GameState.End)
             {
                 TimeUpdate();
             }
@@ -42,8 +42,9 @@ namespace XR_3MatchGame_UI
                 {
                     gaugeFill.fillAmount = 0;
 
-                    // 게임 끝
+                    // 게임 종료 및 게임 종료 로직 실행
                     GameManager.Instance.SetGameState(GameState.End);
+                    GameManager.Instance.Board.IGM.Initiazlie();
                 }
                 else
                 {

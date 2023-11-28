@@ -50,21 +50,21 @@ SpriteAtlas:
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
-  - {fileID: 21300000, guid: d8c1ac4260a980244bb1ab4ebbecc0f9, type: 3}
-  - {fileID: 21300000, guid: 8756bbc48b0c0af4dbf48cc0cade62b5, type: 3}
   - {fileID: 21300000, guid: c62878b5a76a4f44da7e9ad4186db018, type: 3}
-  - {fileID: 21300000, guid: ee6e7a87a2dd2ae44b0a9cca842286c6, type: 3}
+  - {fileID: 21300000, guid: 665779465deee4445be31f07422d7fd9, type: 3}
+  - {fileID: 21300000, guid: 9c16d60772b586440845d774c8050513, type: 3}
+  - {fileID: 21300000, guid: 5d4b9159c370cab4a998310e3f6eab5c, type: 3}
   - {fileID: 21300000, guid: 201b4a8ceac46f841b5d6f726c06a4ee, type: 3}
-  - {fileID: 21300000, guid: 32c172ddc49d14c42a5e757e5c087c7b, type: 3}
   - {fileID: 21300000, guid: aa878f0f2adab394f9628ce8b819d16d, type: 3}
+  - {fileID: 21300000, guid: 97f4c3ef1f8bd3542b3ad683d816a0a6, type: 3}
   m_PackedSpriteNamesToIndex:
-  - Grass
-  - Lightning
   - Balance
-  - Fire
-  - Dark
+  - Lightning
+  - Grass
   - Ice
+  - Dark
   - Light
+  - Fire
   m_RenderDataMap: {}
   m_Tag: IconAtlas
   m_IsVariant: 0

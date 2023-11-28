@@ -59,6 +59,9 @@ namespace XR_3MatchGame_UI
 
             var userName_2 = user_2.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
             userName_2.text = PlayerPrefs.GetString(HighScore.Name_2);
+
+            // 배경음악실행
+            SoundManager.Instance.Initialize(SceneType.Lobby);
         }
 
         /// <summary>

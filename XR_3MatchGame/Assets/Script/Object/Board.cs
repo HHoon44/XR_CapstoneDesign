@@ -16,8 +16,7 @@ namespace XR_3MatchGame_Object
         public List<Block> downBlocks = new List<Block>();           // 아래 이동 블럭 리스트
         public List<Block> delBlocks = new List<Block>();            // 삭제 블럭 리스트
 
-        [SerializeField]
-        private InGameManager IGM;
+        public InGameManager IGM;
 
         private GameManager GM;
         private DataManager DM;
@@ -29,6 +28,9 @@ namespace XR_3MatchGame_Object
             GM = GameManager.Instance;
             DM = DataManager.Instance;
             GM.Initialize(this);
+
+            // BGM 실행
+            SoundManager.Instance.Initialize(SceneType.InGame);
 
             StartCoroutine(SpawnBlock());
         }
@@ -42,12 +44,6 @@ namespace XR_3MatchGame_Object
                     GM.isStart = false;
                     StartCoroutine(BlockClear());
                 }
-            }
-
-            if (GM.GameState == GameState.End)
-            {
-                // 게임 끝 로직 실행
-                IGM.Initiazlie();
             }
 
             // 게임 재시작

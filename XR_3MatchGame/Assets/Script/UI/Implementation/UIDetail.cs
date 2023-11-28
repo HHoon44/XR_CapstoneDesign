@@ -38,7 +38,7 @@ namespace XR_3MatchGame_UI
             var stageIcon = SpriteLoader.GetSprite(AtlasType.IconAtlas, GameManager.Instance.stageType.ToString());
 
             icon.sprite = stageIcon;
-            detail.text = GameManager.Instance.stageName + "의 시련";
+            detail.text = GameManager.Instance.stageName + " STAGE";
 
             // 점수 세팅
             SetScore();
