@@ -26,6 +26,9 @@ namespace XR_3MatchGame_UI
         [SerializeField]
         private ParticleSystem magicEffect;     // 작은놈 2
 
+        [SerializeField]
+        private GameObject backBlack;           // 스킬 사용 시 나올 검은 배경
+
         private void Start()
         {
             Initialize();
@@ -106,8 +109,12 @@ namespace XR_3MatchGame_UI
         {
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
-            if (uiElement.GetGauge() >= 1f)
+            // 현재 게임 상태가  Play 상태일때만 스킬 사용 가능
+            if (uiElement.GetGauge() >= 1f && GameManager.Instance.GameState == GameState.Play)
             {
+                // 검은 배경 활성화
+                backBlack.SetActive(true);
+
                 Debug.Log("스킬을 사용합니다!");
 
                 // 스킬 게이지 0으로 초기화
@@ -154,6 +161,9 @@ namespace XR_3MatchGame_UI
                             }
                         }
                     }
+
+                    // 검은 배경 비활성화
+                    backBlack.SetActive(false);
 
                     // 블럭 파티클 실행
                     for (int i = 0; i < delBlocks.Count; i++)
@@ -275,6 +285,9 @@ namespace XR_3MatchGame_UI
                         }
                     }
 
+                    // 검은 배경 비활성화
+                    backBlack.SetActive(false);
+
                     // 블럭 파티클 실행
                     for (int i = 0; i < delBlocks.Count; i++)
                     {
@@ -391,13 +404,14 @@ namespace XR_3MatchGame_UI
                         }
                     }
 
+                    // 검은 배경 비활성화
+                    backBlack.SetActive(false);
+
                     // 블럭 파티클 실행
                     for (int i = 0; i < delBlocks.Count; i++)
                     {
                         delBlocks[i].BlockParticle();
                     }
-
-                    // 블럭 파괴
 
                     yield return new WaitForSeconds(.3f);
 

@@ -10414,7 +10414,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: c62878b5a76a4f44da7e9ad4186db018, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -10799,6 +10799,7 @@ MonoBehaviour:
   skillEffectObj: {fileID: 1154899520}
   magicCircle: {fileID: 0}
   magicEffect: {fileID: 0}
+  backBlack: {fileID: 413099227}
 --- !u!1 &514621918
 GameObject:
   m_ObjectHideFlags: 0
@@ -11372,6 +11373,7 @@ MonoBehaviour:
   skillEffectObj: {fileID: 1154899520}
   magicCircle: {fileID: 0}
   magicEffect: {fileID: 0}
+  backBlack: {fileID: 413099227}
 --- !u!1 &750649395
 GameObject:
   m_ObjectHideFlags: 0
@@ -17738,7 +17740,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: c62878b5a76a4f44da7e9ad4186db018, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -18325,7 +18327,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 21300000, guid: c62878b5a76a4f44da7e9ad4186db018, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -19459,7 +19461,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -10}
-  m_SizeDelta: {x: 120, y: 120}
+  m_SizeDelta: {x: 130, y: 130}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1824428004
 MonoBehaviour:
@@ -19651,6 +19653,7 @@ MonoBehaviour:
   skillEffectObj: {fileID: 1154899520}
   magicCircle: {fileID: 0}
   magicEffect: {fileID: 0}
+  backBlack: {fileID: 413099227}
 --- !u!1 &1845371117
 GameObject:
   m_ObjectHideFlags: 0
@@ -20315,7 +20318,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!1 &1611161566060761
 GameObject:
   m_ObjectHideFlags: 0
@@ -20462,7 +20465,7 @@ ParticleSystem:
   emitterVelocityMode: 0
   looping: 0
   prewarm: 0
-  playOnAwake: 0
+  playOnAwake: 1
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -25100,7 +25103,7 @@ ParticleSystem:
   emitterVelocityMode: 0
   looping: 1
   prewarm: 0
-  playOnAwake: 0
+  playOnAwake: 1
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:
@@ -29576,7 +29579,7 @@ ParticleSystem:
   emitterVelocityMode: 0
   looping: 1
   prewarm: 0
-  playOnAwake: 0
+  playOnAwake: 1
   useUnscaledTime: 0
   autoRandomSeed: 1
   startDelay:

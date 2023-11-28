@@ -1,14 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq.Expressions;
 using TMPro;
-using UIHealthAlchemy;
 using UnityEngine;
 using UnityEngine.UI;
-using XR_3MatchGame.Util;
-using XR_3MatchGame_Data;
-using XR_3MatchGame_InGame;
 
 namespace XR_3MatchGame_UI
 {
@@ -20,8 +12,7 @@ namespace XR_3MatchGame_UI
         [SerializeField]
         private Image gaugeFill;
 
-        [SerializeField]
-        private GameObject fullEffect;
+        public GameObject fullEffect;
 
         public override void Start()
         {

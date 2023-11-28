@@ -25,6 +25,13 @@ public class InGameManager : MonoBehaviour
             // 보드 비활성화
             GM.Board.gameObject.SetActive(false);
 
+            // 게이지 풀 이펙트 비활성화
+            if (UIWindowManager.Instance.GetWindow<UIElement>().fullEffect.activeSelf)
+            {
+                UIWindowManager.Instance.GetWindow<UIElement>().fullEffect.SetActive(false);
+            }
+
+
             // End UI 활성화
             uiEnd.gameObject.SetActive(true);
 
