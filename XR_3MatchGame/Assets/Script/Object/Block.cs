@@ -56,7 +56,7 @@ namespace XR_3MatchGame_Object
         public ElementType elementType = ElementType.None;        // 현재 블럭의 타입
         private SwipeDir swipeDir = SwipeDir.None;
 
-        [Header("Test")]
+        [Header("TestBoard")]
         public ElementType Top_T = ElementType.None;
         public ElementType Bottom_T = ElementType.None;
         public ElementType Left_T = ElementType.None;

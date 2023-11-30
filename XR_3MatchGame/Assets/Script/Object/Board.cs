@@ -27,6 +27,7 @@ namespace XR_3MatchGame_Object
         {
             GM = GameManager.Instance;
             DM = DataManager.Instance;
+
             GM.Initialize(this);
 
             // BGM ½ÇÇà
@@ -117,7 +118,7 @@ namespace XR_3MatchGame_Object
                         {
                             blocks[i].topBlock = blocks[j];
 
-                            // Test
+                            // TestBoard
                             blocks[i].Top_T = blocks[j].elementType;
                         }
                     }
@@ -134,7 +135,7 @@ namespace XR_3MatchGame_Object
                         {
                             blocks[i].bottomBlock = blocks[j];
 
-                            // Test
+                            // TestBoard
                             blocks[i].Bottom_T = blocks[j].elementType;
                         }
                     }
@@ -152,7 +153,7 @@ namespace XR_3MatchGame_Object
                         {
                             blocks[i].leftBlock = blocks[j];
 
-                            // Test
+                            // TestBoard
                             blocks[i].Left_T = blocks[j].elementType;
                         }
                     }
@@ -170,7 +171,7 @@ namespace XR_3MatchGame_Object
                         {
                             blocks[i].rightBlock = blocks[j];
 
-                            // Test
+                            // TestBoard
                             blocks[i].Right_T = blocks[j].elementType;
                         }
                     }
@@ -304,7 +305,7 @@ namespace XR_3MatchGame_Object
                         downBlocks.Clear();
                         BlockUpdate();
 
-                        /// Test
+                        /// TestBoard
                         i = 0;
                     }
                 }
@@ -404,7 +405,7 @@ namespace XR_3MatchGame_Object
                         downBlocks.Clear();
                         BlockUpdate();
 
-                        /// Test
+                        /// TestBoard
                         i = 0;
                     }
                 }
