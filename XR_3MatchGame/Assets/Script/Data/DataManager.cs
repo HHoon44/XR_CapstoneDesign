@@ -22,6 +22,8 @@ namespace XR_3MatchGame_Data
 
         public void Initialize()
         {
+            PlayerPrefs.DeleteAll();
+
             #region 점수 공간 생성
 
             if (!PlayerPrefs.HasKey(HighScore.Score_0))

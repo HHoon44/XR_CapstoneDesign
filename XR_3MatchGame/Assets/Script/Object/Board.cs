@@ -303,6 +303,9 @@ namespace XR_3MatchGame_Object
                         delBlocks.Clear();
                         downBlocks.Clear();
                         BlockUpdate();
+
+                        /// Test
+                        i = 0;
                     }
                 }
 
@@ -400,6 +403,9 @@ namespace XR_3MatchGame_Object
                         delBlocks.Clear();
                         downBlocks.Clear();
                         BlockUpdate();
+
+                        /// Test
+                        i = 0;
                     }
                 }
             }
