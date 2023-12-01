@@ -244,7 +244,7 @@ namespace XR_3MatchGame_UI
                     GM.isPlus = true;
 
                     // 블럭 업데이트
-                    GM.Board.BlockUpdate();
+                    //GM.Board.BlockUpdate();
 
                     if (GM.Board.BlockCheck())
                     {
@@ -363,7 +363,7 @@ namespace XR_3MatchGame_UI
                     downBlocks.Clear();
 
                     // 블럭 업데이트
-                    GM.Board.BlockUpdate();
+                    //GM.Board.BlockUpdate();
 
                     if (GM.Board.BlockCheck())
                     {
@@ -489,7 +489,7 @@ namespace XR_3MatchGame_UI
                     }
 
                     // 블럭 업데이트
-                    GM.Board.BlockUpdate();
+                    //GM.Board.BlockUpdate();
 
                     if (GM.Board.BlockCheck())
                     {
@@ -505,7 +505,7 @@ namespace XR_3MatchGame_UI
             }
 
             // 한번더 체크
-            GM.Board.BlockUpdate();
+            //GM.Board.BlockUpdate();
 
             if (GM.Board.BlockCheck())
             {

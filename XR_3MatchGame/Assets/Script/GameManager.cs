@@ -46,8 +46,8 @@ namespace XR_3MatchGame_InGame
         {
             get
             {
-                // (0 ~ 7)
-                Vector2Int boardSize = new Vector2Int(7, 7);
+                // (-3 ~ 3)
+                Vector2Int boardSize = new Vector2Int(-3, 3);
 
                 return boardSize;
             }

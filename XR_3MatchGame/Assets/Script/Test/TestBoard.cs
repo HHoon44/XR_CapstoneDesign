@@ -26,6 +26,14 @@ public class TestBoard : MonoBehaviour
         SetBoard();
     }
 
+    private void Update()
+    {
+        if (isMatch)
+        {
+            // 블럭 매치 시작
+        }
+    }
+
     /// <summary>
     /// 보드에 블럭을 세팅하는 메서드
     /// </summary>
@@ -61,14 +69,227 @@ public class TestBoard : MonoBehaviour
 
                 newBlock.GetComponent<TestBlock>().icon.sprite = sprites[num];
 
+                switch (num + 1)
+                {
+                    case (int)ElementType.Fire:
+                        newBlock.GetComponent<TestBlock>().elementType = ElementType.Fire;
+                        break;
+
+                    case (int)ElementType.Ice:
+                        newBlock.GetComponent<TestBlock>().elementType = ElementType.Ice;
+                        break;
+
+                    case (int)ElementType.Grass:
+                        newBlock.GetComponent<TestBlock>().elementType = ElementType.Grass;
+                        break;
+
+                    case (int)ElementType.Lightning:
+                        newBlock.GetComponent<TestBlock>().elementType = ElementType.Lightning;
+                        break;
+
+                    case (int)ElementType.Light:
+                        newBlock.GetComponent<TestBlock>().elementType = ElementType.Light;
+                        break;
+
+                    case (int)ElementType.Dark:
+                        newBlock.GetComponent<TestBlock>().elementType = ElementType.Dark;
+                        break;
+                }
+
                 // Block 저장
                 blocks.Add(newBlock.GetComponent<TestBlock>());
             }
         }
     }
 
-    public bool BlockUpdate(TestBlock checkBlock = null, TestBlock otherBlock = null, SwipeDir swipeDir = SwipeDir.None)
+    public bool MatchCheck(TestBlock checkBlock = null, TestBlock otherBlock = null, SwipeDir swipeDir = SwipeDir.None)
     {
+        if (checkBlock != null || otherBlock != null)
+        {
+            // 같은 블럭 개수
+            int count_T = 0;
+            int count_B = 0;
+            int count_L = 0;
+            int count_R = 0;
+            int count_M = 0;
+            int count_M2 = 0;
+
+            switch (swipeDir)
+            {
+                case SwipeDir.None:
+
+                    // 3X3
+                    for (int i = 0; i < blocks.Count; i++)
+                    {
+                        // Top
+                        if ((blocks[i].row == otherBlock.row + 1 || blocks[i].row == otherBlock.row + 2) &&
+                            blocks[i].col == otherBlock.col)
+                        {
+                            // 같은 블럭인지 체크
+                            if (blocks[i].elementType == otherBlock.elementType)
+                            {
+                                count_T++;
+                            }
+                        }
+
+                        // Bottom
+                        if ((blocks[i].row == otherBlock.row - 1 || blocks[i].row == otherBlock.row - 2) &&
+                            blocks[i].col == otherBlock.col)
+                        {
+                            if (blocks[i].elementType == otherBlock.elementType)
+                            {
+                                count_B++;
+                            }
+                        }
+
+                        // Left
+                        if ((blocks[i].col == otherBlock.col - 1 || blocks[i].col == otherBlock.col - 2) &&
+                            blocks[i].row == otherBlock.row)
+                        {
+                            if (blocks[i].elementType == otherBlock.elementType)
+                            {
+                                count_L++;
+                            }
+                        }
+
+
+                        // Right
+                        if ((blocks[i].col == otherBlock.col + 1 || blocks[i].col == otherBlock.col + 2) &&
+                            blocks[i].row == otherBlock.row)
+                        {
+                            if (blocks[i].elementType == otherBlock.elementType)
+                            {
+                                count_R++;
+                            }
+                        }
+
+                        // Horizontal Middle
+                        if ((blocks[i].col == otherBlock.col + 1 || blocks[i].col == otherBlock.col - 1) && 
+                            blocks[i].row == otherBlock.row)
+                        {
+                            if (blocks[i].elementType == otherBlock.elementType)
+                            {
+                                count_M++;
+                            }
+                        }
+
+                        // Verticla Middle
+                        if ((blocks[i].row == otherBlock.row + 1 || blocks[i].row == otherBlock.row - 1) && 
+                            blocks[i].col == otherBlock.col)
+                        {
+                            if (blocks[i].elementType == otherBlock.elementType)
+                            {
+                                count_M2++;
+                            }
+                        }
+                    }
+
+                    break;
+
+                case SwipeDir.Top:
+
+                    for (int i = 0; i < blocks.Count; i++)
+                    {
+                        // Top
+                        if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                        {
+                            // 같은 블럭인지 체크
+                            if (checkBlock.elementType == blocks[i].elementType)
+                            {
+                                count_T++;
+                            }
+                        }
+
+                        // Middle
+                        if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                        {
+                            // 같은 블럭인지 체크
+                            if (checkBlock.elementType == blocks[i].elementType)
+                            {
+                                count_M++;
+                            }
+                        }
+
+                        // Left
+                        if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                        {
+                            // 같은 블럭인지 체크
+                            if (checkBlock.elementType == blocks[i].elementType)
+                            {
+                                count_L++;
+                            }
+                        }
+
+                        // Right
+                        if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                        {
+                            // 같은 블럭인지 체크
+                            if (checkBlock.elementType == blocks[i].elementType)
+                            {
+                                count_R++;
+                            }
+                        }
+                    }
+
+                    break;
+
+                case SwipeDir.Bottom:
+
+                    for (int i = 0; i < blocks.Count; i++)
+                    {
+                        // Bottom
+                        if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                        {
+                            if (checkBlock.elementType == blocks[i].elementType)
+                            {
+                                count_B++;
+                            }
+                        }
+
+                        // Middle
+                        if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                        {
+                            if (checkBlock.elementType == blocks[i].elementType)
+                            {
+                                count_M++;
+                            }
+                        }
+
+                        // Left
+                        if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                        {
+                            if (checkBlock.elementType == blocks[i].elementType)
+                            {
+                                count_L++;
+                            }
+                        }
+
+                        //Right
+                        if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                        {
+                            if (checkBlock.elementType == blocks[i].elementType)
+                            {
+                                count_R++;
+                            }
+                        }
+                    }
+
+                    break;
+
+                case SwipeDir.Left:
+
+
+                    break;
+
+                case SwipeDir.Right:
+
+
+
+                    break;
+            }
+
+        }
+
         return true;
     }
 }

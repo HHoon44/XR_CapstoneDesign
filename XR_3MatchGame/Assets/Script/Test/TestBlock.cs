@@ -5,6 +5,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Object;
+using XR_3MatchGame_Resource;
 
 public class TestBlock : MonoBehaviour
 {
@@ -15,6 +16,9 @@ public class TestBlock : MonoBehaviour
     [Header("상대의 좌표")]
     public int targetCol;
     public int targetRow;
+
+    [Header("현재 블럭 원소")]
+    public ElementType elementType;
 
     public SpriteRenderer icon;
 
@@ -188,13 +192,14 @@ public class TestBlock : MonoBehaviour
     {
         var testBoard = TestGameManager.Instance.testBoard;
 
-        testBoard.BlockUpdate();
+        testBoard.MatchCheck();
 
         // 유저가 옮긴 블럭에 대한 로직
         switch (swipeDir)
         {
             case SwipeDir.Top:
-                if (testBoard.BlockUpdate(this, null, swipeDir))
+
+                if (testBoard.MatchCheck(this, null, swipeDir))
                 {
                     // 블럭 매칭 시작
                     testBoard.isMatch = true;
@@ -204,7 +209,7 @@ public class TestBlock : MonoBehaviour
                     yield return new WaitForSeconds(.2f);
 
                     // OtherBlock의 매칭 여부 판단
-                    if (testBoard.BlockUpdate(null, otherBlock, SwipeDir.None))
+                    if (testBoard.MatchCheck(null, otherBlock, SwipeDir.None))
                     {
                         // 블럭 매칭 시작
                         testBoard.isMatch = true;
@@ -220,6 +225,7 @@ public class TestBlock : MonoBehaviour
                         // GM.SetGameState(GameState.Play);
                     }
                 }
+
                 break;
 
                 //    case SwipeDir.Bottom:
@@ -310,7 +316,7 @@ public class TestBlock : MonoBehaviour
                 //        break;
                 //}
 
-                //board.BlockUpdate();
+                //board.MatchCheck();
         }
 
     }

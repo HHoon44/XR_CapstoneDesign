@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.WSA;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
@@ -15,6 +16,10 @@ namespace XR_3MatchGame_Object
         public List<Block> blocks = new List<Block>();               // 인 게임 블럭 리스트
         public List<Block> downBlocks = new List<Block>();           // 아래 이동 블럭 리스트
         public List<Block> delBlocks = new List<Block>();            // 삭제 블럭 리스트
+
+        [Header("Test")]
+        public List<Block> colDel = new List<Block>();
+        public List<Block> rowDel = new List<Block>();
 
         public InGameManager IGM;
 
@@ -43,151 +48,95 @@ namespace XR_3MatchGame_Object
                 if (GM.isStart == true)
                 {
                     GM.isStart = false;
-                    StartCoroutine(BlockClear());
+                    // StartCoroutine(BlockClear());
                 }
             }
 
-            // 게임 재시작
-            if (isReStart == true)
+            // 블럭 삭제
+            if (blocks.Count > 0 && GM.GameState == GameState.Play)
             {
-                isReStart = false;
+                var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
 
-                StartCoroutine(SpawnBlock());
+                // 3X3 작업
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    // Col
+                    if (blocks[i].leftBlock != null && blocks[i].rightBlock && blocks[i].leftBlock.elementType == blocks[i].elementType &&
+                        blocks[i].rightBlock.elementType == blocks[i].elementType)
+                    {
+                        colDel.Add(blocks[i]);
+                        colDel.Add(blocks[i].leftBlock);
+                        colDel.Add(blocks[i].rightBlock);
+
+                        for (int j = 0; j < colDel.Count; j++)
+                        {
+                            blockPool.ReturnPoolableObject(colDel[j]);
+
+                            blocks.Remove(colDel[j]);
+                        }
+
+                        colDel.Clear();
+                    }
+                }
             }
         }
 
         public IEnumerator SpawnBlock()
         {
-            GM.SetGameState(GameState.Checking);
-
-            yield return new WaitForSeconds(.5f);
+            GM.SetGameState(GameState.Spawn);
 
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
-            var size = GameManager.Instance.BoardSize;
 
-            // 블럭 세팅 작업
-            for (int row = 0; row < size.y; row++)
+            for (int row = -3; row < 4; row++)
             {
-                for (int col = 0; col < size.x; col++)
+                for (int col = -3; col < 4; col++)
                 {
-                    var block = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-                    block.transform.position = new Vector3(col, 7, 0);
-                    block.Initialize(col, 7);
-                    block.gameObject.SetActive(true);
+                    // 블럭 생성
+                    var newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
 
-                    blocks.Add(block);
+                    // 부모 설정
+                    newBlock.transform.SetParent(this.transform);
 
-                    // 위에서 아래로 내려가는 것처럼
-                    var targetRow = (block.row = row);
+                    // 위치값 설정
+                    newBlock.transform.localPosition = new Vector3(col, 4, 0);
 
-                    if (Mathf.Abs(targetRow - block.transform.position.y) > .1f)
+                    // 회전값 설정
+                    newBlock.transform.localRotation = Quaternion.identity;
+
+                    // 사이즈값 설정
+                    newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
+
+                    // 활성화
+                    newBlock.gameObject.SetActive(true);
+
+                    // 블럭 초기화
+                    newBlock.Initialize(col, 4);
+
+                    blocks.Add(newBlock);
+
+                    // 위에서 아래로 작업
+                    var targetRow = (newBlock.row = row);
+
+                    if (Mathf.Abs(targetRow - newBlock.transform.localPosition.y) > .1f)
                     {
-                        Vector2 tempPosition = new Vector2(block.transform.position.x, targetRow);
-                        block.transform.position = Vector2.Lerp(block.transform.position, tempPosition, .05f);
+                        Vector2 tempPosition = new Vector2(newBlock.transform.localPosition.x, targetRow);
+                        newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempPosition, .05f);
                     }
                 }
 
                 yield return new WaitForSeconds(.3f);
             }
 
+            GM.SetGameState(GameState.Play);
 
-            BlockUpdate();
-            StartCoroutine(BlockClear());
+            // StartCoroutine(BlockClear());
         }
 
-        /// <summary>
-        /// 블럭의 주위의 블럭들에 대한 데이터를 업데이트하는 메서드
-        /// </summary>
-        public void BlockUpdate()
-        {
-            // Top = 6, Bottom = 0
-            // Left = 0, Right = 6
-            for (int i = 0; i < blocks.Count; i++)
-            {
-                for (int j = 0; j < blocks.Count; j++)
-                {
-                    // Top
-                    if (blocks[i].row == 6)
-                    {
-                        blocks[i].topBlock = null;
-                        blocks[i].Top_T = ElementType.None;
-                    }
-                    else
-                    {
-                        if (blocks[i].row + 1 == blocks[j].row && blocks[i].col == blocks[j].col)
-                        {
-                            blocks[i].topBlock = blocks[j];
-
-                            // TestBoard
-                            blocks[i].Top_T = blocks[j].elementType;
-                        }
-                    }
-
-                    // Bottom
-                    if (blocks[i].row == 0)
-                    {
-                        blocks[i].bottomBlock = null;
-                        blocks[i].Bottom_T = ElementType.None;
-                    }
-                    else
-                    {
-                        if (blocks[i].row - 1 == blocks[j].row && blocks[i].col == blocks[j].col)
-                        {
-                            blocks[i].bottomBlock = blocks[j];
-
-                            // TestBoard
-                            blocks[i].Bottom_T = blocks[j].elementType;
-                        }
-                    }
-
-                    // Left
-                    if (blocks[i].col == 0)
-                    {
-                        // 현재 블럭은 Col = 0에 존재하는 블럭
-                        blocks[i].leftBlock = null;
-                        blocks[i].Left_T = ElementType.None;
-                    }
-                    else
-                    {
-                        if (blocks[i].col - 1 == blocks[j].col && blocks[i].row == blocks[j].row)
-                        {
-                            blocks[i].leftBlock = blocks[j];
-
-                            // TestBoard
-                            blocks[i].Left_T = blocks[j].elementType;
-                        }
-                    }
-
-                    // Right
-                    if (blocks[i].col == 6)
-                    {
-                        // 현재 블럭은 Col = 6에 존재하는 블럭
-                        blocks[i].rightBlock = null;
-                        blocks[i].Right_T = ElementType.None;
-                    }
-                    else
-                    {
-                        if (blocks[i].col + 1 == blocks[j].col && blocks[i].row == blocks[j].row)
-                        {
-                            blocks[i].rightBlock = blocks[j];
-
-                            // TestBoard
-                            blocks[i].Right_T = blocks[j].elementType;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// 블럭 클리어 및 블럭 생성을 담당하는 메서드
         /// </summary>
         /// <returns></returns>
         public IEnumerator BlockClear()
         {
-            // 검사할 블럭
-            Block curBlock = null;
-
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var size = (GM.BoardSize.x * GM.BoardSize.y);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
@@ -195,122 +144,111 @@ namespace XR_3MatchGame_Object
             // 3X3 작업
             for (int i = 0; i < blocks.Count; i++)
             {
-                curBlock = blocks[i];
-
-                // Left, Right
-                if (curBlock.leftBlock != null && curBlock.rightBlock != null)
+                // Col
+                if (blocks[i].leftBlock != null && blocks[i].rightBlock && blocks[i].leftBlock.elementType == blocks[i].elementType &&
+                    blocks[i].rightBlock.elementType == blocks[i].elementType)
                 {
-                    if (curBlock.leftBlock.elementType == curBlock.elementType && curBlock.rightBlock.elementType == curBlock.elementType)
+                    var col_L = blocks[i].leftBlock.col;
+                    var col_M = blocks[i].col;
+                    var col_R = blocks[i].rightBlock.col;
+                    var row_M = blocks[i].row;
+
+                    colDel.Add(blocks[i]);
+                    colDel.Add(blocks[i].leftBlock);
+                    colDel.Add(blocks[i].rightBlock);
+
+
+                    // 파티클 실행
+                    // curBlock.BlockParticle();
+                    // curBlock.leftBlock.BlockParticle();
+                    // curBlock.rightBlock.BlockParticle();
+
+                    yield return new WaitForSeconds(.5f);
+
+                    // 풀 반환 및 점수 업데이트
+                    for (int j = 0; j < colDel.Count; j++)
                     {
-                        // yield return new WaitForSeconds(.2f);
+                        blockPool.ReturnPoolableObject(colDel[j]);
 
-                        delBlocks.Clear();
-                        downBlocks.Clear();
+                        //uiElement.SetGauge(delBlocks[j].ElementValue);
 
-                        // 삭제할 블럭들 삭제 저장소에 저장
-                        delBlocks.Add(curBlock);
-                        delBlocks.Add(curBlock.leftBlock);
-                        delBlocks.Add(curBlock.rightBlock);
+                        blocks.Remove(colDel[j]);
 
-                        var col_L = curBlock.leftBlock.col;
-                        var col_M = curBlock.col;
-                        var col_R = curBlock.rightBlock.col;
-                        var row_M = curBlock.row;
-
-                        // 파티클 실행
-                        curBlock.BlockParticle();
-                        curBlock.leftBlock.BlockParticle();
-                        curBlock.rightBlock.BlockParticle();
-
-                        yield return new WaitForSeconds(.5f);
-
-                        // 풀 반환 및 점수 업데이트
-                        for (int j = 0; j < delBlocks.Count; j++)
-                        {
-                            blockPool.ReturnPoolableObject(delBlocks[j]);
-                            uiElement.SetGauge(delBlocks[j].ElementValue);
-                            blocks.Remove(delBlocks[j]);
-
-                            if (GM.isPlus)
-                            {
-                                DM.SetScore(delBlocks[j].BlockScore * 2);
-                            }
-                            else
-                            {
-                                DM.SetScore(delBlocks[j].BlockScore);
-                            }
-                        }
-
-                        // 맨 위에 있는 블럭인지 확인
-                        if (row_M != (GM.BoardSize.y - 1))
-                        {
-                            downBlocks.Clear();
-
-                            // 삭제 블럭 위에 존재하는 블럭 탐색
-                            for (int j = 0; j < blocks.Count; j++)
-                            {
-                                if ((blocks[j].col == col_L || blocks[j].col == col_M || blocks[j].col == col_R) && blocks[j].row > row_M)
-                                {
-                                    // 내릴 블럭 저장
-                                    downBlocks.Add(blocks[j]);
-                                }
-                            }
-                        }
-
-                        yield return new WaitForSeconds(.4f);
-
-                        // 블럭을 내리는 작업
-                        for (int j = 0; j < downBlocks.Count; j++)
-                        {
-                            var targetRow = (downBlocks[j].row -= 1);
-
-                            if (Mathf.Abs(targetRow - downBlocks[j].transform.position.y) > .1f)
-                            {
-                                Vector2 tempPosition = new Vector2(downBlocks[j].transform.position.x, targetRow);
-                                downBlocks[j].transform.position = Vector2.Lerp(downBlocks[j].transform.position, tempPosition, .05f);
-                            }
-                        }
-
-                        // 비어있는 칸의 개수
-                        var emptyCount = size - blocks.Count;
-                        var col_NewNum = col_L;
-                        var row_NewNum = downBlocks.Count > 0 ? downBlocks[downBlocks.Count - 1].row + 1 : row_M;
-
-                        yield return new WaitForSeconds(.4f);
-
-                        // 빈 공간에 블럭 생성 작업
-                        for (int j = 0; j < emptyCount; j++)
-                        {
-                            if (col_NewNum <= col_R && row_NewNum < GM.BoardSize.y)
-                            {
-                                var newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-                                newBlock.transform.position = new Vector3(col_NewNum, row_NewNum, 0);
-                                newBlock.gameObject.SetActive(true);
-                                newBlock.Initialize(col_NewNum, row_NewNum);
-
-                                blocks.Add(newBlock);
-
-                                col_NewNum++;
-                            }
-
-                            if (col_NewNum > col_R)
-                            {
-                                // 다음 줄을 채우기 위한 작업
-                                col_NewNum = col_L;
-                                row_NewNum++;
-                            }
-                        }
-
-                        delBlocks.Clear();
-                        downBlocks.Clear();
-                        BlockUpdate();
-
-                        /// TestBoard
-                        i = 0;
+                        //if (GM.isPlus)
+                        //{
+                        //    DM.SetScore(delBlocks[j].BlockScore * 2);
+                        //}
+                        //else
+                        //{
+                        //    DM.SetScore(delBlocks[j].BlockScore);
+                        //}
                     }
+
+                    // 맨 위에 있는 블럭인지 확인
+                    if (row_M != 3)
+                    {
+                        // 삭제 블럭 위에 존재하는 블럭 탐색
+                        for (int j = 0; j < blocks.Count; j++)
+                        {
+                            if ((blocks[j].col == col_L || blocks[j].col == col_M || blocks[j].col == col_R) &&
+                                blocks[j].row > row_M)
+                            {
+                                // 내릴 블럭 저장
+                                downBlocks.Add(blocks[j]);
+                            }
+                        }
+                    }
+
+                    yield return new WaitForSeconds(.4f);
+
+                    // 블럭을 내리는 작업
+                    for (int j = 0; j < downBlocks.Count; j++)
+                    {
+                        var targetRow = (downBlocks[j].row -= 1);
+
+                        if (Mathf.Abs(targetRow - downBlocks[j].transform.position.y) > .1f)
+                        {
+                            Vector2 tempPosition = new Vector2(downBlocks[j].transform.position.x, targetRow);
+                            downBlocks[j].transform.position = Vector2.Lerp(downBlocks[j].transform.position, tempPosition, .05f);
+                        }
+                    }
+
+                    //// 비어있는 칸의 개수
+                    //var emptyCount = size - blocks.Count;
+                    //var col_NewNum = col_L;
+                    //var row_NewNum = downBlocks.Count > 0 ? downBlocks[downBlocks.Count - 1].row + 1 : row_M;
+
+                    //yield return new WaitForSeconds(.4f);
+
+                    //// 빈 공간에 블럭 생성 작업
+                    //for (int j = 0; j < emptyCount; j++)
+                    //{
+                    //    if (col_NewNum <= col_R && row_NewNum < GM.BoardSize.y)
+                    //    {
+                    //        var newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
+                    //        newBlock.transform.position = new Vector3(col_NewNum, row_NewNum, 0);
+                    //        newBlock.gameObject.SetActive(true);
+                    //        newBlock.Initialize(col_NewNum, row_NewNum);
+
+                    //        blocks.Add(newBlock);
+
+                    //        col_NewNum++;
+                    //    }
+
+                    //    if (col_NewNum > col_R)
+                    //    {
+                    //        // 다음 줄을 채우기 위한 작업
+                    //        col_NewNum = col_L;
+                    //        row_NewNum++;
+                    //    }
+                    //}
+
+                    colDel.Clear();
+                    downBlocks.Clear();
                 }
 
                 // Top, Bottom
+                /*
                 if (curBlock.topBlock != null && curBlock.bottomBlock != null)
                 {
                     if (curBlock.topBlock.elementType == curBlock.elementType && curBlock.bottomBlock.elementType == curBlock.elementType)
@@ -409,6 +347,7 @@ namespace XR_3MatchGame_Object
                         i = 0;
                     }
                 }
+                */
             }
 
             // 다시 한번더 체크
@@ -461,7 +400,8 @@ namespace XR_3MatchGame_Object
                         for (int i = 0; i < blocks.Count; i++)
                         {
                             // Top
-                            if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row + 2 == blocks[i].row) && otherBlock.col == blocks[i].col)
+                            if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row + 2 == blocks[i].row) &&
+                                otherBlock.col == blocks[i].col)
                             {
                                 if (otherBlock.elementType == blocks[i].elementType)
                                 {
@@ -469,8 +409,9 @@ namespace XR_3MatchGame_Object
                                 }
                             }
 
-                            // Horizontal Middle
-                            if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col - 1 == blocks[i].col) && otherBlock.row == blocks[i].row)
+                            // Col Middle
+                            if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col - 1 == blocks[i].col) &&
+                                otherBlock.row == blocks[i].row)
                             {
                                 if (otherBlock.elementType == blocks[i].elementType)
                                 {
@@ -478,9 +419,9 @@ namespace XR_3MatchGame_Object
                                 }
                             }
 
-                            // Vertical Middle
-                            // Horizontal에서 매칭되는 블럭이 없으므로 재사용
-                            if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row - 1 == blocks[i].row) && otherBlock.col == blocks[i].col)
+                            // Row Middle
+                            if ((otherBlock.row + 1 == blocks[i].row || otherBlock.row - 1 == blocks[i].row) &&
+                                otherBlock.col == blocks[i].col)
                             {
                                 if (otherBlock.elementType == blocks[i].elementType)
                                 {
@@ -489,7 +430,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Bottom
-                            if ((otherBlock.row - 1 == blocks[i].row || otherBlock.row - 2 == blocks[i].row) && otherBlock.col == blocks[i].col)
+                            if ((otherBlock.row - 1 == blocks[i].row || otherBlock.row - 2 == blocks[i].row) &&
+                                otherBlock.col == blocks[i].col)
                             {
                                 if (otherBlock.elementType == blocks[i].elementType)
                                 {
@@ -498,7 +440,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Left
-                            if ((otherBlock.col - 1 == blocks[i].col || otherBlock.col - 2 == blocks[i].col) && otherBlock.row == blocks[i].row)
+                            if ((otherBlock.col - 1 == blocks[i].col || otherBlock.col - 2 == blocks[i].col) &&
+                                otherBlock.row == blocks[i].row)
                             {
                                 if (otherBlock.elementType == blocks[i].elementType)
                                 {
@@ -507,7 +450,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Right
-                            if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col + 2 == blocks[i].col) && otherBlock.row == blocks[i].row)
+                            if ((otherBlock.col + 1 == blocks[i].col || otherBlock.col + 2 == blocks[i].col) &&
+                                otherBlock.row == blocks[i].row)
                             {
                                 if (otherBlock.elementType == blocks[i].elementType)
                                 {
@@ -521,7 +465,8 @@ namespace XR_3MatchGame_Object
                         for (int i = 0; i < blocks.Count; i++)
                         {
                             // Top
-                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) &&
+                                checkBlock.col == blocks[i].col)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -530,7 +475,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Middle
-                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) &&
+                                checkBlock.row == blocks[i].row)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -539,7 +485,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Left
-                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) &&
+                                checkBlock.row == blocks[i].row)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -548,7 +495,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Right
-                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) &&
+                                checkBlock.row == blocks[i].row)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -562,7 +510,8 @@ namespace XR_3MatchGame_Object
                         for (int i = 0; i < blocks.Count; i++)
                         {
                             // Bottom
-                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) &&
+                                checkBlock.col == blocks[i].col)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -571,7 +520,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Middle
-                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col + 1 == blocks[i].col) &&
+                                checkBlock.row == blocks[i].row)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -580,7 +530,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Left
-                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) &&
+                                checkBlock.row == blocks[i].row)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -589,7 +540,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             //Right
-                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) &&
+                                checkBlock.row == blocks[i].row)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -603,7 +555,8 @@ namespace XR_3MatchGame_Object
                         for (int i = 0; i < blocks.Count; i++)
                         {
                             // Top
-                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) &&
+                                checkBlock.col == blocks[i].col)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -612,7 +565,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Bottom
-                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) &&
+                                checkBlock.col == blocks[i].col)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -621,7 +575,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Middle
-                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row + 1 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row + 1 == blocks[i].row) &&
+                                checkBlock.col == blocks[i].col)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -630,7 +585,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Left
-                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            if ((checkBlock.col - 1 == blocks[i].col || checkBlock.col - 2 == blocks[i].col) &&
+                                checkBlock.row == blocks[i].row)
                             {
                                 if (checkBlock.elementType == blocks[i].elementType)
                                 {
@@ -644,7 +600,8 @@ namespace XR_3MatchGame_Object
                         for (int i = 0; i < blocks.Count; i++)
                         {
                             // Top
-                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            if ((checkBlock.row + 1 == blocks[i].row || checkBlock.row + 2 == blocks[i].row) &&
+                                checkBlock.col == blocks[i].col)
                             {
                                 if (blocks[i].elementType == checkBlock.elementType)
                                 {
@@ -653,7 +610,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Bottom
-                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row - 2 == blocks[i].row) &&
+                                checkBlock.col == blocks[i].col)
                             {
                                 if (blocks[i].elementType == checkBlock.elementType)
                                 {
@@ -662,7 +620,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Middle
-                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row + 1 == blocks[i].row) && checkBlock.col == blocks[i].col)
+                            if ((checkBlock.row - 1 == blocks[i].row || checkBlock.row + 1 == blocks[i].row) &&
+                                checkBlock.col == blocks[i].col)
                             {
                                 if (blocks[i].elementType == checkBlock.elementType)
                                 {
@@ -671,7 +630,8 @@ namespace XR_3MatchGame_Object
                             }
 
                             // Right
-                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) && checkBlock.row == blocks[i].row)
+                            if ((checkBlock.col + 1 == blocks[i].col || checkBlock.col + 2 == blocks[i].col) &&
+                                checkBlock.row == blocks[i].row)
                             {
                                 if (blocks[i].elementType == checkBlock.elementType)
                                 {
@@ -696,21 +656,18 @@ namespace XR_3MatchGame_Object
             {
                 for (int i = 0; i < blocks.Count; i++)
                 {
-                    if (blocks[i].leftBlock != null && blocks[i].rightBlock != null)
+                    // Col
+                    if ((blocks[i].leftBlock != null && blocks[i].rightBlock != null) &&
+                        (blocks[i].elementType == blocks[i].leftBlock.elementType && blocks[i].elementType == blocks[i].rightBlock.elementType))
                     {
-                        if (blocks[i].elementType == blocks[i].leftBlock.elementType && blocks[i].elementType == blocks[i].rightBlock.elementType)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
 
-                    if (blocks[i].topBlock != null && blocks[i].bottomBlock != null)
+                    // Row
+                    if ((blocks[i].topBlock != null && blocks[i].bottomBlock != null) &&
+                        (blocks[i].elementType == blocks[i].topBlock.elementType && blocks[i].elementType == blocks[i].bottomBlock.elementType))
                     {
-                        if (blocks[i].elementType == blocks[i].topBlock.elementType &&
-                            blocks[i].elementType == blocks[i].bottomBlock.elementType)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
 

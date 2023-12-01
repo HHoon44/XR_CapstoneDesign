@@ -9,6 +9,12 @@ namespace XR_3MatchGame_Object
 {
     public class Block : MonoBehaviour, IPoolableObject
     {
+        [SerializeField]
+        private ParticleSystem blockParticle;
+
+        [SerializeField]
+        private SpriteRenderer spriteRenderer;
+
         public bool CanRecycle { get; set; } = true;
 
         public int BlockScore
@@ -29,19 +35,11 @@ namespace XR_3MatchGame_Object
             }
         }
 
-        private ParticleSystem blockParticle;
-        private SpriteRenderer spriteRenderer;
-
         public int col;     // 현재 블럭의 X 값
         public int row;     // 현재 블럭의 Y 값
 
         public int targetCol;       // 상대 블럭의 X 값
         public int targetRow;       // 상대 블럭의 Y 값
-
-        public Block topBlock;      // 위에 존재하는 블럭
-        public Block bottomBlock;   // 아래에 존재하는 블럭
-        public Block leftBlock;     // 왼쪽에 존재하는 블럭
-        public Block rightBlock;    // 오른쪽에 존재하는 블럭
 
         private float swipeAngle = 0;           // 스와이프 각도
 
@@ -56,11 +54,10 @@ namespace XR_3MatchGame_Object
         public ElementType elementType = ElementType.None;        // 현재 블럭의 타입
         private SwipeDir swipeDir = SwipeDir.None;
 
-        [Header("TestBoard")]
-        public ElementType Top_T = ElementType.None;
-        public ElementType Bottom_T = ElementType.None;
-        public ElementType Left_T = ElementType.None;
-        public ElementType Right_T = ElementType.None;
+        public Block topBlock;
+        public Block bottomBlock;
+        public Block leftBlock;
+        public Block rightBlock;
 
         public void BlockParticle()
         {
@@ -74,14 +71,10 @@ namespace XR_3MatchGame_Object
         /// <param name="row">Y 값</param>
         public void Initialize(int col, int row)
         {
-            blockParticle = transform.GetChild(0).GetComponent<ParticleSystem>();
-
-            spriteRenderer = GetComponent<SpriteRenderer>();
-
             GM = GameManager.Instance;
             board = GM.Board;
 
-            var blockNum = UnityEngine.Random.Range(1, 7);
+            var blockNum = Random.Range(1, 7);
 
             // 랜덤으로 블럭의 스프라이트를 설정
             switch (blockNum)
@@ -130,6 +123,100 @@ namespace XR_3MatchGame_Object
             targetRow = row;
 
             BlockSwipe();
+            BlockUpdate();
+        }
+
+        /// <summary>
+        /// 블럭을 스와이프를 체크하는 메서드
+        /// </summary>
+        private void BlockSwipe()
+        {
+            // Horizontal
+            if (Mathf.Abs(targetCol - transform.localPosition.x) > .1f)
+            {
+                tempPosition = new Vector2(targetCol, transform.localPosition.y);
+                transform.localPosition = Vector2.Lerp(transform.localPosition, tempPosition, .3f);
+            }
+            else
+            {
+                tempPosition = new Vector2(targetCol, transform.localPosition.y);
+                transform.localPosition = tempPosition;
+            }
+
+            // Vertical
+            if (Mathf.Abs(targetRow - transform.localPosition.y) > .1f)
+            {
+                tempPosition = new Vector2(transform.localPosition.x, targetRow);
+                transform.localPosition = Vector2.Lerp(transform.localPosition, tempPosition, .3f);
+            }
+            else
+            {
+                tempPosition = new Vector2(transform.localPosition.x, targetRow);
+                transform.localPosition = tempPosition;
+            }
+        }
+
+        public void BlockUpdate()
+        {
+            var blocks = board.blocks;
+
+            for (int i = 0; i < blocks.Count; i++)
+            {
+                for (int j = 0; j < blocks.Count; j++)
+                {
+                    // Top
+                    if (blocks[i].row == 3)
+                    {
+                        blocks[i].topBlock = null;
+                    }
+                    else
+                    {
+                        if (blocks[i].row + 1 == blocks[j].row && blocks[i].col == blocks[j].col)
+                        {
+                            blocks[i].topBlock = blocks[j];
+                        }
+                    }
+
+                    // Bottom
+                    if (blocks[i].row == 0)
+                    {
+                        blocks[i].bottomBlock = null;
+                    }
+                    else
+                    {
+                        if (blocks[i].row - 1 == blocks[j].row && blocks[i].col == blocks[j].col)
+                        {
+                            blocks[i].bottomBlock = blocks[j];
+                        }
+                    }
+
+                    // Left
+                    if (blocks[i].col == 0)
+                    {
+                        blocks[i].leftBlock = null;
+                    }
+                    else
+                    {
+                        if (blocks[i].col - 1 == blocks[j].col && blocks[i].row == blocks[j].row)
+                        {
+                            blocks[i].leftBlock = blocks[j];
+                        }
+                    }
+
+                    // Right
+                    if (blocks[i].col == 6)
+                    {
+                        blocks[i].rightBlock = null;
+                    }
+                    else
+                    {
+                        if (blocks[i].col + 1 == blocks[j].col && blocks[i].row == blocks[j].row)
+                        {
+                            blocks[i].rightBlock = blocks[j];
+                        }
+                    }
+                }
+            }
         }
 
         private void OnMouseDown()
@@ -163,34 +250,6 @@ namespace XR_3MatchGame_Object
         }
 
         /// <summary>
-        /// 블럭을 스와이프를 체크하는 메서드
-        /// </summary>
-        private void BlockSwipe()
-        {
-            if (Mathf.Abs(targetCol - transform.position.x) > .1f)
-            {
-                tempPosition = new Vector2(targetCol, transform.position.y);
-                transform.position = Vector2.Lerp(transform.position, tempPosition, .3f);
-            }
-            else
-            {
-                tempPosition = new Vector2(targetCol, transform.position.y);
-                transform.position = tempPosition;
-            }
-
-            if (Mathf.Abs(targetRow - transform.position.y) > .1f)
-            {
-                tempPosition = new Vector2(transform.position.x, targetRow);
-                transform.position = Vector2.Lerp(transform.position, tempPosition, .3f);
-            }
-            else
-            {
-                tempPosition = new Vector2(transform.position.x, targetRow);
-                transform.position = tempPosition;
-            }
-        }
-
-        /// <summary>
         /// 계산한 각도를 이용해서 블럭을 이동시키는 메서드
         /// </summary>
         private void BlockMove()
@@ -214,7 +273,7 @@ namespace XR_3MatchGame_Object
                         row += 1;
 
                         swipeDir = SwipeDir.Top;
-                        StartCoroutine(BlockCheck());
+                        //StartCoroutine(BlockCheck());
                         return;
                     }
                 }
@@ -234,7 +293,7 @@ namespace XR_3MatchGame_Object
                         row -= 1;
 
                         swipeDir = SwipeDir.Bottom;
-                        StartCoroutine(BlockCheck());
+                        //StartCoroutine(BlockCheck());
                         return;
                     }
                 }
@@ -254,7 +313,7 @@ namespace XR_3MatchGame_Object
                         col -= 1;
 
                         swipeDir = SwipeDir.Left;
-                        StartCoroutine(BlockCheck());
+                        //StartCoroutine(BlockCheck());
                         return;
                     }
                 }
@@ -274,7 +333,7 @@ namespace XR_3MatchGame_Object
                         col += 1;
 
                         swipeDir = SwipeDir.Right;
-                        StartCoroutine(BlockCheck());
+                        //StartCoroutine(BlockCheck());
                         return;
                     }
                 }
@@ -287,8 +346,6 @@ namespace XR_3MatchGame_Object
         /// <returns></returns>
         private IEnumerator BlockCheck()
         {
-            board.BlockUpdate();
-
             // 유저가 옮긴 블럭에 대한 로직
             switch (swipeDir)
             {
@@ -408,8 +465,6 @@ namespace XR_3MatchGame_Object
                     }
                     break;
             }
-
-            board.BlockUpdate();
         }
     }
 }
