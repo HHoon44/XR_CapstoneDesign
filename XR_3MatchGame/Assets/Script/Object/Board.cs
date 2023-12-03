@@ -17,7 +17,7 @@ namespace XR_3MatchGame_Object
         public List<Block> downBlocks = new List<Block>();           // 아래 이동 블럭 리스트
         public List<Block> delBlocks = new List<Block>();            // 삭제 블럭 리스트
 
-        [Header("Test")]
+        [Header("BlockMatch")]
         public List<Block> colDel = new List<Block>();
         public List<Block> rowDel = new List<Block>();
 
@@ -51,38 +51,15 @@ namespace XR_3MatchGame_Object
                     // StartCoroutine(BlockClear());
                 }
             }
-
-            // 블럭 삭제
-            if (blocks.Count > 0 && GM.GameState == GameState.Play)
-            {
-                var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
-
-                // 3X3 작업
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    // Col
-                    if (blocks[i].leftBlock != null && blocks[i].rightBlock && blocks[i].leftBlock.elementType == blocks[i].elementType &&
-                        blocks[i].rightBlock.elementType == blocks[i].elementType)
-                    {
-                        colDel.Add(blocks[i]);
-                        colDel.Add(blocks[i].leftBlock);
-                        colDel.Add(blocks[i].rightBlock);
-
-                        for (int j = 0; j < colDel.Count; j++)
-                        {
-                            blockPool.ReturnPoolableObject(colDel[j]);
-
-                            blocks.Remove(colDel[j]);
-                        }
-
-                        colDel.Clear();
-                    }
-                }
-            }
         }
 
+        /// <summary>
+        /// 보드에 블럭을 생성하는 메서드
+        /// </summary>
+        /// <returns></returns>
         public IEnumerator SpawnBlock()
         {
+            // 게임 상태 Spawn
             GM.SetGameState(GameState.Spawn);
 
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
@@ -127,9 +104,107 @@ namespace XR_3MatchGame_Object
                 yield return new WaitForSeconds(.3f);
             }
 
-            GM.SetGameState(GameState.Play);
+            StartCoroutine(BlockMatch());
 
-            // StartCoroutine(BlockClear());
+            // 매칭후 게임 상태 Play
+            GM.SetGameState(GameState.Play);
+        }
+
+        /// <summary>
+        /// 매칭 블럭을 찾아 파괴하는 코루틴
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator BlockMatch()
+        {
+            var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+
+            if (blocks.Count > 0)
+            {
+                // 3X3
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    // Col 블럭 찾기
+                    if ((blocks[i].leftBlock != null && blocks[i].rightBlock != null) &&
+                        (blocks[i].leftBlock.elementType == blocks[i].elementType && blocks[i].rightBlock.elementType == blocks[i].elementType))
+                    {
+                        delBlocks.Add(blocks[i]);
+                        delBlocks.Add(blocks[i].leftBlock);
+                        delBlocks.Add(blocks[i].rightBlock);
+
+                        blocks.Remove(blocks[i].leftBlock);
+                        blocks.Remove(blocks[i].rightBlock);
+                        blocks.Remove(blocks[i]);
+                    }
+
+                    // Row 블럭 찾기
+                    if ((blocks[i].topBlock != null && blocks[i].bottomBlock != null) &&
+                        (blocks[i].topBlock.elementType == blocks[i].elementType && blocks[i].bottomBlock.elementType == blocks[i].elementType))
+                    {
+                        delBlocks.Add(blocks[i]);
+                        delBlocks.Add(blocks[i].topBlock);
+                        delBlocks.Add(blocks[i].bottomBlock);
+
+                        blocks.Remove(blocks[i].topBlock);
+                        blocks.Remove(blocks[i].bottomBlock);
+                        blocks.Remove(blocks[i]);
+                    }
+                }
+
+                if (delBlocks.Count > 0)
+                {
+                    // 블럭 파괴 파티클 실행
+                    for (int i = 0; i < delBlocks.Count; i++)
+                    {
+                        delBlocks[i].BlockParticle();
+                    }
+
+                    yield return new WaitForSeconds(.3f);
+
+                    // 블럭 파괴
+                    for (int i = 0; i < delBlocks.Count; i++)
+                    {
+                        blockPool.ReturnPoolableObject(delBlocks[i]);
+                    }
+                }
+
+                // 파괴된 자리로 블럭 내리기
+                // -3 ~ 3
+                int c_Col = -3;
+                int c_Row = -3;
+
+                for (int i = 0; i < blocks.Count; i++)
+                {
+                    if (blocks[i].col == c_Col && blocks[i].row == c_Row)
+                    {
+                        downBlocks.Add(blocks[i]);
+
+                        c_Col++;
+                    }
+
+                    // Col 한줄 완료
+                    if (c_Col == 4)
+                    {
+                        // 초기화
+                        c_Col = -3;
+
+                        if (downBlocks.Count == 7)
+                        {
+                            // 현재 Col의 줄은 빈곳이 존재 하지않음
+                            // 다음 Row를 검사
+                            c_Row++;
+                        }
+                        else
+                        {
+                            
+                        }
+                    }
+                }
+
+
+
+
+                // 빈 자리에 블럭 채우기
+            }
         }
 
         /// 블럭 클리어 및 블럭 생성을 담당하는 메서드
@@ -137,6 +212,7 @@ namespace XR_3MatchGame_Object
         /// <returns></returns>
         public IEnumerator BlockClear()
         {
+
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var size = (GM.BoardSize.x * GM.BoardSize.y);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
@@ -248,106 +324,103 @@ namespace XR_3MatchGame_Object
                 }
 
                 // Top, Bottom
-                /*
-                if (curBlock.topBlock != null && curBlock.bottomBlock != null)
-                {
-                    if (curBlock.topBlock.elementType == curBlock.elementType && curBlock.bottomBlock.elementType == curBlock.elementType)
-                    {
-                        // yield return new WaitForSeconds(.2f);
+                //if (curBlock.topBlock != null && curBlock.bottomBlock != null)
+                //{
+                //    if (curBlock.topBlock.elementType == curBlock.elementType && curBlock.bottomBlock.elementType == curBlock.elementType)
+                //    {
+                //        yield return new WaitForSeconds(.2f);
 
-                        delBlocks.Clear();
-                        downBlocks.Clear();
+                //        delBlocks.Clear();
+                //        downBlocks.Clear();
 
-                        delBlocks.Add(curBlock.topBlock);
-                        delBlocks.Add(curBlock.bottomBlock);
-                        delBlocks.Add(curBlock);
+                //        delBlocks.Add(curBlock.topBlock);
+                //        delBlocks.Add(curBlock.bottomBlock);
+                //        delBlocks.Add(curBlock);
 
-                        // 파티클 실행
-                        curBlock.BlockParticle();
-                        curBlock.topBlock.BlockParticle();
-                        curBlock.bottomBlock.BlockParticle();
+                //        파티클 실행
+                //        curBlock.BlockParticle();
+                //        curBlock.topBlock.BlockParticle();
+                //        curBlock.bottomBlock.BlockParticle();
 
-                        yield return new WaitForSeconds(.5f);
+                //        yield return new WaitForSeconds(.5f);
 
-                        for (int j = 0; j < delBlocks.Count; j++)
-                        {
-                            blockPool.ReturnPoolableObject(delBlocks[j]);
-                            uiElement.SetGauge(delBlocks[j].ElementValue);
-                            blocks.Remove(delBlocks[j]);
+                //        for (int j = 0; j < delBlocks.Count; j++)
+                //        {
+                //            blockPool.ReturnPoolableObject(delBlocks[j]);
+                //            uiElement.SetGauge(delBlocks[j].ElementValue);
+                //            blocks.Remove(delBlocks[j]);
 
-                            if (GM.isPlus)
-                            {
-                                DM.SetScore(delBlocks[j].BlockScore * 2);
-                            }
-                            else
-                            {
-                                DM.SetScore(delBlocks[j].BlockScore);
-                            }
-                        }
+                //            if (GM.isPlus)
+                //            {
+                //                DM.SetScore(delBlocks[j].BlockScore * 2);
+                //            }
+                //            else
+                //            {
+                //                DM.SetScore(delBlocks[j].BlockScore);
+                //            }
+                //        }
 
-                        var col_B = curBlock.col;
-                        var row_B = curBlock.topBlock.row;
+                //        var col_B = curBlock.col;
+                //        var row_B = curBlock.topBlock.row;
 
-                        downBlocks.Clear();
+                //        downBlocks.Clear();
 
-                        // 맨 위 블럭인지 확인
-                        if (row_B != (GM.BoardSize.y - 1))
-                        {
-                            // 내릴 블럭 탐색
-                            for (int j = 0; j < blocks.Count; j++)
-                            {
-                                if ((col_B == blocks[j].col) && (row_B < blocks[j].row))
-                                {
-                                    downBlocks.Add(blocks[j]);
-                                }
-                            }
-                        }
+                //        맨 위 블럭인지 확인
+                //        if (row_B != (GM.BoardSize.y - 1))
+                //        {
+                //            내릴 블럭 탐색
+                //            for (int j = 0; j < blocks.Count; j++)
+                //            {
+                //                if ((col_B == blocks[j].col) && (row_B < blocks[j].row))
+                //                {
+                //                    downBlocks.Add(blocks[j]);
+                //                }
+                //            }
+                //        }
 
-                        yield return new WaitForSeconds(.4f);
+                //        yield return new WaitForSeconds(.4f);
 
-                        // 블럭 내리는 작업
-                        for (int j = 0; j < downBlocks.Count; j++)
-                        {
-                            var targetRow = (downBlocks[j].row -= 3);
+                //        블럭 내리는 작업
+                //        for (int j = 0; j < downBlocks.Count; j++)
+                //        {
+                //            var targetRow = (downBlocks[j].row -= 3);
 
-                            if (Mathf.Abs(targetRow - downBlocks[j].transform.position.y) > .1f)
-                            {
-                                Vector2 tempPosition = new Vector2(downBlocks[j].transform.position.x, targetRow);
-                                downBlocks[j].transform.position = Vector2.Lerp(downBlocks[j].transform.position, tempPosition, .05f);
-                            }
-                        }
+                //            if (Mathf.Abs(targetRow - downBlocks[j].transform.position.y) > .1f)
+                //            {
+                //                Vector2 tempPosition = new Vector2(downBlocks[j].transform.position.x, targetRow);
+                //                downBlocks[j].transform.position = Vector2.Lerp(downBlocks[j].transform.position, tempPosition, .05f);
+                //            }
+                //        }
 
-                        // 비어있는 칸 개수
-                        var emptyBlockCount = size - blocks.Count;
+                //        비어있는 칸 개수
+                //       var emptyBlockCount = size - blocks.Count;
 
-                        var n_Row = downBlocks.Count > 0 ? downBlocks[downBlocks.Count - 1].row + 1 : row_B - 2;
+                //        var n_Row = downBlocks.Count > 0 ? downBlocks[downBlocks.Count - 1].row + 1 : row_B - 2;
 
-                        yield return new WaitForSeconds(.4f);
+                //        yield return new WaitForSeconds(.4f);
 
-                        for (int j = 0; j < emptyBlockCount; j++)
-                        {
-                            if (n_Row < GM.BoardSize.y)
-                            {
-                                var newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-                                newBlock.transform.position = new Vector3(col_B, n_Row, 0);
-                                newBlock.gameObject.SetActive(true);
-                                newBlock.Initialize(col_B, n_Row);
+                //        for (int j = 0; j < emptyBlockCount; j++)
+                //        {
+                //            if (n_Row < GM.BoardSize.y)
+                //            {
+                //                var newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
+                //                newBlock.transform.position = new Vector3(col_B, n_Row, 0);
+                //                newBlock.gameObject.SetActive(true);
+                //                newBlock.Initialize(col_B, n_Row);
 
-                                blocks.Add(newBlock);
+                //                blocks.Add(newBlock);
 
-                                n_Row++;
-                            }
-                        }
+                //                n_Row++;
+                //            }
+                //        }
 
-                        delBlocks.Clear();
-                        downBlocks.Clear();
-                        BlockUpdate();
+                //        delBlocks.Clear();
+                //        downBlocks.Clear();
+                //        BlockUpdate();
 
-                        /// TestBoard
-                        i = 0;
-                    }
-                }
-                */
+                //        / TestBoard
+                //        i = 0;
+                //    }
             }
 
             // 다시 한번더 체크

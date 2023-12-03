@@ -35,29 +35,30 @@ namespace XR_3MatchGame_Object
             }
         }
 
-        public int col;     // 현재 블럭의 X 값
-        public int row;     // 현재 블럭의 Y 값
+        public int col;                                     // 현재 블럭의 X 값
+        public int row;                                     // 현재 블럭의 Y 값
 
-        public int targetCol;       // 상대 블럭의 X 값
-        public int targetRow;       // 상대 블럭의 Y 값
+        public int targetCol;                               // 상대 블럭의 X 값
+        public int targetRow;                               // 상대 블럭의 Y 값
 
-        private float swipeAngle = 0;           // 스와이프 각도
+        private float swipeAngle = 0;                       // 스와이프 각도
 
-        private Vector2 firstTouchPosition;     // 마우스 클릭 지점
-        private Vector2 finalTouchPosition;     // 마우스 클릭을 마무리한 지점
-        private Vector2 tempPosition;
+        private Vector2 firstTouchPosition;                 // 마우스 클릭 지점
+        private Vector2 finalTouchPosition;                 // 마우스 클릭을 마무리한 지점
+        private Vector2 tempPosition;                       // 목표 지점
 
-        private Block otherBlock;               // 현재 블럭과 자리를 바꿀 블럭
+        private Block otherBlock;                           // 현재 블럭과 자리를 바꿀 블럭
+        private Board board;                                // 블럭이 존재하는 보드
         private GameManager GM;
-        private Board board;                    // 블럭이 존재하는 보드
 
-        public ElementType elementType = ElementType.None;        // 현재 블럭의 타입
-        private SwipeDir swipeDir = SwipeDir.None;
+        public ElementType elementType = ElementType.None;  // 현재 블럭의 타입
+        private SwipeDir swipeDir = SwipeDir.None;          // 블럭의 이동 방향
 
-        public Block topBlock;
-        public Block bottomBlock;
-        public Block leftBlock;
-        public Block rightBlock;
+        [Header("주위 블럭")]
+        public Block topBlock;                              // 위에 존재하는 블럭
+        public Block bottomBlock;                           // 아래에 존재하는 블럭
+        public Block leftBlock;                             // 왼쪽에 존재하는 블럭
+        public Block rightBlock;                            // 오른쪽에 존재하는 블럭
 
         public void BlockParticle()
         {
