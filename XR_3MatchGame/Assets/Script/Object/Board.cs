@@ -150,6 +150,7 @@ namespace XR_3MatchGame_Object
                     }
                 }
 
+                /*
                 // Row 블럭 찾기
                 for (int i = 0; i < blocks.Count; i++)
                 {
@@ -174,6 +175,7 @@ namespace XR_3MatchGame_Object
                         blocks.Remove(bottomBlock);
                     }
                 }
+                */
 
                 // 블럭 파괴
                 if (delBlocks.Count > 0)
@@ -211,6 +213,7 @@ namespace XR_3MatchGame_Object
                     }
                 }
 
+                /*
                 // 내릴 Row 블럭 찾기
                 for (int i = 0; i < rowDel.Count; i++)
                 {
@@ -218,18 +221,29 @@ namespace XR_3MatchGame_Object
                     {
                         if (blocks[j].col == rowDel[i].col && blocks[j].row > rowDel[i].row)
                         {
-                            if (blocks[j].gameObject.activeSelf)
+                            if (rowDown.Count > 0 && j > 0)
                             {
-                                // 활성화된것만
-                                rowDown.Add(blocks[j]);
+                                // 중복체크
+                                for (int c = 0; c < rowDown.Count; c++)
+                                {
+                                    if (rowDown[c].row != blocks[j].row)
+                                    {
+                                        // 활성화 상태만 저장
+                                        if (blocks[j].gameObject.activeSelf)
+                                        {
+                                            rowDown.Add(blocks[j]);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                */
 
-                if (colDel.Count > 0)
+                // Col 블럭을 내리는 작업
+                if (colDown.Count > 0)
                 {
-                    // Col 블럭을 내리는 작업
                     for (int i = 0; i < colDown.Count; i++)
                     {
                         var targetrow = (colDown[i].row -= 1);
@@ -242,7 +256,8 @@ namespace XR_3MatchGame_Object
                     }
                 }
 
-                if (rowDel.Count > 0)
+                /*
+                if (rowDown.Count > 0)
                 {
                     // Row 블럭을 내리는 작업
                     for (int i = 0; i < rowDown.Count; i++)
@@ -256,9 +271,12 @@ namespace XR_3MatchGame_Object
                         }
                     }
                 }
+                */
 
 
                 // 빈 자리에 블럭 채우기
+
+                // 무조건 리스트 클리어 작업 해줘야 한다
             }
         }
 
