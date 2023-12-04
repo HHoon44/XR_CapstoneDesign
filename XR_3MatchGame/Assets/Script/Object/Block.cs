@@ -179,7 +179,7 @@ namespace XR_3MatchGame_Object
                     }
 
                     // Bottom
-                    if (blocks[i].row == 0)
+                    if (blocks[i].row == -3)
                     {
                         blocks[i].bottomBlock = null;
                     }
@@ -192,7 +192,7 @@ namespace XR_3MatchGame_Object
                     }
 
                     // Left
-                    if (blocks[i].col == 0)
+                    if (blocks[i].col == -3)
                     {
                         blocks[i].leftBlock = null;
                     }
@@ -205,7 +205,7 @@ namespace XR_3MatchGame_Object
                     }
 
                     // Right
-                    if (blocks[i].col == 6)
+                    if (blocks[i].col == 3)
                     {
                         blocks[i].rightBlock = null;
                     }
