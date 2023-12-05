@@ -1,4 +1,4 @@
-using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_InGame;
@@ -9,16 +9,6 @@ namespace XR_3MatchGame_Object
 {
     public class Block : MonoBehaviour, IPoolableObject
     {
-        public int blockCount;
-
-        [SerializeField]
-        private ParticleSystem blockParticle;
-
-        [SerializeField]
-        private SpriteRenderer spriteRenderer;
-
-        public bool CanRecycle { get; set; } = true;
-
         public int BlockScore
         {
             get
@@ -36,6 +26,17 @@ namespace XR_3MatchGame_Object
                 return elementValue;
             }
         }
+
+        public int downCount;
+
+        [SerializeField]
+        private ParticleSystem blockParticle;
+
+        [SerializeField]
+        private SpriteRenderer spriteRenderer;
+
+        public bool CanRecycle { get; set; } = true;
+
 
         public int col;                                     // 현재 블럭의 X 값
         public int row;                                     // 현재 블럭의 Y 값
@@ -55,12 +56,6 @@ namespace XR_3MatchGame_Object
 
         public ElementType elementType = ElementType.None;  // 현재 블럭의 타입
         private SwipeDir swipeDir = SwipeDir.None;          // 블럭의 이동 방향
-
-        [Header("주위 블럭")]
-        public Block topBlock;                              // 위에 존재하는 블럭
-        public Block bottomBlock;                           // 아래에 존재하는 블럭
-        public Block leftBlock;                             // 왼쪽에 존재하는 블럭
-        public Block rightBlock;                            // 오른쪽에 존재하는 블럭
 
         public void BlockParticle()
         {
@@ -126,7 +121,6 @@ namespace XR_3MatchGame_Object
             targetRow = row;
 
             BlockSwipe();
-            BlockUpdate();
         }
 
         /// <summary>
@@ -156,69 +150,6 @@ namespace XR_3MatchGame_Object
             {
                 tempPosition = new Vector2(transform.localPosition.x, targetRow);
                 transform.localPosition = tempPosition;
-            }
-        }
-
-        public void BlockUpdate()
-        {
-            var blocks = board.blocks;
-
-            for (int i = 0; i < blocks.Count; i++)
-            {
-                for (int j = 0; j < blocks.Count; j++)
-                {
-                    // Top
-                    if (blocks[i].row == 3)
-                    {
-                        blocks[i].topBlock = null;
-                    }
-                    else
-                    {
-                        if (blocks[i].row + 1 == blocks[j].row && blocks[i].col == blocks[j].col)
-                        {
-                            blocks[i].topBlock = blocks[j];
-                        }
-                    }
-
-                    // Bottom
-                    if (blocks[i].row == -3)
-                    {
-                        blocks[i].bottomBlock = null;
-                    }
-                    else
-                    {
-                        if (blocks[i].row - 1 == blocks[j].row && blocks[i].col == blocks[j].col)
-                        {
-                            blocks[i].bottomBlock = blocks[j];
-                        }
-                    }
-
-                    // Left
-                    if (blocks[i].col == -3)
-                    {
-                        blocks[i].leftBlock = null;
-                    }
-                    else
-                    {
-                        if (blocks[i].col - 1 == blocks[j].col && blocks[i].row == blocks[j].row)
-                        {
-                            blocks[i].leftBlock = blocks[j];
-                        }
-                    }
-
-                    // Right
-                    if (blocks[i].col == 3)
-                    {
-                        blocks[i].rightBlock = null;
-                    }
-                    else
-                    {
-                        if (blocks[i].col + 1 == blocks[j].col && blocks[i].row == blocks[j].row)
-                        {
-                            blocks[i].rightBlock = blocks[j];
-                        }
-                    }
-                }
             }
         }
 
@@ -257,216 +188,96 @@ namespace XR_3MatchGame_Object
         /// </summary>
         private void BlockMove()
         {
-            GM.SetGameState(GameState.Checking);
+            // GM.SetGameState(GameState.Checking);
 
             var blocks = GM.Board.blocks;
 
-            // Top
-            if ((swipeAngle > 45 && swipeAngle <= 135) && row < GM.BoardSize.y)
-            {
-                for (int i = 0; i < blocks.Count; i++)
-                {
-                    if (blocks[i].col == col &&
-                        blocks[i].row == row + 1)
-                    {
-                        // 위쪽 이동이므로 목표 블럭은 -1 이동
-                        // 위쪽 이동이므로 이동 블럭은 +1 이동
-                        otherBlock = blocks[i];
-                        otherBlock.row -= 1;
-                        row += 1;
+            int height = GM.Board.height;
+            int width = GM.Board.width;
 
-                        swipeDir = SwipeDir.Top;
-                        //StartCoroutine(BlockCheck());
-                        return;
+            // Top
+            if ((swipeAngle > 45 && swipeAngle <= 135) && row < 4)
+            {
+                for (int row = 0; row < height; row++)
+                {
+                    for (int col = 0; col < width; col++)
+                    {
+                        if (blocks[row, col].col == this.col && blocks[row, col].row == this.row + 1)
+                        {
+                            otherBlock = blocks[row, col];
+                            otherBlock.row -= 1;
+                            this.row += 1;
+
+                            /// Test
+                            GM.isMatch = true;
+
+                            return;
+                        }
                     }
                 }
             }
             // Bottom
-            else if ((swipeAngle < -45 && swipeAngle >= -135) && row > 0)
+            else if ((swipeAngle < -45 && swipeAngle >= -135) && row > -4)
             {
-                for (int i = 0; i < blocks.Count; i++)
+                for (int row = 0; row < height; row++)
                 {
-                    if (blocks[i].col == col &&
-                        blocks[i].row == row - 1)
+                    for (int col = 0; col < width; col++)
                     {
-                        // 아래쪽 이동이므로 목표 블럭은 + 1 이동
-                        // 아래쪽 이동이므로 이동 블럭은 - 1 이동
-                        otherBlock = blocks[i];
-                        otherBlock.row += 1;
-                        row -= 1;
+                        if (blocks[row, col].col == this.col && blocks[row, col].row == this.row - 1)
+                        {
+                            otherBlock = blocks[row, col];
+                            otherBlock.row += 1;
+                            this.row -= 1;
 
-                        swipeDir = SwipeDir.Bottom;
-                        //StartCoroutine(BlockCheck());
-                        return;
+                            /// Test
+                            GM.isMatch = true;
+
+                            return;
+                        }
                     }
                 }
             }
             // Left
-            else if ((swipeAngle > 135 || swipeAngle <= -135) && col > 0)
+            else if ((swipeAngle > 135 || swipeAngle <= -135) && col > -4)
             {
-                for (int i = 0; i < blocks.Count; i++)
+                for (int row = 0; row < height; row++)
                 {
-                    if (blocks[i].col == col - 1 &&
-                        blocks[i].row == row)
+                    for (int col = 0; col < width; col++)
                     {
-                        // 왼쪽 이동이므로 목표 블럭은 + 1 이동
-                        // 왼쪽 이동이므로 이동 블럭은 - 1 이동
-                        otherBlock = blocks[i];
-                        otherBlock.col += 1;
-                        col -= 1;
+                        if (blocks[row, col].col == this.col - 1 && blocks[row, col].row == this.row)
+                        {
+                            otherBlock = blocks[row, col];
+                            otherBlock.col += 1;
+                            this.col -= 1;
 
-                        swipeDir = SwipeDir.Left;
-                        //StartCoroutine(BlockCheck());
-                        return;
+                            /// Test
+                            GM.isMatch = true;
+
+                            return;
+                        }
                     }
                 }
             }
             // Right
-            else if ((swipeAngle > -45 && swipeAngle <= 45) && col < GM.BoardSize.x)
+            else if ((swipeAngle > -45 && swipeAngle <= 45) && col < 4)
             {
-                for (int i = 0; i < blocks.Count; i++)
+                for (int row = 0; row < height; row++)
                 {
-                    if (blocks[i].col == col + 1 &&
-                        blocks[i].row == row)
+                    for (int col = 0; col < width; col++)
                     {
-                        // 오른쪽 이동이므로 목표 블럭은 - 1 이동
-                        // 오른쪽 이동이므로 이동 블럭은 + 1 이동
-                        otherBlock = blocks[i];
-                        otherBlock.col -= 1;
-                        col += 1;
+                        if (blocks[row, col].col == this.col + 1 && blocks[row, col].row == this.row)
+                        {
+                            otherBlock = blocks[row, col];
+                            otherBlock.col -= 1;
+                            this.col += 1;
 
-                        swipeDir = SwipeDir.Right;
-                        //StartCoroutine(BlockCheck());
-                        return;
+                            /// Test
+                            GM.isMatch = true;
+
+                            return;
+                        }
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// 블럭 매칭을 체크하는 메서드
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerator BlockCheck()
-        {
-            // 유저가 옮긴 블럭에 대한 로직
-            switch (swipeDir)
-            {
-                case SwipeDir.Top:
-                    if (board.BlockCheck(this, null, swipeDir))
-                    {
-                        // 블럭 매칭 시작
-                        GM.isStart = true;
-                    }
-                    else
-                    {
-                        yield return new WaitForSeconds(.2f);
-
-                        // OtherBlock의 매칭 여부 판단
-                        if (board.BlockCheck(null, otherBlock, SwipeDir.None))
-                        {
-                            // 블럭 매칭 시작
-                            GM.isStart = true;
-                        }
-                        else
-                        {
-                            // 블럭 원위치
-                            otherBlock.row += 1;
-                            row -= 1;
-
-                            yield return new WaitForSeconds(.4f);
-
-                            GM.SetGameState(GameState.Play);
-                        }
-                    }
-                    break;
-
-                case SwipeDir.Bottom:
-                    if (board.BlockCheck(this, null, swipeDir))
-                    {
-                        // 블럭 매칭 시작
-                        GM.isStart = true;
-                    }
-                    else
-                    {
-                        yield return new WaitForSeconds(.2f);
-
-                        // OtherBlock의 매칭 여부 판단
-                        if (board.BlockCheck(null, otherBlock, SwipeDir.None))
-                        {
-                            // 블럭 매칭 시작
-                            GM.isStart = true;
-                        }
-                        else
-                        {
-                            // 블럭 원위치
-                            otherBlock.row -= 1;
-                            row += 1;
-
-                            yield return new WaitForSeconds(.4f);
-
-                            GM.SetGameState(GameState.Play);
-                        }
-                    }
-                    break;
-
-                case SwipeDir.Left:
-                    if (board.BlockCheck(this, null, swipeDir))
-                    {
-                        // 블럭 매칭 시작
-                        GM.isStart = true;
-                    }
-                    else
-                    {
-                        yield return new WaitForSeconds(.2f);
-
-                        // OtherBlock의 매칭 여부 판단
-                        if (board.BlockCheck(null, otherBlock, SwipeDir.None))
-                        {
-                            // 블럭 매칭 시작
-                            GM.isStart = true;
-                        }
-                        else
-                        {
-                            // 블럭 원위치
-                            otherBlock.col -= 1;
-                            col += 1;
-
-                            yield return new WaitForSeconds(.4f);
-
-                            GM.SetGameState(GameState.Play);
-                        }
-                    }
-                    break;
-
-                case SwipeDir.Right:
-                    if (board.BlockCheck(this, null, swipeDir))
-                    {
-                        // 블럭 매칭 시작
-                        GM.isStart = true;
-                    }
-                    else
-                    {
-                        yield return new WaitForSeconds(.2f);
-
-                        // OtherBlock의 매칭 여부 판단
-                        if (board.BlockCheck(null, otherBlock, SwipeDir.None))
-                        {
-                            // 블럭 매칭 시작
-                            GM.isStart = true;
-                        }
-                        else
-                        {
-                            // 블럭 원위치
-                            otherBlock.col += 1;
-                            col -= 1;
-
-                            yield return new WaitForSeconds(.4f);
-
-                            GM.SetGameState(GameState.Play);
-                        }
-                    }
-                    break;
             }
         }
     }

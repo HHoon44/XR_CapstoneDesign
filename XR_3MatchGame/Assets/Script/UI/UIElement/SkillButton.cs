@@ -124,17 +124,16 @@ namespace XR_3MatchGame_UI
                 GM.SetGameState(GameState.SKill);
 
                 // 스킬을 시작합니다.
-                StartCoroutine(StartSkill());
+                //StartCoroutine(StartSkill());
             }
         }
 
+        /*
         private IEnumerator StartSkill()
         {
             var GM = GameManager.Instance;
 
             var blocks = GM.Board.blocks;
-            var delBlocks = GM.Board.delBlocks;
-            var downBlocks = GM.Board.downBlocks;
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
@@ -246,9 +245,9 @@ namespace XR_3MatchGame_UI
                     // 블럭 업데이트
                     //GM.Board.BlockUpdate();
 
-                    if (GM.Board.BlockCheck())
+                    if (GM.Board.MatchCheck())
                     {
-                        GM.isStart = true;
+                        GM.isMatch = true;
                         GM.SetGameState(GameState.Checking);
                     }
                     else
@@ -365,9 +364,9 @@ namespace XR_3MatchGame_UI
                     // 블럭 업데이트
                     //GM.Board.BlockUpdate();
 
-                    if (GM.Board.BlockCheck())
+                    if (GM.Board.MatchCheck())
                     {
-                        GM.isStart = true;
+                        GM.isMatch = true;
                         GM.SetGameState(GameState.Checking);
                     }
                     else
@@ -491,9 +490,9 @@ namespace XR_3MatchGame_UI
                     // 블럭 업데이트
                     //GM.Board.BlockUpdate();
 
-                    if (GM.Board.BlockCheck())
+                    if (GM.Board.MatchCheck())
                     {
-                        GM.isStart = true;
+                        GM.isMatch = true;
                         GM.SetGameState(GameState.Checking);
                     }
                     else
@@ -507,9 +506,9 @@ namespace XR_3MatchGame_UI
             // 한번더 체크
             //GM.Board.BlockUpdate();
 
-            if (GM.Board.BlockCheck())
+            if (GM.Board.MatchCheck())
             {
-                GM.isStart = true;
+                GM.isMatch = true;
                 GM.SetGameState(GameState.Checking);
             }
             else
@@ -517,6 +516,7 @@ namespace XR_3MatchGame_UI
                 GM.SetGameState(GameState.Play);
             }
         }
+        */
 
     }
 }

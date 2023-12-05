@@ -34,7 +34,7 @@ namespace XR_3MatchGame_InGame
         /// </summary>
         public Board Board { get; private set; }
 
-        public bool isStart = false;                                 // 블럭 체크를 실행할것인가?
+        public bool isMatch = false;                                 // 블럭 체크를 실행할것인가?
         public bool isPlus = false;
         public float loadProgress;
 

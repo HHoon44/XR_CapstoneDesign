@@ -229,20 +229,20 @@ public class TestBlock : MonoBehaviour
                 break;
 
                 //    case SwipeDir.Bottom:
-                //        if (board.BlockCheck(this, null, swipeDir))
+                //        if (board.MatchCheck(this, null, swipeDir))
                 //        {
                 //            // 블럭 매칭 시작
-                //            GM.isStart = true;
+                //            GM.isMatch = true;
                 //        }
                 //        else
                 //        {
                 //            yield return new WaitForSeconds(.2f);
 
                 //            // OtherBlock의 매칭 여부 판단
-                //            if (board.BlockCheck(null, otherBlock, SwipeDir.None))
+                //            if (board.MatchCheck(null, otherBlock, SwipeDir.None))
                 //            {
                 //                // 블럭 매칭 시작
-                //                GM.isStart = true;
+                //                GM.isMatch = true;
                 //            }
                 //            else
                 //            {
@@ -258,20 +258,20 @@ public class TestBlock : MonoBehaviour
                 //        break;
 
                 //    case SwipeDir.Left:
-                //        if (board.BlockCheck(this, null, swipeDir))
+                //        if (board.MatchCheck(this, null, swipeDir))
                 //        {
                 //            // 블럭 매칭 시작
-                //            GM.isStart = true;
+                //            GM.isMatch = true;
                 //        }
                 //        else
                 //        {
                 //            yield return new WaitForSeconds(.2f);
 
                 //            // OtherBlock의 매칭 여부 판단
-                //            if (board.BlockCheck(null, otherBlock, SwipeDir.None))
+                //            if (board.MatchCheck(null, otherBlock, SwipeDir.None))
                 //            {
                 //                // 블럭 매칭 시작
-                //                GM.isStart = true;
+                //                GM.isMatch = true;
                 //            }
                 //            else
                 //            {
@@ -287,20 +287,20 @@ public class TestBlock : MonoBehaviour
                 //        break;
 
                 //    case SwipeDir.Right:
-                //        if (board.BlockCheck(this, null, swipeDir))
+                //        if (board.MatchCheck(this, null, swipeDir))
                 //        {
                 //            // 블럭 매칭 시작
-                //            GM.isStart = true;
+                //            GM.isMatch = true;
                 //        }
                 //        else
                 //        {
                 //            yield return new WaitForSeconds(.2f);
 
                 //            // OtherBlock의 매칭 여부 판단
-                //            if (board.BlockCheck(null, otherBlock, SwipeDir.None))
+                //            if (board.MatchCheck(null, otherBlock, SwipeDir.None))
                 //            {
                 //                // 블럭 매칭 시작
-                //                GM.isStart = true;
+                //                GM.isMatch = true;
                 //            }
                 //            else
                 //            {
