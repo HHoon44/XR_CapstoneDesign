@@ -1,5 +1,7 @@
+using JetBrains.Annotations;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.WSA;
@@ -13,22 +15,35 @@ namespace XR_3MatchGame_Object
 {
     public class Board : MonoBehaviour
     {
-        [Header("InGame Blocks")]
+        // [row, col]
+        // [가로, 세로]
+
+        public int width = 7;
+        public int height = 7;
+
+        [Header("인 게임 블럭")]
+        public Block[,] arrBlocks = new Block[7, 7];
         public List<Block> blocks = new List<Block>();               // 인 게임 블럭 리스트
         public List<Block> downBlocks = new List<Block>();           // 아래 이동 블럭 리스트
         public List<Block> delBlocks = new List<Block>();            // 삭제 블럭 리스트
 
-        [Header("BlockMatch")]
+        [Header("파괴 블럭")]
         public List<Block> colDel = new List<Block>();
         public List<Block> rowDel = new List<Block>();
 
         public List<Block> colDown = new List<Block>();
         public List<Block> rowDown = new List<Block>();
 
+        public List<Block> newBlock = new List<Block>();
+
+        #region Manager
+
         public InGameManager IGM;
 
         private GameManager GM;
         private DataManager DM;
+
+        #endregion
 
         public bool isReStart;
 
@@ -68,47 +83,45 @@ namespace XR_3MatchGame_Object
 
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
 
-            for (int row = -3; row < 4; row++)
+            for (int row = 0; row < 7; row++)
             {
-                for (int col = -3; col < 4; col++)
+                for (int col = 0; col < 7; col++)
                 {
-                    // 블럭 생성
-                    var newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
+                    Block block = blockPool.GetPoolableObject(obj => obj.CanRecycle);
 
                     // 부모 설정
-                    newBlock.transform.SetParent(this.transform);
+                    block.transform.SetParent(this.transform);
 
                     // 위치값 설정
-                    newBlock.transform.localPosition = new Vector3(col, 4, 0);
+                    block.transform.localPosition = new Vector3(-3 + col, 4 + row, 0);
 
                     // 회전값 설정
-                    newBlock.transform.localRotation = Quaternion.identity;
+                    block.transform.localRotation = Quaternion.identity;
 
                     // 사이즈값 설정
-                    newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
+                    block.transform.localScale = new Vector3(.19f, .19f, .19f);
 
                     // 활성화
-                    newBlock.gameObject.SetActive(true);
+                    block.gameObject.SetActive(true);
 
                     // 블럭 초기화
-                    newBlock.Initialize(col, 4);
-
-                    blocks.Add(newBlock);
+                    block.Initialize(-3 + col, 4);
 
                     // 위에서 아래로 작업
-                    var targetRow = (newBlock.row = row);
+                    var targetRow = (block.row = -3 + row);
 
-                    if (Mathf.Abs(targetRow - newBlock.transform.localPosition.y) > .1f)
+                    if (Mathf.Abs(targetRow - block.transform.localPosition.y) > .1f)
                     {
-                        Vector2 tempPosition = new Vector2(newBlock.transform.localPosition.x, targetRow);
-                        newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempPosition, .05f);
+                        Vector2 tempPosition = new Vector2(block.transform.localPosition.x, targetRow);
+                        block.transform.localPosition = Vector2.Lerp(block.transform.localPosition, tempPosition, .05f);
                     }
+
                 }
 
                 yield return new WaitForSeconds(.3f);
             }
 
-            StartCoroutine(BlockMatch());
+            StartCoroutine(Test());
 
             // 매칭후 게임 상태 Play
             GM.SetGameState(GameState.Play);
@@ -121,7 +134,6 @@ namespace XR_3MatchGame_Object
         public IEnumerator BlockMatch()
         {
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
-
             if (blocks.Count > 0)
             {
                 // 3X3
@@ -141,36 +153,68 @@ namespace XR_3MatchGame_Object
                         colDel.Add(blocks[i].rightBlock);
 
                         // 삭제할 블럭
+                        Block middleBlock = blocks[i];
                         Block leftBlock = blocks[i].leftBlock;
                         Block rightBlock = blocks[i].rightBlock;
 
-                        blocks.Remove(blocks[i]);
+                        blocks.Remove(middleBlock);
                         blocks.Remove(leftBlock);
                         blocks.Remove(rightBlock);
+
+
+                        //for (int col = 0; col < 49; col++)
+                        //{
+                        //    // 왼쪽
+                        //    if (arrBlocks[col] != null)
+                        //    {
+                        //        if ((arrBlocks[col].col == leftBlock.col && arrBlocks[col].row == leftBlock.row))
+                        //        {
+                        //            arrBlocks[col] = null;
+                        //        }
+                        //    }
+
+                        //    // 가운데
+                        //    if (arrBlocks[col] != null)
+                        //    {
+                        //        if ((arrBlocks[col].col == middleBlock.col && arrBlocks[col].row == middleBlock.row) && arrBlocks[col] != null)
+                        //        {
+                        //            arrBlocks[col] = null;
+                        //        }
+                        //    }
+
+                        //    // 오른쪽
+                        //    if (arrBlocks[col] != null)
+                        //    {
+                        //        if (arrBlocks[col].col == rightBlock.col && arrBlocks[col].row == rightBlock.row)
+                        //        {
+                        //            arrBlocks[col] = null;
+                        //        }
+                        //    }
+                        //}
                     }
                 }
 
                 /*
                 // Row 블럭 찾기
-                for (int i = 0; i < blocks.Count; i++)
+                for (int row = 0; row < blocks.Count; row++)
                 {
-                    if ((blocks[i].topBlock != null && blocks[i].bottomBlock != null) &&
-                        (blocks[i].topBlock.elementType == blocks[i].elementType && blocks[i].bottomBlock.elementType == blocks[i].elementType))
+                    if ((blocks[row].topBlock != null && blocks[row].bottomBlock != null) &&
+                        (blocks[row].topBlock.elementType == blocks[row].elementType && blocks[row].bottomBlock.elementType == blocks[row].elementType))
                     {
-                        delBlocks.Add(blocks[i].topBlock);
-                        delBlocks.Add(blocks[i]);
-                        delBlocks.Add(blocks[i].bottomBlock);
+                        delBlocks.Add(blocks[row].topBlock);
+                        delBlocks.Add(blocks[row]);
+                        delBlocks.Add(blocks[row].bottomBlock);
 
                         //  삭제할 Row 블럭 저장
-                        rowDel.Add(blocks[i].topBlock);
-                        rowDel.Add(blocks[i]);
-                        rowDel.Add(blocks[i].bottomBlock);
+                        rowDel.Add(blocks[row].topBlock);
+                        rowDel.Add(blocks[row]);
+                        rowDel.Add(blocks[row].bottomBlock);
 
                         // 삭제할 블럭
-                        Block topBlock = blocks[i].topBlock;
-                        Block bottomBlock = blocks[i].bottomBlock;
+                        Block topBlock = blocks[row].topBlock;
+                        Block bottomBlock = blocks[row].bottomBlock;
 
-                        blocks.Remove(blocks[i]);
+                        blocks.Remove(blocks[row]);
                         blocks.Remove(topBlock);
                         blocks.Remove(bottomBlock);
                     }
@@ -196,6 +240,16 @@ namespace XR_3MatchGame_Object
                 }
 
                 /// Col과 Row에서 중복되는 블럭 처리 생각하기
+                /// 일단 Col 부터 하기
+                /// 여기서 부터 시작
+
+                for (int i = 0; i < 7; i++)
+                {
+                    for (int j = 0; j < 7; j++)
+                    {
+                    }
+                }
+
 
                 // 내릴 Col 블럭 찾기
                 for (int i = 0; i < colDel.Count; i++)
@@ -213,34 +267,6 @@ namespace XR_3MatchGame_Object
                     }
                 }
 
-                /*
-                // 내릴 Row 블럭 찾기
-                for (int i = 0; i < rowDel.Count; i++)
-                {
-                    for (int j = 0; j < blocks.Count; j++)
-                    {
-                        if (blocks[j].col == rowDel[i].col && blocks[j].row > rowDel[i].row)
-                        {
-                            if (rowDown.Count > 0 && j > 0)
-                            {
-                                // 중복체크
-                                for (int c = 0; c < rowDown.Count; c++)
-                                {
-                                    if (rowDown[c].row != blocks[j].row)
-                                    {
-                                        // 활성화 상태만 저장
-                                        if (blocks[j].gameObject.activeSelf)
-                                        {
-                                            rowDown.Add(blocks[j]);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                */
-
                 // Col 블럭을 내리는 작업
                 if (colDown.Count > 0)
                 {
@@ -256,28 +282,126 @@ namespace XR_3MatchGame_Object
                     }
                 }
 
-                /*
-                if (rowDown.Count > 0)
-                {
-                    // Row 블럭을 내리는 작업
-                    for (int i = 0; i < rowDown.Count; i++)
-                    {
-                        var targetRow = (rowDown[i].row -= 3);
+                // 빈 곳 탐색
+                int num = 0;
 
-                        if (Mathf.Abs(targetRow - rowDown[i].transform.localPosition.y) > .1f)
+                //for (int row = -3; row < 4; row++)
+                //{
+                //    for (int col = -3; col < 4; col++)
+                //    {
+                //        if (arrBlocks[num] == null)
+                //        {
+                //            // 블럭이 존재하지 않으므로 블럭 생성
+                //            var block = blockPool.GetPoolableObject(obj => obj.CanRecycle);
+
+                //            // 부모 설정
+                //            block.transform.SetParent(this.transform);
+
+                //            /// 여기서 TargetRow를 설정해주는게 좋을거 같은데
+
+                //            // 위치값 설정
+                //            block.transform.localPosition = new Vector3(col, row, 0);
+
+                //            // 회전값 설정
+                //            block.transform.localRotation = Quaternion.identity;
+
+                //            // 사이즈값 설정
+                //            block.transform.localScale = new Vector3(.19f, .19f, .19f);
+
+                //            // 블럭 초기화
+                //            block.Initialize(col, row);
+
+                //            newBlock.Add(block);
+
+                //            arrBlocks[num] = block;
+
+                //            // 활성화는 나중에 내릴 때 할거임
+                //        }
+
+                //        num++;
+                //    }
+                //}
+
+                /*
+                // 내릴 Row 블럭 찾기
+                for (int row = 0; row < rowDel.Count; row++)
+                {
+                    for (int col = 0; col < blocks.Count; col++)
+                    {
+                        if (blocks[col].col == rowDel[row].col && blocks[col].row > rowDel[row].row)
                         {
-                            Vector2 tempPosition = new Vector2(rowDown[i].transform.localPosition.x, targetRow);
-                            rowDown[i].transform.localPosition = Vector2.Lerp(rowDown[i].transform.localPosition, tempPosition, .05f);
+                            if (rowDown.Count > 0 && col > 0)
+                            {
+                                // 중복체크
+                                for (int c = 0; c < rowDown.Count; c++)
+                                {
+                                    if (rowDown[c].row != blocks[col].row)
+                                    {
+                                        // 활성화 상태만 저장
+                                        if (blocks[col].gameObject.activeSelf)
+                                        {
+                                            rowDown.Add(blocks[col]);
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
                 */
 
 
-                // 빈 자리에 블럭 채우기
+                // 빈자리 채우기
+                for (int i = 0; i < newBlock.Count; i++)
+                {
+                    int myRow = 0;
+
+                    // 위치값 설정
+                    newBlock[i].transform.localPosition = new Vector3(newBlock[i].col, 4, 0);
+                    newBlock[i].row = 4;
+
+                    newBlock[i].gameObject.SetActive(true);
+
+                    // 위에서 아래로 작업
+                    var targetRow = (newBlock[i].row = myRow);
+
+                    if (Mathf.Abs(targetRow - newBlock[i].transform.localPosition.y) > .1f)
+                    {
+                        Vector2 tempPosition = new Vector2(newBlock[i].transform.localPosition.x, targetRow);
+                        newBlock[i].transform.localPosition = Vector2.Lerp(newBlock[i].transform.localPosition, tempPosition, .05f);
+                    }
+                }
 
                 // 무조건 리스트 클리어 작업 해줘야 한다
             }
+        }
+
+        public IEnumerator Test()
+        {
+            yield return null;
+
+            for (int row = 0; row < height; row++)
+            {
+                for (int col = 0; col < width; col++)
+                {
+                    if ((col != 2 || col != 3) && arrBlocks[row, col] != null)
+                    {
+                        Block block_0 = arrBlocks[row, col];
+                        Block block_1 = arrBlocks[row, col - 1];
+                        Block block_2 = arrBlocks[row, col - 2];
+
+                        if (block_0.elementType == block_1.elementType && block_1.elementType == block_2.elementType)
+                        {
+                            arrBlocks[row, col] = null;
+                            arrBlocks[row, col - 1] = null;
+                            arrBlocks[row, col - 2] = null;
+                        }
+                    }
+                }
+            }
+
+
+
         }
 
         /// 블럭 클리어 및 블럭 생성을 담당하는 메서드
@@ -319,17 +443,17 @@ namespace XR_3MatchGame_Object
                     {
                         blockPool.ReturnPoolableObject(colDel[j]);
 
-                        //uiElement.SetGauge(delBlocks[i].ElementValue);
+                        //uiElement.SetGauge(delBlocks[row].ElementValue);
 
                         blocks.Remove(colDel[j]);
 
                         //if (GM.isPlus)
                         //{
-                        //    DM.SetScore(delBlocks[i].BlockScore * 2);
+                        //    DM.SetScore(delBlocks[row].BlockScore * 2);
                         //}
                         //else
                         //{
-                        //    DM.SetScore(delBlocks[i].BlockScore);
+                        //    DM.SetScore(delBlocks[row].BlockScore);
                         //}
                     }
 
@@ -370,7 +494,7 @@ namespace XR_3MatchGame_Object
                     //yield return new WaitForSeconds(.4f);
 
                     //// 빈 공간에 블럭 생성 작업
-                    //for (int i = 0; i < emptyCount; i++)
+                    //for (int row = 0; row < emptyCount; row++)
                     //{
                     //    if (col_NewNum <= col_R && row_NewNum < GM.BoardSize.y)
                     //    {
@@ -417,19 +541,19 @@ namespace XR_3MatchGame_Object
 
                 //        yield return new WaitForSeconds(.5f);
 
-                //        for (int i = 0; i < delBlocks.Count; i++)
+                //        for (int row = 0; row < delBlocks.Count; row++)
                 //        {
-                //            blockPool.ReturnPoolableObject(delBlocks[i]);
-                //            uiElement.SetGauge(delBlocks[i].ElementValue);
-                //            blocks.Remove(delBlocks[i]);
+                //            blockPool.ReturnPoolableObject(delBlocks[row]);
+                //            uiElement.SetGauge(delBlocks[row].ElementValue);
+                //            blocks.Remove(delBlocks[row]);
 
                 //            if (GM.isPlus)
                 //            {
-                //                DM.SetScore(delBlocks[i].BlockScore * 2);
+                //                DM.SetScore(delBlocks[row].BlockScore * 2);
                 //            }
                 //            else
                 //            {
-                //                DM.SetScore(delBlocks[i].BlockScore);
+                //                DM.SetScore(delBlocks[row].BlockScore);
                 //            }
                 //        }
 
@@ -442,11 +566,11 @@ namespace XR_3MatchGame_Object
                 //        if (row_B != (GM.BoardSize.y - 1))
                 //        {
                 //            내릴 블럭 탐색
-                //            for (int i = 0; i < blocks.Count; i++)
+                //            for (int row = 0; row < blocks.Count; row++)
                 //            {
-                //                if ((col_B == blocks[i].col) && (row_B < blocks[i].row))
+                //                if ((col_B == blocks[row].col) && (row_B < blocks[row].row))
                 //                {
-                //                    downBlocks.Add(blocks[i]);
+                //                    downBlocks.Add(blocks[row]);
                 //                }
                 //            }
                 //        }
@@ -454,14 +578,14 @@ namespace XR_3MatchGame_Object
                 //        yield return new WaitForSeconds(.4f);
 
                 //        블럭 내리는 작업
-                //        for (int i = 0; i < downBlocks.Count; i++)
+                //        for (int row = 0; row < downBlocks.Count; row++)
                 //        {
-                //            var targetRow = (downBlocks[i].row -= 3);
+                //            var targetRow = (downBlocks[row].row -= 3);
 
-                //            if (Mathf.Abs(targetRow - downBlocks[i].transform.position.y) > .1f)
+                //            if (Mathf.Abs(targetRow - downBlocks[row].transform.position.y) > .1f)
                 //            {
-                //                Vector2 tempPosition = new Vector2(downBlocks[i].transform.position.x, targetRow);
-                //                downBlocks[i].transform.position = Vector2.Lerp(downBlocks[i].transform.position, tempPosition, .05f);
+                //                Vector2 tempPosition = new Vector2(downBlocks[row].transform.position.x, targetRow);
+                //                downBlocks[row].transform.position = Vector2.Lerp(downBlocks[row].transform.position, tempPosition, .05f);
                 //            }
                 //        }
 
@@ -472,7 +596,7 @@ namespace XR_3MatchGame_Object
 
                 //        yield return new WaitForSeconds(.4f);
 
-                //        for (int i = 0; i < emptyBlockCount; i++)
+                //        for (int row = 0; row < emptyBlockCount; row++)
                 //        {
                 //            if (n_Row < GM.BoardSize.y)
                 //            {
@@ -492,7 +616,7 @@ namespace XR_3MatchGame_Object
                 //        BlockUpdate();
 
                 //        / TestBoard
-                //        i = 0;
+                //        row = 0;
                 //    }
             }
 

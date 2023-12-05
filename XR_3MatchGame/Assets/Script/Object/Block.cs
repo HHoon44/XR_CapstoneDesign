@@ -9,6 +9,8 @@ namespace XR_3MatchGame_Object
 {
     public class Block : MonoBehaviour, IPoolableObject
     {
+        public int blockCount;
+
         [SerializeField]
         private ParticleSystem blockParticle;
 
