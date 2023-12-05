@@ -116,6 +116,7 @@ namespace XR_3MatchGame_Object
                         block.transform.localPosition = Vector2.Lerp(block.transform.localPosition, tempPosition, .05f);
                     }
 
+                    arrBlocks[row, col] = block;
                 }
 
                 yield return new WaitForSeconds(.3f);
@@ -378,30 +379,38 @@ namespace XR_3MatchGame_Object
 
         public IEnumerator Test()
         {
-            yield return null;
+            var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
 
             for (int row = 0; row < height; row++)
             {
                 for (int col = 0; col < width; col++)
                 {
-                    if ((col != 2 || col != 3) && arrBlocks[row, col] != null)
+                    if (arrBlocks[row, col] != null && (col != 5 && col != 6))
                     {
                         Block block_0 = arrBlocks[row, col];
-                        Block block_1 = arrBlocks[row, col - 1];
-                        Block block_2 = arrBlocks[row, col - 2];
+                        Block block_1 = arrBlocks[row, col + 1];
+                        Block block_2 = arrBlocks[row, col + 2];
+
+                        //Debug.Log(block_0.elementType);
+                        //Debug.Log(block_1.elementType);
+                        //Debug.Log(block_2.elementType);
 
                         if (block_0.elementType == block_1.elementType && block_1.elementType == block_2.elementType)
                         {
                             arrBlocks[row, col] = null;
-                            arrBlocks[row, col - 1] = null;
-                            arrBlocks[row, col - 2] = null;
+                            arrBlocks[row, col + 1] = null;
+                            arrBlocks[row, col + 2] = null;
+
+                            blockPool.ReturnPoolableObject(block_0);
+                            blockPool.ReturnPoolableObject(block_1);
+                            blockPool.ReturnPoolableObject(block_2);
                         }
                     }
                 }
             }
 
 
-
+            yield return null;
         }
 
         /// 블럭 클리어 및 블럭 생성을 담당하는 메서드
