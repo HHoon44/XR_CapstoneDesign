@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
 using XR_3MatchGame.Util;
@@ -188,10 +189,9 @@ namespace XR_3MatchGame_Object
         /// </summary>
         private void BlockMove()
         {
-            // GM.SetGameState(GameState.Checking);
+            GM.SetGameState(GameState.Move);
 
-            var blocks = GM.Board.blocks;
-
+            Block[,] blocks = GM.Board.blocks;
             int height = GM.Board.height;
             int width = GM.Board.width;
 
@@ -208,8 +208,8 @@ namespace XR_3MatchGame_Object
                             otherBlock.row -= 1;
                             this.row += 1;
 
-                            /// Test
-                            GM.isMatch = true;
+                            swipeDir = SwipeDir.Top;
+                            ReturnCheck();
 
                             return;
                         }
@@ -229,8 +229,8 @@ namespace XR_3MatchGame_Object
                             otherBlock.row += 1;
                             this.row -= 1;
 
-                            /// Test
-                            GM.isMatch = true;
+                            swipeDir = SwipeDir.Bottom;
+                            ReturnCheck();
 
                             return;
                         }
@@ -250,8 +250,8 @@ namespace XR_3MatchGame_Object
                             otherBlock.col += 1;
                             this.col -= 1;
 
-                            /// Test
-                            GM.isMatch = true;
+                            swipeDir = SwipeDir.Left;
+                            ReturnCheck();
 
                             return;
                         }
@@ -271,14 +271,72 @@ namespace XR_3MatchGame_Object
                             otherBlock.col -= 1;
                             this.col += 1;
 
-                            /// Test
-                            GM.isMatch = true;
+                            swipeDir = SwipeDir.Right;
+                            ReturnCheck();
 
                             return;
                         }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 블럭 제자리 유무를 판단하는 메서드
+        /// </summary>
+        private void ReturnCheck()
+        {
+            GM.Board.BlockSort();
+
+            if (GM.Board.MatchCheck())
+            {
+                // 매칭 성공
+                GM.isMatch = true;
+            }
+            else
+            {
+                // 매칭 실패 제자리
+                StartCoroutine(ReturnBlock());
+            }
+
+            GM.Board.BlockSort();
+        }
+
+        /// <summary>
+        /// 블럭을 제자리로 돌리는 코루틴
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerator ReturnBlock()
+        {
+            yield return new WaitForSeconds(.3f);
+
+            switch (swipeDir)
+            {
+                case SwipeDir.Top:
+                    otherBlock.row += 1;
+                    this.row -= 1;
+                    break;
+
+                case SwipeDir.Bottom:
+                    otherBlock.row -= 1;
+                    this.row += 1;
+                    break;
+
+                case SwipeDir.Left:
+                    otherBlock.col -= 1;
+                    this.col += 1;
+                    break;
+
+                case SwipeDir.Right:
+                    otherBlock.col += 1;
+                    this.col -= 1;
+                    break;
+            }
+
+            yield return new WaitForSeconds(.3f);
+
+            // GameState -> Play
+            GameManager.Instance.SetGameState(GameState.Play);
         }
     }
 }
