@@ -14,18 +14,10 @@ namespace XR_3MatchGame_UI
         [SerializeField]
         private TextMeshProUGUI myScore;
 
-        #region User Object
-
-        [SerializeField]
-        private GameObject user_0;
-
-        [SerializeField]
-        private GameObject user_1;
-
-        [SerializeField]
-        private GameObject user_2;
-
-        #endregion
+        [Header("유저")]
+        public GameObject user_0;
+        public GameObject user_1;
+        public GameObject user_2;
 
         private void Start()
         {
@@ -38,7 +30,7 @@ namespace XR_3MatchGame_UI
         public void Initialize()
         {
             // 내 점수 업데이트
-            myScore.text = DataManager.Instance.PlayerScore.ToString();
+            myScore.text = DataManager.Instance.playerScore.ToString();
 
             // 점수
             var userScore_0 = user_0.transform.GetChild(2).GetComponent<TextMeshProUGUI>();

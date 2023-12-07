@@ -1,5 +1,4 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_InGame;
@@ -10,6 +9,8 @@ namespace XR_3MatchGame_Object
 {
     public class Block : MonoBehaviour, IPoolableObject
     {
+        public bool CanRecycle { get; set; } = true;
+
         public int BlockScore
         {
             get
@@ -28,16 +29,11 @@ namespace XR_3MatchGame_Object
             }
         }
 
-        public int downCount;
-
         [SerializeField]
         private ParticleSystem blockParticle;
 
-        [SerializeField]
-        private SpriteRenderer spriteRenderer;
-
-        public bool CanRecycle { get; set; } = true;
-
+        public int downCount;
+        public SpriteRenderer spriteRenderer;
 
         public int col;                                     // 현재 블럭의 X 값
         public int row;                                     // 현재 블럭의 Y 값
@@ -45,17 +41,17 @@ namespace XR_3MatchGame_Object
         public int targetCol;                               // 상대 블럭의 X 값
         public int targetRow;                               // 상대 블럭의 Y 값
 
+        public ElementType elementType = ElementType.None;  // 현재 블럭의 타입
+        public Block otherBlock;                            // 현재 블럭과 자리를 바꿀 블럭
+
         private float swipeAngle = 0;                       // 스와이프 각도
 
         private Vector2 firstTouchPosition;                 // 마우스 클릭 지점
         private Vector2 finalTouchPosition;                 // 마우스 클릭을 마무리한 지점
         private Vector2 tempPosition;                       // 목표 지점
 
-        private Block otherBlock;                           // 현재 블럭과 자리를 바꿀 블럭
-        private Board board;                                // 블럭이 존재하는 보드
         private GameManager GM;
 
-        public ElementType elementType = ElementType.None;  // 현재 블럭의 타입
         private SwipeDir swipeDir = SwipeDir.None;          // 블럭의 이동 방향
 
         public void BlockParticle()
@@ -71,7 +67,6 @@ namespace XR_3MatchGame_Object
         public void Initialize(int col, int row)
         {
             GM = GameManager.Instance;
-            board = GM.Board;
 
             var blockNum = Random.Range(1, 7);
 
@@ -156,15 +151,21 @@ namespace XR_3MatchGame_Object
 
         private void OnMouseDown()
         {
-            // 마우스 클릭 위치 저장
-            firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            if (GM.GameState == GameState.Play)
+            {
+                // 마우스 클릭 위치 저장
+                firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            }
         }
 
         private void OnMouseUp()
         {
-            // 마우스 클릭 끝난 위치 저장
-            finalTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            CalculateAngle();
+            if (GM.GameState == GameState.Play)
+            {
+                // 마우스 클릭 끝난 위치 저장
+                finalTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                CalculateAngle();
+            }
         }
 
         /// <summary>
@@ -290,6 +291,12 @@ namespace XR_3MatchGame_Object
 
             if (GM.Board.MatchCheck())
             {
+                // GameState -> Checking
+                GM.SetGameState(GameState.Checking);
+
+                // 이동 블럭 저장
+                GM.Board.moveBlock = this;
+
                 // 매칭 성공
                 GM.isMatch = true;
             }

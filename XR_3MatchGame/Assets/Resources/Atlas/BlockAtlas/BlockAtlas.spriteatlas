@@ -38,6 +38,7 @@ SpriteAtlas:
     cachedData: {fileID: 0}
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
+  - {fileID: 21300000, guid: 97d32440770265549a48c977b52eda2c, type: 3}
   - {fileID: 21300000, guid: 78288f711f515ad4b954be2557569ebb, type: 3}
   - {fileID: 21300000, guid: 4f8efc528c209ae40843d2eeb61e9adf, type: 3}
   - {fileID: 21300000, guid: 5aa3f694979a841408880ed2c4d39c3d, type: 3}
@@ -45,6 +46,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 3c5ac918639d8914bb0b138a8904c4d7, type: 3}
   - {fileID: 21300000, guid: dbbc0bad406921e4f8a2d8fe17fe3e03, type: 3}
   m_PackedSpriteNamesToIndex:
+  - Balance
   - Ice
   - Light
   - Grass

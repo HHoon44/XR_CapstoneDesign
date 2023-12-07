@@ -14,44 +14,20 @@ namespace XR_3MatchGame_InGame
     public class GameManager : Singleton<GameManager>
     {
         /// <summary>
-        /// 현재 게임 상태 프로퍼티
+        /// 유저가 선택한 3가지 원소
         /// </summary>
-        // public GameState GameState { get; private set; }
-        public GameState GameState;
-
-        /// <summary>
-        /// 기본 원소 프로퍼티
-        /// </summary>
-        //public ElementType ElementType { get; private set; }
-
-        public ElementType ElementType = ElementType.Fire;
-
-        // 유저가 선택한 3가지 원소
         public List<ElementType> selectType = new List<ElementType>();
 
-        /// <summary>
-        /// 보드 컴포넌트 프로퍼티
-        /// </summary>
-        public Board Board { get; private set; }
+        [Header("인 게임 사용")]
+        public GameState GameState;     // 게임 상태
+        public Board Board;             // 게임 보드
+        public bool isMatch = false;    // 블럭 매칭 여부
+        public bool isPlus = false;     
+        public float loadProgress;      // 로딩 진행도
 
-        public bool isMatch = false;                                 // 블럭 체크를 실행할것인가?
-        public bool isPlus = false;
-        public float loadProgress;
-
-        // 스테이지 정보
+        [Header("현재 스테이지 정보")]
         public string stageName;
         public ElementType stageType;
-
-        public Vector2Int BoardSize
-        {
-            get
-            {
-                // (-3 ~ 3)
-                Vector2Int boardSize = new Vector2Int(-3, 3);
-
-                return boardSize;
-            }
-        }
 
         protected override void Awake()
         {
@@ -68,16 +44,11 @@ namespace XR_3MatchGame_InGame
             var StartController = FindObjectOfType<StartController>();
             StartController?.Initialize();
 
+            // GameState -> Play
             GameState = GameState.Play;
-            SetElementType(ElementType.Fire);
 
             // 초기 설정
             Application.targetFrameRate = 60;
-        }
-
-        public void Initialize(Board board)
-        {
-            Board = board;
         }
 
         /// <summary>
@@ -90,14 +61,11 @@ namespace XR_3MatchGame_InGame
         }
 
         /// <summary>
-        /// 현재 캐릭터 속성 세팅 메서드
+        /// 비동기로 씬을 로드하는 메서드
         /// </summary>
-        /// <param name="elementType"></param>
-        public void SetElementType(ElementType elementType)
-        {
-            ElementType = elementType;
-        }
-
+        /// <param name="sceneName"></param>
+        /// <param name="loadCoroutine"></param>
+        /// <param name="loadComplete"></param>
         public void LoadScene(SceneType sceneName, IEnumerator loadCoroutine = null, Action loadComplete = null)
         {
             StartCoroutine(WaitForLoad());

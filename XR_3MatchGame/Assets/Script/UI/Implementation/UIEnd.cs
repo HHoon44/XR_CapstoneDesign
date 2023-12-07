@@ -21,7 +21,7 @@ namespace XR_3MatchGame_UI
 
         private void Start()
         {
-            score.text = DataManager.Instance.PlayerScore.ToString();
+            score.text = DataManager.Instance.playerScore.ToString();
 
             // 검은 배경 활성화
             backBlack.SetActive(true);
@@ -32,13 +32,13 @@ namespace XR_3MatchGame_UI
         public void HighScore()
         {
             // 점수
-            var currentScore = DataManager.Instance.PlayerScore;
+            var currentScore = DataManager.Instance.playerScore;
             var score_0 = PlayerPrefs.GetInt(XR_3MatchGame.Util.HighScore.Score_0);
             var score_1 = PlayerPrefs.GetInt(XR_3MatchGame.Util.HighScore.Score_1);
             var score_2 = PlayerPrefs.GetInt(XR_3MatchGame.Util.HighScore.Score_2);
 
             // 이름
-            var currentName = DataManager.Instance.PlayerName;
+            var currentName = DataManager.Instance.playerName;
             var name_0 = PlayerPrefs.GetString(XR_3MatchGame.Util.HighScore.Name_0);
             var name_1 = PlayerPrefs.GetString(XR_3MatchGame.Util.HighScore.Name_1);
             var name_2 = PlayerPrefs.GetString(XR_3MatchGame.Util.HighScore.Name_2);
@@ -100,7 +100,7 @@ namespace XR_3MatchGame_UI
              */
 
             GameManager.Instance.Board.gameObject.SetActive(true);
-            DataManager.Instance.SetScore(-DataManager.Instance.PlayerScore);
+            DataManager.Instance.SetScore(-DataManager.Instance.playerScore);
             UIWindowManager.Instance.GetWindow<UIElement>().Initialize();
             GameManager.Instance.SetGameState(GameState.Play);
 

@@ -44,19 +44,22 @@ namespace XR_3MatchGame_UI
             SetScore();
         }
 
-        //public void SetStageDetail()
-        //{
-        //    var stageIcon = SpriteLoader.GetSprite(AtlasType.IconAtlas, GameManager.Instance.stageType.ToString());
-        //    icon.sprite = stageIcon;
-        //    detail.text = GameManager.Instance.stageName + "의 시련";
-        //}
+        /// <summary>
+        /// 스테이지 정보를 세팅하는 메서드
+        /// </summary>
+        public void SetStageDetail()
+        {
+            var stageIcon = SpriteLoader.GetSprite(AtlasType.IconAtlas, GameManager.Instance.stageType.ToString());
+            icon.sprite = stageIcon;
+            detail.text = GameManager.Instance.stageName + "의 시련";
+        }
 
         /// <summary>
         /// 스코어 업데이트 메서드
         /// </summary>
         public void SetScore()
         {
-            score.text = DataManager.Instance.PlayerScore.ToString();
+            score.text = DataManager.Instance.playerScore.ToString();
         }
     }
 }

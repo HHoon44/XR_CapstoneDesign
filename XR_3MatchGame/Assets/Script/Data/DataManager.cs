@@ -6,19 +6,9 @@ namespace XR_3MatchGame_Data
 {
     public class DataManager : Singleton<DataManager>
     {
-        /// <summary>
-        /// 유저 점수 프로퍼티
-        /// </summary>
-        // public int PlayerScore { get; private set; }
-
-        public int PlayerScore;
-
-        /// <summary>
-        /// 유저 이름 프로퍼티
-        /// </summary>
-        // public string PlayerName { get; private set; }
-
-        public string PlayerName;
+        [Header("유저 정보")]
+        public int playerScore;
+        public string playerName;
 
         public void Initialize()
         {
@@ -63,14 +53,13 @@ namespace XR_3MatchGame_Data
             #endregion
         }
 
-
         /// <summary>
         /// 스코어 업데이트 메서드
         /// </summary>
         /// <param name="score"></param>
         public void SetScore(int score)
         {
-            PlayerScore += score;
+            playerScore += score;
             UIWindowManager.Instance.GetWindow<UIDetail>().SetScore();
         }
 
@@ -80,7 +69,7 @@ namespace XR_3MatchGame_Data
         /// <param name="name"></param>
         public void SetName(string name)
         {
-            PlayerName = name;
+            playerName = name;
         }
     }
 }

@@ -42,9 +42,11 @@ namespace XR_3MatchGame_UI
         {
             if (gaugeFill.fillAmount >= 1f)
             {
+                // 게이지 완충!
                 if (!fullEffect.activeSelf)
                 {
                     fullEffect.SetActive(true);
+                
                 }
 
                 gaugeFill.fillAmount = 1f;

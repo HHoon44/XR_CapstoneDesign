@@ -1,11 +1,10 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using UnityEditor.TextCore.Text;
 using UnityEngine;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Data;
 using XR_3MatchGame_InGame;
+using XR_3MatchGame_Resource;
+using XR_3MatchGame_UI;
 using XR_3MatchGame_Util;
 
 namespace XR_3MatchGame_Object
@@ -37,35 +36,27 @@ namespace XR_3MatchGame_Object
             GM = GameManager.Instance;
             DM = DataManager.Instance;
 
-            GM.Initialize(this);
+            GM.Board = this;
 
             // BGM 실행
             SoundManager.Instance.Initialize(SceneType.InGame);
 
+            // 스폰 시작
             StartCoroutine(SpawnBlock());
         }
 
         private void Update()
         {
-            //if (GM.GameState == GameState.Checking || GM.GameState == GameState.SKill)
-            //{
-            //    if (GM.isMatch == true)
-            //    {
-            //        GM.isMatch = false;
-            //        // StartCoroutine(BlockClear());
-            //    }
-            //}
-
-            if (GM.isMatch == true)
+            if (GM.GameState == GameState.Checking || GM.GameState == GameState.SKill)
             {
-                BlockSort();
+                if (GM.isMatch == true)
+                {
+                    BlockSort();
 
-                GM.isMatch = false;
+                    GM.isMatch = false;
 
-                // GameState -> Match
-                GM.SetGameState(GameState.Match);
-
-                StartCoroutine(BlockMatch());
+                    StartCoroutine(BlockMatch());
+                }
             }
         }
 
@@ -75,9 +66,6 @@ namespace XR_3MatchGame_Object
         /// <returns></returns>
         public IEnumerator SpawnBlock()
         {
-            // GameState -> Spawn
-            GM.SetGameState(GameState.Spawn);
-
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
 
             for (int row = 0; row < 7; row++)
@@ -120,533 +108,6 @@ namespace XR_3MatchGame_Object
             }
 
             StartCoroutine(BlockMatch());
-
-            GM.SetGameState(GameState.Play);
-        }
-
-        public IEnumerator ColBoom()
-        {
-            var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
-            bool isMake = false;
-
-            for (int row = 0; row < height; row++)
-            {
-                for (int col = 0; col < width; col++)
-                {
-                    if (blocks[row, col] != null)
-                    {
-                        Block checkBlock = blocks[row, col];
-
-                        Block block_0 = null;
-                        Block block_1 = null;
-                        Block block_2 = null;
-
-                        switch (checkBlock.col)
-                        {
-                            case -3:
-                                // ★OOO
-                                block_0 = blocks[row, col + 1];
-                                block_1 = blocks[row, col + 2];
-                                block_2 = blocks[row, col + 3];
-
-                                if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                {
-                                    block_0.col = checkBlock.col;
-                                    block_1.col = checkBlock.col;
-                                    block_2.col = checkBlock.col;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(block_0);
-                                    blockPool.ReturnPoolableObject(block_1);
-                                    blockPool.ReturnPoolableObject(block_2);
-
-                                    // 블럭 저장소에서 제거
-                                    blocks[row, col + 1] = null;
-                                    blocks[row, col + 2] = null;
-                                    blocks[row, col + 3] = null;
-
-                                    isMake = true;
-                                }
-                                break;
-
-                            case -2:
-                                // O★OO
-                                block_0 = blocks[row, col - 1];
-                                block_1 = blocks[row, col + 1];
-                                block_2 = blocks[row, col + 2];
-
-                                if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                {
-                                    block_0.col = checkBlock.col;
-                                    block_1.col = checkBlock.col;
-                                    block_2.col = checkBlock.col;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(block_0);
-                                    blockPool.ReturnPoolableObject(block_1);
-                                    blockPool.ReturnPoolableObject(block_2);
-
-                                    // 블럭 저장소에서 제거
-                                    blocks[row, col - 1] = null;
-                                    blocks[row, col + 1] = null;
-                                    blocks[row, col + 2] = null;
-
-                                    isMake = true;
-                                }
-                                else
-                                {
-                                    // ★OOO
-                                    block_0 = blocks[row, col + 1];
-                                    block_1 = blocks[row, col + 2];
-                                    block_2 = blocks[row, col + 3];
-
-                                    if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                    {
-                                        block_0.col = checkBlock.col;
-                                        block_1.col = checkBlock.col;
-                                        block_2.col = checkBlock.col;
-
-                                        yield return new WaitForSeconds(.3f);
-
-                                        // 풀에 리턴
-                                        blockPool.ReturnPoolableObject(block_0);
-                                        blockPool.ReturnPoolableObject(block_1);
-                                        blockPool.ReturnPoolableObject(block_2);
-
-                                        // 블럭 저장소에서 제거
-                                        blocks[row, col + 1] = null;
-                                        blocks[row, col + 2] = null;
-                                        blocks[row, col + 3] = null;
-
-                                        isMake = true;
-                                    }
-                                }
-                                break;
-
-                            case -1:
-                            case 0:
-                                // OO★O
-                                block_0 = blocks[row, col - 1];
-                                block_1 = blocks[row, col - 2];
-                                block_2 = blocks[row, col + 1];
-
-                                if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                {
-                                    block_0.col = checkBlock.col;
-                                    block_1.col = checkBlock.col;
-                                    block_2.col = checkBlock.col;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(block_0);
-                                    blockPool.ReturnPoolableObject(block_1);
-                                    blockPool.ReturnPoolableObject(block_2);
-
-                                    // 블럭 저장소에서 제거
-                                    blocks[row, col - 1] = null;
-                                    blocks[row, col - 2] = null;
-                                    blocks[row, col + 1] = null;
-
-                                    isMake = true;
-                                }
-                                else
-                                {
-                                    // O★OO
-                                    block_0 = blocks[row, col - 1];
-                                    block_1 = blocks[row, col + 1];
-                                    block_2 = blocks[row, col + 2];
-
-                                    if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                    {
-                                        block_0.col = checkBlock.col;
-                                        block_1.col = checkBlock.col;
-                                        block_2.col = checkBlock.col;
-
-                                        yield return new WaitForSeconds(.3f);
-
-                                        // 풀에 리턴
-                                        blockPool.ReturnPoolableObject(block_0);
-                                        blockPool.ReturnPoolableObject(block_1);
-                                        blockPool.ReturnPoolableObject(block_2);
-
-                                        // 블럭 저장소에서 제거
-                                        blocks[row, col - 1] = null;
-                                        blocks[row, col + 1] = null;
-                                        blocks[row, col + 2] = null;
-
-                                        isMake = true;
-                                    }
-                                    else
-                                    {
-                                        // ★OOO
-                                        block_0 = blocks[row, col + 1];
-                                        block_1 = blocks[row, col + 2];
-                                        block_2 = blocks[row, col + 3];
-
-                                        if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                        {
-                                            block_0.col = checkBlock.col;
-                                            block_1.col = checkBlock.col;
-                                            block_2.col = checkBlock.col;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            // 풀에 리턴
-                                            blockPool.ReturnPoolableObject(block_0);
-                                            blockPool.ReturnPoolableObject(block_1);
-                                            blockPool.ReturnPoolableObject(block_2);
-
-                                            // 블럭 저장소에서 제거
-                                            blocks[row, col + 1] = null;
-                                            blocks[row, col + 2] = null;
-                                            blocks[row, col + 3] = null;
-
-                                            isMake = true;
-                                        }
-                                    }
-                                }
-                                break;
-
-                            case 1:
-                                // O★OO
-                                block_0 = blocks[row, col - 1];
-                                block_1 = blocks[row, col + 1];
-                                block_2 = blocks[row, col + 2];
-
-                                if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                {
-                                    block_0.col = checkBlock.col;
-                                    block_1.col = checkBlock.col;
-                                    block_2.col = checkBlock.col;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(block_0);
-                                    blockPool.ReturnPoolableObject(block_1);
-                                    blockPool.ReturnPoolableObject(block_2);
-
-                                    // 블럭 저장소에서 제거
-                                    blocks[row, col - 1] = null;
-                                    blocks[row, col + 1] = null;
-                                    blocks[row, col + 2] = null;
-
-                                    isMake = true;
-                                }
-                                else
-                                {
-                                    // OO★O
-                                    block_0 = blocks[row, col - 1];
-                                    block_1 = blocks[row, col - 2];
-                                    block_2 = blocks[row, col + 1];
-
-                                    if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                    {
-                                        block_0.col = checkBlock.col;
-                                        block_1.col = checkBlock.col;
-                                        block_2.col = checkBlock.col;
-
-                                        yield return new WaitForSeconds(.3f);
-
-                                        // 풀에 리턴
-                                        blockPool.ReturnPoolableObject(block_0);
-                                        blockPool.ReturnPoolableObject(block_1);
-                                        blockPool.ReturnPoolableObject(block_2);
-
-                                        // 블럭 저장소에서 제거
-                                        blocks[row, col - 1] = null;
-                                        blocks[row, col - 2] = null;
-                                        blocks[row, col + 1] = null;
-
-                                        isMake = true;
-                                    }
-                                    else
-                                    {
-                                        // OOO★
-                                        block_0 = blocks[row, col - 1];
-                                        block_1 = blocks[row, col - 2];
-                                        block_2 = blocks[row, col - 3];
-
-
-                                        if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                        {
-                                            block_0.col = checkBlock.col;
-                                            block_1.col = checkBlock.col;
-                                            block_2.col = checkBlock.col;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            // 풀에 리턴
-                                            blockPool.ReturnPoolableObject(block_0);
-                                            blockPool.ReturnPoolableObject(block_1);
-                                            blockPool.ReturnPoolableObject(block_2);
-
-                                            // 블럭 저장소에서 제거
-                                            blocks[row, col - 1] = null;
-                                            blocks[row, col - 2] = null;
-                                            blocks[row, col - 3] = null;
-
-                                            isMake = true;
-                                        }
-                                    }
-                                }
-                                break;
-
-                            case 2:
-                                // OO★O
-                                block_0 = blocks[row, col + 1];
-                                block_1 = blocks[row, col - 1];
-                                block_2 = blocks[row, col - 2];
-
-                                if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                {
-                                    block_0.col = checkBlock.col;
-                                    block_1.col = checkBlock.col;
-                                    block_2.col = checkBlock.col;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(block_0);
-                                    blockPool.ReturnPoolableObject(block_1);
-                                    blockPool.ReturnPoolableObject(block_2);
-
-                                    // 블럭 저장소에서 제거
-                                    blocks[row, col + 1] = null;
-                                    blocks[row, col - 1] = null;
-                                    blocks[row, col - 2] = null;
-
-                                    isMake = true;
-                                }
-                                else
-                                {
-                                    // OOO★
-                                    block_0 = blocks[row, col - 1];
-                                    block_1 = blocks[row, col - 2];
-                                    block_2 = blocks[row, col - 3];
-
-                                    if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                    {
-                                        block_0.col = checkBlock.col;
-                                        block_1.col = checkBlock.col;
-                                        block_2.col = checkBlock.col;
-
-                                        yield return new WaitForSeconds(.3f);
-
-                                        // 풀에 리턴
-                                        blockPool.ReturnPoolableObject(block_0);
-                                        blockPool.ReturnPoolableObject(block_1);
-                                        blockPool.ReturnPoolableObject(block_2);
-
-                                        // 블럭 저장소에서 제거
-                                        blocks[row, col - 1] = null;
-                                        blocks[row, col - 2] = null;
-                                        blocks[row, col - 3] = null;
-
-                                        isMake = true;
-                                    }
-                                }
-                                break;
-
-                            case 3:
-                                // OOO★
-                                block_0 = blocks[row, col - 1];
-                                block_1 = blocks[row, col - 2];
-                                block_2 = blocks[row, col - 3];
-
-                                if (checkBlock.elementType == block_0.elementType && checkBlock.elementType == block_1.elementType && checkBlock.elementType == block_2.elementType)
-                                {
-                                    block_0.col = checkBlock.col;
-                                    block_1.col = checkBlock.col;
-                                    block_2.col = checkBlock.col;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(block_0);
-                                    blockPool.ReturnPoolableObject(block_1);
-                                    blockPool.ReturnPoolableObject(block_2);
-
-                                    // 블럭 저장소에서 제거
-                                    blocks[row, col - 1] = null;
-                                    blocks[row, col - 2] = null;
-                                    blocks[row, col - 3] = null;
-
-                                    isMake = true;
-                                }
-                                break;
-                        }
-
-                        if (isMake)
-                        {
-                            // 블럭 다운 카운트 계산
-                            int downCount = 0;
-
-                            for (int c_Col = 0; c_Col < width; c_Col++)
-                            {
-                                for (int c_Row = 0; c_Row < height; c_Row++)
-                                {
-                                    if (blocks[c_Row, c_Col] == null)
-                                    {
-                                        downCount++;
-                                    }
-                                    else
-                                    {
-                                        blocks[c_Row, c_Col].downCount = downCount;
-                                    }
-                                }
-
-                                downCount = 0;
-                            }
-
-                            yield return new WaitForSeconds(.3f);
-
-                            // 블럭 내리기 작업
-                            for (int d_Row = 0; d_Row < height; d_Row++)
-                            {
-                                for (int d_Col = 0; d_Col < width; d_Col++)
-                                {
-                                    if (blocks[d_Row, d_Col] != null)
-                                    {
-                                        if (blocks[d_Row, d_Col].downCount > 0)
-                                        {
-                                            // 내릴 공간이 존재한다
-
-                                            var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
-
-                                            if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
-                                            {
-                                                Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
-                                                blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
-                                            }
-
-                                            // 다운 카운트 초기화
-                                            blocks[d_Row, d_Col].downCount = 0;
-                                        }
-                                    }
-                                }
-                            }
-
-                            yield return new WaitForSeconds(.3f);
-
-                            // 빈 공간 블럭 생성
-                            int newCol = -3;
-                            int newRow = 3;
-
-                            for (int n_Col = 0; n_Col < width; n_Col++)
-                            {
-                                for (int n_Row = 0; n_Row < height; n_Row++)
-                                {
-                                    if (blocks[n_Row, n_Col] == null)
-                                    {
-                                        // 어? 여기 비어있는데? 탈모인데?
-                                        // 그러면 머리 심어줘야자~
-                                        Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-
-                                        // 부모 설정
-                                        newBlock.transform.SetParent(this.transform);
-
-                                        // 위치값 설정
-                                        newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
-
-                                        // 회전값 설정
-                                        newBlock.transform.localRotation = Quaternion.identity;
-
-                                        // 사이즈값 설정
-                                        newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
-
-                                        // 활성화
-                                        newBlock.gameObject.SetActive(true);
-
-                                        // 블럭 초기화
-                                        newBlock.Initialize(newCol, 4 + n_Row);
-
-                                        // 블럭 저장
-                                        blocks[n_Row, n_Col] = newBlock;
-
-                                        var targetrow = (newBlock.row = newRow);
-
-                                        if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
-                                        {
-                                            Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
-                                            newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
-                                        }
-
-                                        newRow--;
-                                    }
-                                }
-
-                                newCol++;
-                                newRow = 3;
-                            }
-
-                            // 블럭 정렬
-                            BlockSort();
-
-                            isMake = false;
-
-                            yield return new WaitForSeconds(.5f);
-                        }
-                    }
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// 움직인 블럭 주위로 폭탄 여부 확인 메서드
-        /// </summary>
-        /// <param name="moveBlock"></param>
-        /// <returns></returns>
-        public IEnumerator MoveBoom(Block moveBlock = null)
-        {
-            Block block_0 = null;
-            Block block_1 = null;
-            Block block_2 = null;
-
-            if (moveBlock != null)
-            {
-                for (int row = 0; row < height; row++)
-                {
-                    for (int col = 0; col < width; col++)
-                    {
-                        if (blocks[row, col] == moveBlock)
-                        {
-                            switch (moveBlock.col)
-                            {
-                                case -3:
-
-                                    break;
-
-                                case -2:
-                                    break;
-
-                                case -1:
-
-                                case 0:
-                                    break;
-
-                                case 1:
-                                    break;
-
-                                case 2:
-                                    break;
-
-                                case 3:
-                                    break;
-
-                            }
-                        }
-                    }
-                }
-            }
-
-            yield return null;
         }
 
         /// <summary>
@@ -655,11 +116,13 @@ namespace XR_3MatchGame_Object
         /// <returns></returns>
         public IEnumerator BlockMatch()
         {
-            StartCoroutine(ColBoom());
+            // 4X4 먼저 체크
+            StartCoroutine(MakeBoom());
 
-            yield return new WaitForSeconds(.5f);
+            yield return new WaitForSeconds(.3f);
 
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+            var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
             // 3X3 블럭 파괴
             for (int row = 0; row < height; row++)
@@ -668,7 +131,7 @@ namespace XR_3MatchGame_Object
                 {
                     if (blocks[row, col] != null)
                     {
-                        // 3X3 Col
+                        // Col
                         if (col != 5 && col != 6)
                         {
                             Block checkBlock = blocks[row, col];
@@ -677,13 +140,24 @@ namespace XR_3MatchGame_Object
 
                             if (col_0 != null && col_1 != null)
                             {
-                                // Col
                                 if (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType)
                                 {
+                                    // 점수 업데이트
+                                    DM.SetScore(blocks[row, col].BlockScore);
+                                    DM.SetScore(blocks[row, col + 1].BlockScore);
+                                    DM.SetScore(blocks[row, col + 2].BlockScore);
+
+                                    // 스킬 게이지 업데이트
+                                    uiElement.SetGauge(blocks[row, col].ElementValue);
+                                    uiElement.SetGauge(blocks[row, col + 1].ElementValue);
+                                    uiElement.SetGauge(blocks[row, col + 2].ElementValue);
+
+
                                     blocks[row, col] = null;
                                     blocks[row, col + 1] = null;
                                     blocks[row, col + 2] = null;
 
+                                    // 블럭 제거
                                     blockPool.ReturnPoolableObject(checkBlock);
                                     blockPool.ReturnPoolableObject(col_0);
                                     blockPool.ReturnPoolableObject(col_1);
@@ -692,9 +166,9 @@ namespace XR_3MatchGame_Object
                         }
                     }
 
-                    // 3X3 Row
                     if (blocks[row, col] != null)
                     {
+                        // Row
                         if (row != 5 && row != 6)
                         {
                             Block checkBlock = blocks[row, col];
@@ -705,10 +179,21 @@ namespace XR_3MatchGame_Object
                             {
                                 if (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType)
                                 {
+                                    // 점수 업데이트
+                                    DM.SetScore(blocks[row, col].BlockScore);
+                                    DM.SetScore(blocks[row + 1, col].BlockScore);
+                                    DM.SetScore(blocks[row + 2, col].BlockScore);
+
+                                    // 스킬 게이지 업데이트
+                                    uiElement.SetGauge(blocks[row, col].ElementValue);
+                                    uiElement.SetGauge(blocks[row, col + 1].ElementValue);
+                                    uiElement.SetGauge(blocks[row, col + 2].ElementValue);
+
                                     blocks[row, col] = null;
                                     blocks[row + 1, col] = null;
                                     blocks[row + 2, col] = null;
 
+                                    // 블럭 제거
                                     blockPool.ReturnPoolableObject(checkBlock);
                                     blockPool.ReturnPoolableObject(row_0);
                                     blockPool.ReturnPoolableObject(row_1);
@@ -773,6 +258,10 @@ namespace XR_3MatchGame_Object
             int newCol = -3;
             int newRow = 3;
 
+            // GameState -> Move
+            GM.SetGameState(GameState.Move);
+
+            // 블럭 생성 및 이동
             for (int col = 0; col < width; col++)
             {
                 for (int row = 0; row < height; row++)
@@ -820,6 +309,9 @@ namespace XR_3MatchGame_Object
                 newRow = 3;
             }
 
+            // GameState -> Checking
+            GM.SetGameState(GameState.Checking);
+
             BlockSort();
 
             if (MatchCheck())
@@ -830,6 +322,2404 @@ namespace XR_3MatchGame_Object
             {
                 // GameState -> Play
                 GM.SetGameState(GameState.Play);
+            }
+        }
+
+        public IEnumerator MakeBoom()
+        {
+            var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+            var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
+
+            var isMake = false;
+
+            Block block_0 = null;
+            Block block_1 = null;
+            Block block_2 = null;
+
+            // 이동 블럭이 있는 경우
+            if (moveBlock)
+            {
+                for (int row = 0; row < height; row++)
+                {
+                    for (int col = 0; col < width; col++)
+                    {
+                        if (blocks[row, col] != null && GM.GameState != GameState.Move)
+                        {
+                            // MoveBlock
+                            if (blocks[row, col] == moveBlock)
+                            {
+                                // Col
+                                switch (blocks[row, col].col)
+                                {
+                                    case -3:
+                                        // XOOO
+                                        block_0 = blocks[row, col + 1];
+                                        block_1 = blocks[row, col + 2];
+                                        block_2 = blocks[row, col + 3];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            block_0.col = moveBlock.col;
+                                            block_1.col = moveBlock.col;
+                                            block_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        break;
+
+                                    case -2:
+                                        // XOOO
+                                        block_0 = blocks[row, col + 1];
+                                        block_1 = blocks[row, col + 2];
+                                        block_2 = blocks[row, col + 3];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            block_0.col = moveBlock.col;
+                                            block_1.col = moveBlock.col;
+                                            block_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col + 1];
+                                            block_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.elementType == block_0.elementType &&
+                                                moveBlock.elementType == block_1.elementType &&
+                                                moveBlock.elementType == block_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                block_0.col = moveBlock.col;
+                                                block_1.col = moveBlock.col;
+                                                block_2.col = moveBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                // 블럭 제거
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수 업데이트
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                        }
+                                        break;
+
+                                    case -1:
+                                    case 0:
+                                        // XOOO
+                                        block_0 = blocks[row, col + 1];
+                                        block_1 = blocks[row, col + 2];
+                                        block_2 = blocks[row, col + 3];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            block_0.col = moveBlock.col;
+                                            block_1.col = moveBlock.col;
+                                            block_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col + 1];
+                                            block_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.elementType == block_0.elementType &&
+                                                moveBlock.elementType == block_1.elementType &&
+                                                moveBlock.elementType == block_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                block_0.col = moveBlock.col;
+                                                block_1.col = moveBlock.col;
+                                                block_2.col = moveBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                // 블럭 제거
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수 업데이트
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OOXO
+                                                block_0 = blocks[row, col - 1];
+                                                block_1 = blocks[row, col - 2];
+                                                block_2 = blocks[row, col + 1];
+
+                                                if (moveBlock.elementType == block_0.elementType &&
+                                                    moveBlock.elementType == block_1.elementType &&
+                                                    moveBlock.elementType == block_2.elementType)
+                                                {
+                                                    // 블럭 이동
+                                                    block_0.col = moveBlock.col;
+                                                    block_1.col = moveBlock.col;
+                                                    block_2.col = moveBlock.col;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    // 블럭 제거
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수 업데이트
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row, col - 1] = null;
+                                                    blocks[row, col - 2] = null;
+                                                    blocks[row, col + 1] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.elementType = ElementType.Balance;
+                                                    moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 1:
+                                        // OOOX
+                                        block_0 = blocks[row, col - 1];
+                                        block_1 = blocks[row, col - 2];
+                                        block_2 = blocks[row, col - 3];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            block_0.col = moveBlock.col;
+                                            block_1.col = moveBlock.col;
+                                            block_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col - 2] = null;
+                                            blocks[row, col - 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OOXO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col - 2];
+                                            block_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.elementType == block_0.elementType &&
+                                                moveBlock.elementType == block_1.elementType &&
+                                                moveBlock.elementType == block_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                block_0.col = moveBlock.col;
+                                                block_1.col = moveBlock.col;
+                                                block_2.col = moveBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                // 블럭 제거
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수 업데이트
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col - 2] = null;
+                                                blocks[row, col + 1] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OXOO
+                                                block_0 = blocks[row, col - 1];
+                                                block_1 = blocks[row, col + 1];
+                                                block_2 = blocks[row, col + 2];
+
+                                                if (moveBlock.elementType == block_0.elementType &&
+                                                    moveBlock.elementType == block_1.elementType &&
+                                                    moveBlock.elementType == block_2.elementType)
+                                                {
+                                                    // 블럭 이동
+                                                    block_0.col = moveBlock.col;
+                                                    block_1.col = moveBlock.col;
+                                                    block_2.col = moveBlock.col;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    // 블럭 제거
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수 업데이트
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row, col - 1] = null;
+                                                    blocks[row, col + 1] = null;
+                                                    blocks[row, col + 2] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.elementType = ElementType.Balance;
+                                                    moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 2:
+                                        // OOOX
+                                        block_0 = blocks[row, col - 1];
+                                        block_1 = blocks[row, col - 2];
+                                        block_2 = blocks[row, col - 3];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            block_0.col = moveBlock.col;
+                                            block_1.col = moveBlock.col;
+                                            block_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col - 2] = null;
+                                            blocks[row, col - 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OOXO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col - 2];
+                                            block_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.elementType == block_0.elementType &&
+                                                moveBlock.elementType == block_1.elementType &&
+                                                moveBlock.elementType == block_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                block_0.col = moveBlock.col;
+                                                block_1.col = moveBlock.col;
+                                                block_2.col = moveBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                // 블럭 제거
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수 업데이트
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col - 2] = null;
+                                                blocks[row, col + 1] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                        }
+                                        break;
+
+                                    case 3:
+                                        // OOOX
+                                        block_0 = blocks[row, col - 1];
+                                        block_1 = blocks[row, col - 2];
+                                        block_2 = blocks[row, col - 3];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            block_0.col = moveBlock.col;
+                                            block_1.col = moveBlock.col;
+                                            block_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col - 2] = null;
+                                            blocks[row, col - 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        break;
+                                }
+
+                                // Row 
+                                switch (blocks[row, col].row)
+                                {
+                                    case -3:
+                                        // XOOO
+                                        block_0 = blocks[row + 1, col];
+                                        block_1 = blocks[row + 2, col];
+                                        block_2 = blocks[row + 3, col];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.row;
+                                            block_1.row = moveBlock.row;
+                                            block_2.row = moveBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        break;
+
+                                    case -2:
+                                        // XOOO
+                                        block_0 = blocks[row + 1, col];
+                                        block_1 = blocks[row + 2, col];
+                                        block_2 = blocks[row + 3, col];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.row;
+                                            block_1.row = moveBlock.row;
+                                            block_2.row = moveBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row - 1, col];
+                                            block_1 = blocks[row + 1, col];
+                                            block_2 = blocks[row + 2, col];
+
+                                            if (moveBlock.elementType == block_0.elementType &&
+                                                moveBlock.elementType == block_1.elementType &&
+                                                moveBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.row = moveBlock.row;
+                                                block_1.row = moveBlock.row;
+                                                block_2.row = moveBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                        }
+                                        break;
+
+                                    case -1:
+                                    case 0:
+                                        // XOOO
+                                        block_0 = blocks[row + 1, col];
+                                        block_1 = blocks[row + 2, col];
+                                        block_2 = blocks[row + 3, col];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.row;
+                                            block_1.row = moveBlock.row;
+                                            block_2.row = moveBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row - 1, col];
+                                            block_1 = blocks[row + 1, col];
+                                            block_2 = blocks[row + 2, col];
+
+                                            if (moveBlock.elementType == block_0.elementType &&
+                                                moveBlock.elementType == block_1.elementType &&
+                                                moveBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.row = moveBlock.row;
+                                                block_1.row = moveBlock.row;
+                                                block_2.row = moveBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OOXO
+                                                block_0 = blocks[row - 1, col];
+                                                block_1 = blocks[row - 2, col];
+                                                block_2 = blocks[row + 1, col];
+
+                                                if (moveBlock.elementType == block_0.elementType &&
+                                                    moveBlock.elementType == block_1.elementType &&
+                                                    moveBlock.elementType == block_2.elementType)
+                                                {
+                                                    block_0.row = moveBlock.row;
+                                                    block_1.row = moveBlock.row;
+                                                    block_2.row = moveBlock.row;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수를 더합니다!
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row - 1, col] = null;
+                                                    blocks[row - 2, col] = null;
+                                                    blocks[row + 1, col] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.elementType = ElementType.Balance;
+                                                    moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 1:
+                                        // OOOX
+                                        block_0 = blocks[row - 1, col];
+                                        block_1 = blocks[row - 2, col];
+                                        block_2 = blocks[row - 3, col];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.row;
+                                            block_1.row = moveBlock.row;
+                                            block_2.row = moveBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+                                            blocks[row - 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OOXO
+                                            block_0 = blocks[row + 1, col];
+                                            block_1 = blocks[row - 1, col];
+                                            block_2 = blocks[row - 2, col];
+
+                                            if (moveBlock.elementType == block_0.elementType &&
+                                                moveBlock.elementType == block_1.elementType &&
+                                                moveBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.row = moveBlock.row;
+                                                block_1.row = moveBlock.row;
+                                                block_2.row = moveBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row + 1, col] = null;
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OXOO
+                                                block_0 = blocks[row + 1, col];
+                                                block_1 = blocks[row + 2, col];
+                                                block_2 = blocks[row - 1, col];
+
+                                                if (moveBlock.elementType == block_0.elementType &&
+                                                    moveBlock.elementType == block_1.elementType &&
+                                                    moveBlock.elementType == block_2.elementType)
+                                                {
+                                                    block_0.row = moveBlock.row;
+                                                    block_1.row = moveBlock.row;
+                                                    block_2.row = moveBlock.row;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수를 더합니다!
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row + 1, col] = null;
+                                                    blocks[row + 2, col] = null;
+                                                    blocks[row - 1, col] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.elementType = ElementType.Balance;
+                                                    moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 2:
+                                        // OOOX
+                                        block_0 = blocks[row - 1, col];
+                                        block_1 = blocks[row - 2, col];
+                                        block_2 = blocks[row - 3, col];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.row;
+                                            block_1.row = moveBlock.row;
+                                            block_2.row = moveBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+                                            blocks[row - 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OOXO
+                                            block_0 = blocks[row + 1, col];
+                                            block_1 = blocks[row - 1, col];
+                                            block_2 = blocks[row - 2, col];
+
+                                            if (moveBlock.elementType == block_0.elementType &&
+                                                moveBlock.elementType == block_1.elementType &&
+                                                moveBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.row = moveBlock.row;
+                                                block_1.row = moveBlock.row;
+                                                block_2.row = moveBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row + 1, col] = null;
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                        }
+                                        break;
+
+                                    case 3:
+                                        // OOOX
+                                        block_0 = blocks[row - 1, col];
+                                        block_1 = blocks[row - 2, col];
+                                        block_2 = blocks[row - 3, col];
+
+                                        if (moveBlock.elementType == block_0.elementType &&
+                                            moveBlock.elementType == block_1.elementType &&
+                                            moveBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.row;
+                                            block_1.row = moveBlock.row;
+                                            block_2.row = moveBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+                                            blocks[row - 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        break;
+                                }
+                            }
+
+                            // OtherBlock
+                            if (blocks[row, col] == moveBlock.otherBlock)
+                            {
+                                // Col
+                                switch (blocks[row, col].col)
+                                {
+                                    case -3:
+                                        // XOOO
+                                        block_0 = blocks[row, col + 1];
+                                        block_1 = blocks[row, col + 2];
+                                        block_2 = blocks[row, col + 3];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.col = moveBlock.otherBlock.col;
+                                            block_1.col = moveBlock.otherBlock.col;
+                                            block_2.col = moveBlock.otherBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        break;
+
+                                    case -2:
+                                        // XOOO
+                                        block_0 = blocks[row, col + 1];
+                                        block_1 = blocks[row, col + 2];
+                                        block_2 = blocks[row, col + 3];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.col = moveBlock.otherBlock.col;
+                                            block_1.col = moveBlock.otherBlock.col;
+                                            block_2.col = moveBlock.otherBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col + 1];
+                                            block_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.col = moveBlock.otherBlock.col;
+                                                block_1.col = moveBlock.otherBlock.col;
+                                                block_2.col = moveBlock.otherBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                        }
+                                        break;
+
+                                    case -1:
+                                        // XOOO
+                                        block_0 = blocks[row, col + 1];
+                                        block_1 = blocks[row, col + 2];
+                                        block_2 = blocks[row, col + 3];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.col = moveBlock.otherBlock.col;
+                                            block_1.col = moveBlock.otherBlock.col;
+                                            block_2.col = moveBlock.otherBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col + 1];
+                                            block_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.col = moveBlock.otherBlock.col;
+                                                block_1.col = moveBlock.otherBlock.col;
+                                                block_2.col = moveBlock.otherBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OOXO
+                                                block_0 = blocks[row, col - 1];
+                                                block_1 = blocks[row, col - 2];
+                                                block_2 = blocks[row, col + 1];
+
+                                                if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_2.elementType)
+                                                {
+                                                    block_0.col = moveBlock.otherBlock.col;
+                                                    block_1.col = moveBlock.otherBlock.col;
+                                                    block_2.col = moveBlock.otherBlock.col;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수를 더합니다!
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row, col - 1] = null;
+                                                    blocks[row, col - 2] = null;
+                                                    blocks[row, col + 1] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 0:
+                                        // XOOO
+                                        block_0 = blocks[row, col + 1];
+                                        block_1 = blocks[row, col + 2];
+                                        block_2 = blocks[row, col + 3];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.col = moveBlock.otherBlock.col;
+                                            block_1.col = moveBlock.otherBlock.col;
+                                            block_2.col = moveBlock.otherBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col + 1];
+                                            block_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.col = moveBlock.otherBlock.col;
+                                                block_1.col = moveBlock.otherBlock.col;
+                                                block_2.col = moveBlock.otherBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OOXO
+                                                block_0 = blocks[row, col - 1];
+                                                block_1 = blocks[row, col - 2];
+                                                block_2 = blocks[row, col + 1];
+
+                                                if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_2.elementType)
+                                                {
+                                                    block_0.col = moveBlock.otherBlock.col;
+                                                    block_1.col = moveBlock.otherBlock.col;
+                                                    block_2.col = moveBlock.otherBlock.col;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수를 더합니다!
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row, col - 1] = null;
+                                                    blocks[row, col - 2] = null;
+                                                    blocks[row, col + 1] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                                else
+                                                {
+                                                    // OOOX
+                                                    block_0 = blocks[row, col - 1];
+                                                    block_1 = blocks[row, col - 2];
+                                                    block_2 = blocks[row, col - 3];
+
+                                                    if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                        moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                        moveBlock.otherBlock.elementType == block_2.elementType)
+                                                    {
+                                                        block_0.col = moveBlock.otherBlock.col;
+                                                        block_1.col = moveBlock.otherBlock.col;
+                                                        block_2.col = moveBlock.otherBlock.col;
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        blockPool.ReturnPoolableObject(block_0);
+                                                        blockPool.ReturnPoolableObject(block_1);
+                                                        blockPool.ReturnPoolableObject(block_2);
+
+                                                        // 점수를 더합니다!
+                                                        DM.SetScore(block_0.BlockScore);
+                                                        DM.SetScore(block_1.BlockScore);
+                                                        DM.SetScore(block_2.BlockScore);
+
+                                                        blocks[row, col - 1] = null;
+                                                        blocks[row, col - 2] = null;
+                                                        blocks[row, col - 3] = null;
+
+                                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                        moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                        moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                        isMake = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 1:
+                                        // OOOX
+                                        block_0 = blocks[row, col - 1];
+                                        block_1 = blocks[row, col - 2];
+                                        block_2 = blocks[row, col - 3];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.col = moveBlock.otherBlock.col;
+                                            block_1.col = moveBlock.otherBlock.col;
+                                            block_2.col = moveBlock.otherBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col - 2] = null;
+                                            blocks[row, col - 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OOXO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col - 2];
+                                            block_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.col = moveBlock.otherBlock.col;
+                                                block_1.col = moveBlock.otherBlock.col;
+                                                block_2.col = moveBlock.otherBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OXOO
+                                                block_0 = blocks[row, col - 1];
+                                                block_1 = blocks[row, col + 1];
+                                                block_2 = blocks[row, col + 2];
+
+                                                if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_2.elementType)
+                                                {
+                                                    block_0.col = moveBlock.otherBlock.col;
+                                                    block_1.col = moveBlock.otherBlock.col;
+                                                    block_2.col = moveBlock.otherBlock.col;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수를 더합니다!
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row, col - 1] = null;
+                                                    blocks[row, col + 1] = null;
+                                                    blocks[row, col + 2] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 2:
+                                        // OOOX
+                                        block_0 = blocks[row, col - 1];
+                                        block_1 = blocks[row, col - 2];
+                                        block_2 = blocks[row, col - 3];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.col = moveBlock.otherBlock.col;
+                                            block_1.col = moveBlock.otherBlock.col;
+                                            block_2.col = moveBlock.otherBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col - 2] = null;
+                                            blocks[row, col - 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OOXO
+                                            block_0 = blocks[row, col - 1];
+                                            block_1 = blocks[row, col - 2];
+                                            block_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.col = moveBlock.otherBlock.col;
+                                                block_1.col = moveBlock.otherBlock.col;
+                                                block_2.col = moveBlock.otherBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col - 2] = null;
+                                                blocks[row, col + 1] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                        }
+                                        break;
+
+                                    case 3:
+                                        // OOOX
+                                        block_0 = blocks[row, col - 1];
+                                        block_1 = blocks[row, col - 2];
+                                        block_2 = blocks[row, col - 3];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.col = moveBlock.otherBlock.col;
+                                            block_1.col = moveBlock.otherBlock.col;
+                                            block_2.col = moveBlock.otherBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col - 2] = null;
+                                            blocks[row, col - 3] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        break;
+                                }
+
+                                // Row
+                                switch (blocks[row, col].row)
+                                {
+                                    case -3:
+                                        // XOOO
+                                        block_0 = blocks[row + 1, col];
+                                        block_1 = blocks[row + 2, col];
+                                        block_2 = blocks[row + 3, col];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.otherBlock.row;
+                                            block_1.row = moveBlock.otherBlock.row;
+                                            block_2.row = moveBlock.otherBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        break;
+
+                                    case -2:
+                                        // XOOO
+                                        block_0 = blocks[row + 1, col];
+                                        block_1 = blocks[row + 2, col];
+                                        block_2 = blocks[row + 3, col];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.otherBlock.row;
+                                            block_1.row = moveBlock.otherBlock.row;
+                                            block_2.row = moveBlock.otherBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row - 1, col];
+                                            block_1 = blocks[row + 1, col];
+                                            block_2 = blocks[row + 2, col];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.row = moveBlock.otherBlock.row;
+                                                block_1.row = moveBlock.otherBlock.row;
+                                                block_2.row = moveBlock.otherBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                        }
+                                        break;
+
+                                    case -1:
+                                    case 0:
+                                        // XOOO
+                                        block_0 = blocks[row + 1, col];
+                                        block_1 = blocks[row + 2, col];
+                                        block_2 = blocks[row + 3, col];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.otherBlock.row;
+                                            block_1.row = moveBlock.otherBlock.row;
+                                            block_2.row = moveBlock.otherBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OXOO
+                                            block_0 = blocks[row - 1, col];
+                                            block_1 = blocks[row + 1, col];
+                                            block_2 = blocks[row + 2, col];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.row = moveBlock.row;
+                                                block_1.row = moveBlock.row;
+                                                block_2.row = moveBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OOXO
+                                                block_0 = blocks[row - 1, col];
+                                                block_1 = blocks[row - 2, col];
+                                                block_2 = blocks[row + 1, col];
+
+                                                if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_2.elementType)
+                                                {
+                                                    block_0.row = moveBlock.otherBlock.row;
+                                                    block_1.row = moveBlock.otherBlock.row;
+                                                    block_2.row = moveBlock.otherBlock.row;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수를 더합니다!
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row - 1, col] = null;
+                                                    blocks[row - 2, col] = null;
+                                                    blocks[row + 1, col] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 1:
+                                        // OOOX
+                                        block_0 = blocks[row - 1, col];
+                                        block_1 = blocks[row - 2, col];
+                                        block_2 = blocks[row - 3, col];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.otherBlock.row;
+                                            block_1.row = moveBlock.otherBlock.row;
+                                            block_2.row = moveBlock.otherBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+                                            blocks[row - 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OOXO
+                                            block_0 = blocks[row + 1, col];
+                                            block_1 = blocks[row - 1, col];
+                                            block_2 = blocks[row - 2, col];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.row = moveBlock.otherBlock.row;
+                                                block_1.row = moveBlock.otherBlock.row;
+                                                block_2.row = moveBlock.otherBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row + 1, col] = null;
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                            else
+                                            {
+                                                // OXOO
+                                                block_0 = blocks[row + 1, col];
+                                                block_1 = blocks[row + 2, col];
+                                                block_2 = blocks[row - 1, col];
+
+                                                if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                    moveBlock.otherBlock.elementType == block_2.elementType)
+                                                {
+                                                    block_0.row = moveBlock.otherBlock.row;
+                                                    block_1.row = moveBlock.otherBlock.row;
+                                                    block_2.row = moveBlock.otherBlock.row;
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    blockPool.ReturnPoolableObject(block_0);
+                                                    blockPool.ReturnPoolableObject(block_1);
+                                                    blockPool.ReturnPoolableObject(block_2);
+
+                                                    // 점수를 더합니다!
+                                                    DM.SetScore(block_0.BlockScore);
+                                                    DM.SetScore(block_1.BlockScore);
+                                                    DM.SetScore(block_2.BlockScore);
+
+                                                    blocks[row + 1, col] = null;
+                                                    blocks[row + 2, col] = null;
+                                                    blocks[row - 1, col] = null;
+
+                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                    isMake = true;
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 2:
+                                        // OOOX
+                                        block_0 = blocks[row - 1, col];
+                                        block_1 = blocks[row - 2, col];
+                                        block_2 = blocks[row - 3, col];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.otherBlock.row;
+                                            block_1.row = moveBlock.otherBlock.row;
+                                            block_2.row = moveBlock.otherBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+                                            blocks[row - 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        else
+                                        {
+                                            // OOXO
+                                            block_0 = blocks[row + 1, col];
+                                            block_1 = blocks[row - 1, col];
+                                            block_2 = blocks[row - 2, col];
+
+                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                                moveBlock.otherBlock.elementType == block_1.elementType &&
+                                                moveBlock.otherBlock.elementType == block_2.elementType)
+                                            {
+                                                block_0.row = moveBlock.otherBlock.row;
+                                                block_1.row = moveBlock.otherBlock.row;
+                                                block_2.row = moveBlock.otherBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(block_0);
+                                                blockPool.ReturnPoolableObject(block_1);
+                                                blockPool.ReturnPoolableObject(block_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(block_0.BlockScore);
+                                                DM.SetScore(block_1.BlockScore);
+                                                DM.SetScore(block_2.BlockScore);
+
+                                                blocks[row + 1, col] = null;
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.otherBlock.elementType = ElementType.Balance;
+                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                isMake = true;
+                                            }
+                                        }
+                                        break;
+
+                                    case 3:
+                                        // OOOX
+                                        block_0 = blocks[row - 1, col];
+                                        block_1 = blocks[row - 2, col];
+                                        block_2 = blocks[row - 3, col];
+
+                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
+                                            moveBlock.otherBlock.elementType == block_1.elementType &&
+                                            moveBlock.otherBlock.elementType == block_2.elementType)
+                                        {
+                                            block_0.row = moveBlock.otherBlock.row;
+                                            block_1.row = moveBlock.otherBlock.row;
+                                            block_2.row = moveBlock.otherBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(block_0);
+                                            blockPool.ReturnPoolableObject(block_1);
+                                            blockPool.ReturnPoolableObject(block_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(block_0.BlockScore);
+                                            DM.SetScore(block_1.BlockScore);
+                                            DM.SetScore(block_2.BlockScore);
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+                                            blocks[row - 3, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.otherBlock.elementType = ElementType.Balance;
+                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            isMake = true;
+                                        }
+                                        break;
+                                }
+                            }
+
+                            if (isMake)
+                            {
+                                // 블럭 다운 카운트 계산
+                                int downCount = 0;
+
+                                for (int c_Col = 0; c_Col < width; c_Col++)
+                                {
+                                    for (int c_Row = 0; c_Row < height; c_Row++)
+                                    {
+                                        if (blocks[c_Row, c_Col] == null)
+                                        {
+                                            downCount++;
+                                        }
+                                        else
+                                        {
+                                            blocks[c_Row, c_Col].downCount = downCount;
+                                        }
+                                    }
+
+                                    downCount = 0;
+                                }
+
+                                yield return new WaitForSeconds(.3f);
+
+                                // 블럭 내리기 작업
+                                for (int d_Row = 0; d_Row < height; d_Row++)
+                                {
+                                    for (int d_Col = 0; d_Col < width; d_Col++)
+                                    {
+                                        if (blocks[d_Row, d_Col] != null)
+                                        {
+                                            if (blocks[d_Row, d_Col].downCount > 0)
+                                            {
+                                                // 내릴 공간이 존재한다
+
+                                                var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
+
+                                                if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
+                                                {
+                                                    Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
+                                                    blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
+                                                }
+
+                                                // 다운 카운트 초기화
+                                                blocks[d_Row, d_Col].downCount = 0;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                yield return new WaitForSeconds(.3f);
+
+                                // 빈 공간 블럭 생성
+                                int newCol = -3;
+                                int newRow = 3;
+
+                                // GameState -> Move
+                                GM.SetGameState(GameState.Move);
+
+                                for (int n_Col = 0; n_Col < width; n_Col++)
+                                {
+                                    for (int n_Row = 0; n_Row < height; n_Row++)
+                                    {
+                                        if (blocks[n_Row, n_Col] == null)
+                                        {
+                                            // 어? 여기 비어있는데? 탈모인데?
+                                            // 그러면 머리 심어줘야자~
+                                            Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
+
+                                            // 부모 설정
+                                            newBlock.transform.SetParent(this.transform);
+
+                                            // 위치값 설정
+                                            newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
+
+                                            // 회전값 설정
+                                            newBlock.transform.localRotation = Quaternion.identity;
+
+                                            // 사이즈값 설정
+                                            newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
+
+                                            // 활성화
+                                            newBlock.gameObject.SetActive(true);
+
+                                            // 블럭 초기화
+                                            newBlock.Initialize(newCol, 4 + n_Row);
+
+                                            // 블럭 저장
+                                            blocks[n_Row, n_Col] = newBlock;
+
+                                            var targetrow = (newBlock.row = newRow);
+
+                                            if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
+                                            {
+                                                Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
+                                                newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
+                                            }
+
+                                            newRow--;
+                                        }
+                                    }
+
+                                    newCol++;
+                                    newRow = 3;
+                                }
+
+                                // GameState -> Checking
+                                GM.SetGameState(GameState.Checking);
+
+                                isMake = false;
+
+                                BlockSort();
+                            }
+                        }
+                    }
+                }
+
+                // 비워주기
+                moveBlock = null;
+            }
+            // 이동 블럭이 없는 경우
+            else
+            {
+                for (int row = 0; row < height; row++)
+                {
+                    for (int col = 0; col < width; col++)
+                    {
+                        if (blocks[row, col] != null && GM.GameState != GameState.Move)
+                        {
+                            Block checkBlock = blocks[row, col];
+
+                            // Col이 음수 또는 0
+                            if (checkBlock.col <= 0)
+                            {
+                                block_0 = blocks[row, col + 1];
+                                block_1 = blocks[row, col + 2];
+                                block_2 = blocks[row, col + 3];
+
+                                if (checkBlock.elementType == block_0.elementType &&
+                                    checkBlock.elementType == block_1.elementType &&
+                                    checkBlock.elementType == block_2.elementType)
+                                {
+                                    block_0.col = checkBlock.col;
+                                    block_1.col = checkBlock.col;
+                                    block_2.col = checkBlock.col;
+
+                                    yield return new WaitForSeconds(.3f);
+
+                                    // 풀에 리턴
+                                    blockPool.ReturnPoolableObject(block_0);
+                                    blockPool.ReturnPoolableObject(block_1);
+                                    blockPool.ReturnPoolableObject(block_2);
+
+                                    // 점수를 더합니다!
+                                    DM.SetScore(block_0.BlockScore);
+                                    DM.SetScore(block_1.BlockScore);
+                                    DM.SetScore(block_2.BlockScore);
+
+                                    // 블럭 저장소에서 제거
+                                    blocks[row, col + 1] = null;
+                                    blocks[row, col + 2] = null;
+                                    blocks[row, col + 3] = null;
+
+                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                    checkBlock.elementType = ElementType.Balance;
+                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                    isMake = true;
+                                }
+                            }
+                            // Col이 양수
+                            else if (checkBlock.col > 0)
+                            {
+                                block_0 = blocks[row, col - 1];
+                                block_1 = blocks[row, col - 2];
+                                block_2 = blocks[row, col - 3];
+
+                                if (checkBlock.elementType == block_0.elementType &&
+                                    checkBlock.elementType == block_1.elementType &&
+                                    checkBlock.elementType == block_2.elementType)
+                                {
+                                    block_0.col = checkBlock.col;
+                                    block_1.col = checkBlock.col;
+                                    block_2.col = checkBlock.col;
+
+                                    yield return new WaitForSeconds(.3f);
+
+                                    // 풀에 리턴
+                                    blockPool.ReturnPoolableObject(block_0);
+                                    blockPool.ReturnPoolableObject(block_1);
+                                    blockPool.ReturnPoolableObject(block_2);
+
+                                    // 점수를 더합니다!
+                                    DM.SetScore(block_0.BlockScore);
+                                    DM.SetScore(block_1.BlockScore);
+                                    DM.SetScore(block_2.BlockScore);
+
+                                    // 블럭 저장소에서 제거
+                                    blocks[row, col - 1] = null;
+                                    blocks[row, col - 2] = null;
+                                    blocks[row, col - 3] = null;
+
+                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                    checkBlock.elementType = ElementType.Balance;
+                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                    isMake = true;
+                                }
+                            }
+                            // Row이 음수 또는 0
+                            else if (checkBlock.row <= 0)
+                            {
+                                block_0 = blocks[row + 1, col];
+                                block_1 = blocks[row + 2, col];
+                                block_2 = blocks[row + 3, col];
+
+                                if (checkBlock.elementType == block_0.elementType &&
+                                    checkBlock.elementType == block_1.elementType &&
+                                    checkBlock.elementType == block_2.elementType)
+                                {
+                                    block_0.row = checkBlock.row;
+                                    block_1.row = checkBlock.row;
+                                    block_2.row = checkBlock.row;
+
+                                    yield return new WaitForSeconds(.3f);
+
+                                    // 풀에 리턴
+                                    blockPool.ReturnPoolableObject(block_0);
+                                    blockPool.ReturnPoolableObject(block_1);
+                                    blockPool.ReturnPoolableObject(block_2);
+
+                                    // 점수를 더합니다!
+                                    DM.SetScore(block_0.BlockScore);
+                                    DM.SetScore(block_1.BlockScore);
+                                    DM.SetScore(block_2.BlockScore);
+
+                                    // 블럭 저장소에서 제거
+                                    blocks[row + 1, col] = null;
+                                    blocks[row + 2, col] = null;
+                                    blocks[row + 3, col] = null;
+
+                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                    checkBlock.elementType = ElementType.Balance;
+                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                    isMake = true;
+                                }
+                            }
+                            // Row이 양수
+                            else if (checkBlock.row > 0)
+                            {
+                                block_0 = blocks[row - 1, col];
+                                block_1 = blocks[row - 2, col];
+                                block_2 = blocks[row - 3, col];
+
+                                if (checkBlock.elementType == block_0.elementType &&
+                                    checkBlock.elementType == block_1.elementType &&
+                                    checkBlock.elementType == block_2.elementType)
+                                {
+                                    block_0.row = checkBlock.row;
+                                    block_1.row = checkBlock.row;
+                                    block_2.row = checkBlock.row;
+
+                                    yield return new WaitForSeconds(.3f);
+
+                                    // 풀에 리턴
+                                    blockPool.ReturnPoolableObject(block_0);
+                                    blockPool.ReturnPoolableObject(block_1);
+                                    blockPool.ReturnPoolableObject(block_2);
+
+                                    // 점수를 더합니다!
+                                    DM.SetScore(block_0.BlockScore);
+                                    DM.SetScore(block_1.BlockScore);
+                                    DM.SetScore(block_2.BlockScore);
+
+                                    // 블럭 저장소에서 제거
+                                    blocks[row - 1, col] = null;
+                                    blocks[row - 2, col] = null;
+                                    blocks[row - 3, col] = null;
+
+                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                    checkBlock.elementType = ElementType.Balance;
+                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                    isMake = true;
+                                }
+                            }
+
+                            if (isMake)
+                            {
+                                // 블럭 다운 카운트 계산
+                                int downCount = 0;
+
+                                for (int c_Col = 0; c_Col < width; c_Col++)
+                                {
+                                    for (int c_Row = 0; c_Row < height; c_Row++)
+                                    {
+                                        if (blocks[c_Row, c_Col] == null)
+                                        {
+                                            downCount++;
+                                        }
+                                        else
+                                        {
+                                            blocks[c_Row, c_Col].downCount = downCount;
+                                        }
+                                    }
+
+                                    downCount = 0;
+                                }
+
+                                yield return new WaitForSeconds(.3f);
+
+                                // 블럭 내리기 작업
+                                for (int d_Row = 0; d_Row < height; d_Row++)
+                                {
+                                    for (int d_Col = 0; d_Col < width; d_Col++)
+                                    {
+                                        if (blocks[d_Row, d_Col] != null)
+                                        {
+                                            if (blocks[d_Row, d_Col].downCount > 0)
+                                            {
+                                                // 내릴 공간이 존재한다
+
+                                                var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
+
+                                                if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
+                                                {
+                                                    Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
+                                                    blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
+                                                }
+
+                                                // 다운 카운트 초기화
+                                                blocks[d_Row, d_Col].downCount = 0;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                yield return new WaitForSeconds(.3f);
+
+                                // 빈 공간 블럭 생성
+                                int newCol = -3;
+                                int newRow = 3;
+
+                                // GameState -> Move
+                                GM.SetGameState(GameState.Move);
+
+                                for (int n_Col = 0; n_Col < width; n_Col++)
+                                {
+                                    for (int n_Row = 0; n_Row < height; n_Row++)
+                                    {
+                                        if (blocks[n_Row, n_Col] == null)
+                                        {
+                                            // 어? 여기 비어있는데? 탈모인데?
+                                            // 그러면 머리 심어줘야자~
+                                            Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
+
+                                            // 부모 설정
+                                            newBlock.transform.SetParent(this.transform);
+
+                                            // 위치값 설정
+                                            newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
+
+                                            // 회전값 설정
+                                            newBlock.transform.localRotation = Quaternion.identity;
+
+                                            // 사이즈값 설정
+                                            newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
+
+                                            // 활성화
+                                            newBlock.gameObject.SetActive(true);
+
+                                            // 블럭 초기화
+                                            newBlock.Initialize(newCol, 4 + n_Row);
+
+                                            // 블럭 저장
+                                            blocks[n_Row, n_Col] = newBlock;
+
+                                            var targetrow = (newBlock.row = newRow);
+
+                                            if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
+                                            {
+                                                Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
+                                                newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
+                                            }
+
+                                            newRow--;
+                                        }
+                                    }
+
+                                    newCol++;
+                                    newRow = 3;
+                                }
+
+                                isMake = false;
+
+                                // GameState -> Checking
+                                GM.SetGameState(GameState.Checking);
+
+                                BlockSort();
+                            }
+                        }
+                    }
+                }
             }
         }
 

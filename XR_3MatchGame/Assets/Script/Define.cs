@@ -12,7 +12,7 @@ namespace XR_3MatchGame.Util
 
     public enum GameState
     {
-        None, Spawn, Move, Play, Match, Checking, SKill, End
+        None, Move, Play, Checking, SKill, End
     }
 
     public enum AtlasType
@@ -27,7 +27,7 @@ namespace XR_3MatchGame.Util
 
     public enum ElementType
     {
-        None, Fire, Ice, Grass, Dark, Light, Lightning, Balance
+        None, Fire, Ice, Grass, Dark, Light, Lightning, Balance, FireBoom, IceBoom, GrassBoom, DarkBoom, LightBoom, LightningBoom
     }
 
     public enum IntroPhase

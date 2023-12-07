@@ -99,15 +99,5 @@ namespace XR_3MatchGame
                 OnPhase(++introPhase);
             }
         }
-
-        private void MyDelay()
-        {
-            StartCoroutine(WaitForSeconds());
-
-            IEnumerator WaitForSeconds()
-            {
-                yield return new WaitForSeconds(5f);
-            }
-        }
     }
 }
