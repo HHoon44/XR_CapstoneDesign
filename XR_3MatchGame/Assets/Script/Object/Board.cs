@@ -373,10 +373,15 @@ namespace XR_3MatchGame_Object
                                             blockPool.ReturnPoolableObject(block_1);
                                             blockPool.ReturnPoolableObject(block_2);
 
-                                            // 점수를 더합니다!
+                                            // 점수 업데이트
                                             DM.SetScore(block_0.BlockScore);
                                             DM.SetScore(block_1.BlockScore);
                                             DM.SetScore(block_2.BlockScore);
+
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(block_0.ElementValue);
+                                            uiElement.SetGauge(block_1.ElementValue);
+                                            uiElement.SetGauge(block_2.ElementValue);
 
                                             blocks[row, col + 1] = null;
                                             blocks[row, col + 2] = null;
@@ -417,6 +422,11 @@ namespace XR_3MatchGame_Object
                                             DM.SetScore(block_1.BlockScore);
                                             DM.SetScore(block_2.BlockScore);
 
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(block_0.ElementValue);
+                                            uiElement.SetGauge(block_1.ElementValue);
+                                            uiElement.SetGauge(block_2.ElementValue);
+
                                             blocks[row, col + 1] = null;
                                             blocks[row, col + 2] = null;
                                             blocks[row, col + 3] = null;
@@ -454,6 +464,11 @@ namespace XR_3MatchGame_Object
                                                 DM.SetScore(block_0.BlockScore);
                                                 DM.SetScore(block_1.BlockScore);
                                                 DM.SetScore(block_2.BlockScore);
+
+                                                // 스킬 게이지 업데이트
+                                                uiElement.SetGauge(block_0.ElementValue);
+                                                uiElement.SetGauge(block_1.ElementValue);
+                                                uiElement.SetGauge(block_2.ElementValue);
 
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col + 1] = null;
@@ -496,6 +511,11 @@ namespace XR_3MatchGame_Object
                                             DM.SetScore(block_1.BlockScore);
                                             DM.SetScore(block_2.BlockScore);
 
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(block_0.ElementValue);
+                                            uiElement.SetGauge(block_1.ElementValue);
+                                            uiElement.SetGauge(block_2.ElementValue);
+
                                             blocks[row, col + 1] = null;
                                             blocks[row, col + 2] = null;
                                             blocks[row, col + 3] = null;
@@ -534,6 +554,11 @@ namespace XR_3MatchGame_Object
                                                 DM.SetScore(block_1.BlockScore);
                                                 DM.SetScore(block_2.BlockScore);
 
+                                                // 스킬 게이지 업데이트
+                                                uiElement.SetGauge(block_0.ElementValue);
+                                                uiElement.SetGauge(block_1.ElementValue);
+                                                uiElement.SetGauge(block_2.ElementValue);
+
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col + 1] = null;
                                                 blocks[row, col + 2] = null;
@@ -571,6 +596,11 @@ namespace XR_3MatchGame_Object
                                                     DM.SetScore(block_0.BlockScore);
                                                     DM.SetScore(block_1.BlockScore);
                                                     DM.SetScore(block_2.BlockScore);
+
+                                                    // 스킬 게이지 업데이트
+                                                    uiElement.SetGauge(block_0.ElementValue);
+                                                    uiElement.SetGauge(block_1.ElementValue);
+                                                    uiElement.SetGauge(block_2.ElementValue);
 
                                                     blocks[row, col - 1] = null;
                                                     blocks[row, col - 2] = null;
@@ -613,6 +643,11 @@ namespace XR_3MatchGame_Object
                                             DM.SetScore(block_1.BlockScore);
                                             DM.SetScore(block_2.BlockScore);
 
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(block_0.ElementValue);
+                                            uiElement.SetGauge(block_1.ElementValue);
+                                            uiElement.SetGauge(block_2.ElementValue);
+
                                             blocks[row, col - 1] = null;
                                             blocks[row, col - 2] = null;
                                             blocks[row, col - 3] = null;
@@ -651,6 +686,11 @@ namespace XR_3MatchGame_Object
                                                 DM.SetScore(block_1.BlockScore);
                                                 DM.SetScore(block_2.BlockScore);
 
+                                                // 스킬 게이지 업데이트
+                                                uiElement.SetGauge(block_0.ElementValue);
+                                                uiElement.SetGauge(block_1.ElementValue);
+                                                uiElement.SetGauge(block_2.ElementValue);
+
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col - 2] = null;
                                                 blocks[row, col + 1] = null;
@@ -688,6 +728,11 @@ namespace XR_3MatchGame_Object
                                                     DM.SetScore(block_0.BlockScore);
                                                     DM.SetScore(block_1.BlockScore);
                                                     DM.SetScore(block_2.BlockScore);
+
+                                                    // 스킬 게이지 업데이트
+                                                    uiElement.SetGauge(block_0.ElementValue);
+                                                    uiElement.SetGauge(block_1.ElementValue);
+                                                    uiElement.SetGauge(block_2.ElementValue);
 
                                                     blocks[row, col - 1] = null;
                                                     blocks[row, col + 1] = null;
@@ -730,6 +775,11 @@ namespace XR_3MatchGame_Object
                                             DM.SetScore(block_1.BlockScore);
                                             DM.SetScore(block_2.BlockScore);
 
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(block_0.ElementValue);
+                                            uiElement.SetGauge(block_1.ElementValue);
+                                            uiElement.SetGauge(block_2.ElementValue);
+
                                             blocks[row, col - 1] = null;
                                             blocks[row, col - 2] = null;
                                             blocks[row, col - 3] = null;
@@ -767,6 +817,11 @@ namespace XR_3MatchGame_Object
                                                 DM.SetScore(block_0.BlockScore);
                                                 DM.SetScore(block_1.BlockScore);
                                                 DM.SetScore(block_2.BlockScore);
+
+                                                // 스킬 게이지 업데이트
+                                                uiElement.SetGauge(block_0.ElementValue);
+                                                uiElement.SetGauge(block_1.ElementValue);
+                                                uiElement.SetGauge(block_2.ElementValue);
 
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col - 2] = null;
@@ -807,6 +862,11 @@ namespace XR_3MatchGame_Object
                                             DM.SetScore(block_0.BlockScore);
                                             DM.SetScore(block_1.BlockScore);
                                             DM.SetScore(block_2.BlockScore);
+
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(block_0.ElementValue);
+                                            uiElement.SetGauge(block_1.ElementValue);
+                                            uiElement.SetGauge(block_2.ElementValue);
 
                                             blocks[row, col - 1] = null;
                                             blocks[row, col - 2] = null;
