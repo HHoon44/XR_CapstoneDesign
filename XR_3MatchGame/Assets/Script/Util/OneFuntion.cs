@@ -4,17 +4,6 @@ using XR_3MatchGame.Util;
 
 public class OneFuntion : MonoBehaviour
 {
-    #region Logo
-
-    /// <summary>
-    /// 로고 버튼에 바인딩할 메서드
-    /// </summary>
-    public void LobbyLoad()
-    {
-        SceneManager.LoadScene(SceneType.FirstLoading.ToString());
-    }
-
-    #endregion
 
     #region Lobby
 

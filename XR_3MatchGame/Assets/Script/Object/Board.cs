@@ -152,7 +152,6 @@ namespace XR_3MatchGame_Object
                                     uiElement.SetGauge(blocks[row, col + 1].ElementValue);
                                     uiElement.SetGauge(blocks[row, col + 2].ElementValue);
 
-
                                     blocks[row, col] = null;
                                     blocks[row, col + 1] = null;
                                     blocks[row, col + 2] = null;
@@ -186,8 +185,8 @@ namespace XR_3MatchGame_Object
 
                                     // 스킬 게이지 업데이트
                                     uiElement.SetGauge(blocks[row, col].ElementValue);
-                                    uiElement.SetGauge(blocks[row, col + 1].ElementValue);
-                                    uiElement.SetGauge(blocks[row, col + 2].ElementValue);
+                                    uiElement.SetGauge(blocks[row + 1, col].ElementValue);
+                                    uiElement.SetGauge(blocks[row + 2, col].ElementValue);
 
                                     blocks[row, col] = null;
                                     blocks[row + 1, col] = null;

@@ -6,13 +6,9 @@ namespace XR_3MatchGame_UI
 {
     public class UIElement : UIWindow
     {
-        [SerializeField]
-        private TextMeshProUGUI stateText;
-
-        [SerializeField]
-        private Image gaugeFill;
-
-        public GameObject fullEffect;
+        public TextMeshProUGUI stateText;       // 스킬 사용 시 현재 스킬의 버프를 알려주는 Text
+        public Image gaugeFill;                 // 스킬 게이지 이미지
+        public GameObject fullEffect;           // 스킬 게이지가 충전 되었다면 활성화할 이펙트
 
         public override void Start()
         {
@@ -31,6 +27,7 @@ namespace XR_3MatchGame_UI
                 fullEffect.SetActive(false);
             }
 
+            // 게이지 값 0
             gaugeFill.fillAmount = 0;
         }
 
@@ -42,27 +39,32 @@ namespace XR_3MatchGame_UI
         {
             if (gaugeFill.fillAmount >= 1f)
             {
-                // 게이지 완충!
+                // 스킬 게이지 충전 완료
                 if (!fullEffect.activeSelf)
                 {
                     fullEffect.SetActive(true);
-                
+
                 }
 
                 gaugeFill.fillAmount = 1f;
                 return;
             }
 
+            // 매개변수로 받은 값을 더해준다
             gaugeFill.fillAmount += amount;
         }
 
+        /// <summary>
+        /// 스킬 게이지 값을 리턴하는 메서드
+        /// </summary>
+        /// <returns></returns>
         public float GetGauge()
         {
             return gaugeFill.fillAmount;
         }
 
         /// <summary>
-        /// 상태 텍스트를 세팅하는 메서드
+        /// 스킬 사용 시 스킬 효과를 나타내도록 하는 메서드
         /// </summary>
         /// <param name="value"></param>
         public void SetStateText(string value = null)

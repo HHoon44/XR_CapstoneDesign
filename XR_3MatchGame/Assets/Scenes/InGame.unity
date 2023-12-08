@@ -10794,11 +10794,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f338bb4ff97da034b99d8e98f07390c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectElement: 0
+  btnElement: 0
   icon: {fileID: 421979425}
   skillEffectObj: {fileID: 1154899520}
-  magicCircle: {fileID: 0}
-  magicEffect: {fileID: 0}
   backBlack: {fileID: 413099227}
 --- !u!1 &514621918
 GameObject:
@@ -11368,11 +11366,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f338bb4ff97da034b99d8e98f07390c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectElement: 0
+  btnElement: 0
   icon: {fileID: 1288396044}
   skillEffectObj: {fileID: 1154899520}
-  magicCircle: {fileID: 0}
-  magicEffect: {fileID: 0}
   backBlack: {fileID: 413099227}
 --- !u!1 &806218051
 GameObject:
@@ -16755,7 +16751,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1154899520}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3, y: 3, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -16863,64 +16859,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dac27a2649bba384cb60373e05392637, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blocks: []
-  arrBlocks:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  downBlocks: []
-  delBlocks: []
-  colDel: []
-  rowDel: []
-  colDown: []
-  rowDown: []
-  newBlock: []
+  width: 7
+  height: 7
+  moveBlock: {fileID: 0}
   IGM: {fileID: 303469381}
   isReStart: 0
 --- !u!1 &1185031968
@@ -17203,7 +17144,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1200338927}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -18453,7 +18394,7 @@ MonoBehaviour:
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
   m_ReferenceResolution: {x: 1440, y: 2560}
-  m_ScreenMatchMode: 0
+  m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
@@ -19705,11 +19646,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f338bb4ff97da034b99d8e98f07390c1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectElement: 0
+  btnElement: 0
   icon: {fileID: 1497677259}
   skillEffectObj: {fileID: 1154899520}
-  magicCircle: {fileID: 0}
-  magicEffect: {fileID: 0}
   backBlack: {fileID: 413099227}
 --- !u!1 &1845371117
 GameObject:
@@ -34245,7 +34184,7 @@ ParticleSystem:
   ringBufferMode: 0
   ringBufferLoopRange: {x: 0, y: 1}
   emitterVelocityMode: 0
-  looping: 0
+  looping: 1
   prewarm: 0
   playOnAwake: 0
   useUnscaledTime: 0
