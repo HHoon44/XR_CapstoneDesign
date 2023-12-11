@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using System.Collections;
 using UnityEngine;
 using XR_3MatchGame.Util;
@@ -153,8 +154,15 @@ namespace XR_3MatchGame_Object
         {
             if (GM.GameState == GameState.Play)
             {
-                // 마우스 클릭 위치 저장
-                firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                if (elementType == ElementType.Balance)
+                {
+                    GM.Board.boomBlock = this;
+                    GM.Board.SetState(GameState.Boom);
+                }
+                else
+                {
+                    firstTouchPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                }
             }
         }
 
@@ -190,9 +198,11 @@ namespace XR_3MatchGame_Object
         /// </summary>
         private void BlockMove()
         {
+            // GameState -> Move
             GM.SetGameState(GameState.Move);
 
             Block[,] blocks = GM.Board.blocks;
+
             int height = GM.Board.height;
             int width = GM.Board.width;
 
@@ -280,6 +290,9 @@ namespace XR_3MatchGame_Object
                     }
                 }
             }
+
+            // 혹시 마지막 블럭들을 클릭 했을 때 탈출 하도록
+            GM.SetGameState(GameState.Play);
         }
 
         /// <summary>
