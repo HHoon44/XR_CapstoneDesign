@@ -154,6 +154,7 @@ namespace XR_3MatchGame_Object
         {
             if (GM.GameState == GameState.Play)
             {
+                // ÆøÅºÀÎÁö Ã¼Å©
                 if (elementType == ElementType.Balance)
                 {
                     GM.Board.boomBlock = this;

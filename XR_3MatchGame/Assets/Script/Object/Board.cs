@@ -78,6 +78,8 @@ namespace XR_3MatchGame_Object
                     break;
 
                 case GameState.Boom:
+                    // GameState -> Boom
+                    GM.SetGameState(gameState);
                     StartCoroutine(BoomFun(boomBlock.col));
                     break;
             }
@@ -151,60 +153,478 @@ namespace XR_3MatchGame_Object
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
-            // 3X3 블럭 파괴
+            Block checkBlock = null;
+            Block col_0 = null;
+            Block col_1 = null;
+            Block row_0 = null;
+            Block row_1 = null;
+
+
+
+            // 3X3 블록 파괴 - 예외 상황
+            for (int row = 0; row < height; row++)
+            {
+                for (int col = 0; col < width; col++)
+                {
+                    // Col
+                    if (blocks[row, col] != null)
+                    {
+                        checkBlock = blocks[row, col];
+
+                        if (checkBlock.col != 2 && checkBlock.col != 3)
+                        {
+                            col_0 = blocks[row, col + 1];
+                            col_1 = blocks[row, col + 2];
+
+                            // 1번째 Col 특수 상황 모음집 
+                            if ((checkBlock.row != 2 && checkBlock.row != 3) && (col_0 != null && col_1 != null))
+                            {
+                                /*
+                                 * O
+                                 * O
+                                 * O O O
+                                 */
+                                row_0 = blocks[row + 1, col];
+                                row_1 = blocks[row + 2, col];
+
+                                if (row_0 != null && row_1 != null)
+                                {
+                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
+                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                    {
+                                        Debug.Log("특수 상황");
+
+                                        // 점수 업데이트
+                                        DM.SetScore(checkBlock.BlockScore);
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(row_0.BlockScore);
+                                        DM.SetScore(row_1.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(checkBlock.ElementValue);
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(row_0.ElementValue);
+                                        uiElement.SetGauge(row_1.ElementValue);
+
+                                        // 저장소에서 비우기
+                                        blocks[row, col] = null;
+                                        blocks[row, col + 1] = null;
+                                        blocks[row, col + 2] = null;
+
+                                        blocks[row + 1, col] = null;
+                                        blocks[row + 2, col] = null;
+
+                                        // 풀에 반환
+                                        blockPool.ReturnPoolableObject(checkBlock);
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(row_0);
+                                        blockPool.ReturnPoolableObject(row_1);
+                                    }
+                                    else
+                                    {
+                                        /*
+                                         *   O 
+                                         *   O 
+                                         * O O O
+                                         */
+                                        row_0 = blocks[row + 1, col + 1];
+                                        row_1 = blocks[row + 2, col + 1];
+
+                                        if (row_0 != null && row_1 != null)
+                                        {
+                                            if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
+                                                (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                            {
+                                                // 점수 업데이트
+                                                DM.SetScore(checkBlock.BlockScore);
+                                                DM.SetScore(col_0.BlockScore);
+                                                DM.SetScore(col_1.BlockScore);
+                                                DM.SetScore(row_0.BlockScore);
+                                                DM.SetScore(row_1.BlockScore);
+
+                                                // 스킬 게이지 업데이트
+                                                uiElement.SetGauge(checkBlock.ElementValue);
+                                                uiElement.SetGauge(col_0.ElementValue);
+                                                uiElement.SetGauge(col_1.ElementValue);
+                                                uiElement.SetGauge(row_0.ElementValue);
+                                                uiElement.SetGauge(row_1.ElementValue);
+
+                                                // 저장소에서 비우기
+                                                blocks[row, col] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+
+                                                blocks[row + 1, col + 1] = null;
+                                                blocks[row + 2, col + 1] = null;
+
+                                                // 풀에 반환
+                                                blockPool.ReturnPoolableObject(checkBlock);
+                                                blockPool.ReturnPoolableObject(col_0);
+                                                blockPool.ReturnPoolableObject(col_1);
+                                                blockPool.ReturnPoolableObject(row_0);
+                                                blockPool.ReturnPoolableObject(row_1);
+                                            }
+                                            else
+                                            {
+                                                /*
+                                                 *     O
+                                                 *     O
+                                                 * O O O
+                                                 */
+                                                row_0 = blocks[row + 1, col + 2];
+                                                row_1 = blocks[row + 2, col + 2];
+
+                                                if (row_0 != null && row_1 != null)
+                                                {
+                                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
+                                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                                    {
+                                                        // 점수 업데이트
+                                                        DM.SetScore(checkBlock.BlockScore);
+                                                        DM.SetScore(col_0.BlockScore);
+                                                        DM.SetScore(col_1.BlockScore);
+                                                        DM.SetScore(row_0.BlockScore);
+                                                        DM.SetScore(row_1.BlockScore);
+
+                                                        // 스킬 게이지 업데이트
+                                                        uiElement.SetGauge(checkBlock.ElementValue);
+                                                        uiElement.SetGauge(col_0.ElementValue);
+                                                        uiElement.SetGauge(col_1.ElementValue);
+                                                        uiElement.SetGauge(row_0.ElementValue);
+                                                        uiElement.SetGauge(row_1.ElementValue);
+
+                                                        // 저장소에서 비우기
+                                                        blocks[row, col] = null;
+                                                        blocks[row, col + 1] = null;
+                                                        blocks[row, col + 2] = null;
+
+                                                        blocks[row + 1, col + 2] = null;
+                                                        blocks[row + 2, col + 2] = null;
+
+                                                        // 풀에 반환
+                                                        blockPool.ReturnPoolableObject(checkBlock);
+                                                        blockPool.ReturnPoolableObject(col_0);
+                                                        blockPool.ReturnPoolableObject(col_1);
+                                                        blockPool.ReturnPoolableObject(row_0);
+                                                        blockPool.ReturnPoolableObject(row_1);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // 2번째 Col 특수 상황 모음집
+                            if ((checkBlock.row != -2 && checkBlock.row != -3) && (col_0 != null && col_1 != null))
+                            {
+                                /*
+                                 * O O O
+                                 * O
+                                 * O
+                                 */
+                                row_0 = blocks[row - 1, col];
+                                row_1 = blocks[row - 2, col];
+
+                                if (row_0 != null && row_1 != null)
+                                {
+                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
+                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                    {
+                                        // 점수 업데이트
+                                        DM.SetScore(checkBlock.BlockScore);
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(row_0.BlockScore);
+                                        DM.SetScore(row_1.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(checkBlock.ElementValue);
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(row_0.ElementValue);
+                                        uiElement.SetGauge(row_1.ElementValue);
+
+                                        // 저장소에서 비우기
+                                        blocks[row, col] = null;
+                                        blocks[row, col + 1] = null;
+                                        blocks[row, col + 2] = null;
+
+                                        blocks[row - 1, col] = null;
+                                        blocks[row - 2, col] = null;
+
+                                        // 풀에 반환
+                                        blockPool.ReturnPoolableObject(checkBlock);
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(row_0);
+                                        blockPool.ReturnPoolableObject(row_1);
+                                    }
+                                    else
+                                    {
+                                        /*
+                                         * O O O 
+                                         *   O 
+                                         *   O
+                                         */
+                                        row_0 = blocks[row - 1, col + 1];
+                                        row_1 = blocks[row - 2, col + 1];
+
+                                        if (row_0 != null && row_1 != null)
+                                        {
+                                            if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
+                                                (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                            {
+                                                // 점수 업데이트
+                                                DM.SetScore(checkBlock.BlockScore);
+                                                DM.SetScore(col_0.BlockScore);
+                                                DM.SetScore(col_1.BlockScore);
+                                                DM.SetScore(row_0.BlockScore);
+                                                DM.SetScore(row_1.BlockScore);
+
+                                                // 스킬 게이지 업데이트
+                                                uiElement.SetGauge(checkBlock.ElementValue);
+                                                uiElement.SetGauge(col_0.ElementValue);
+                                                uiElement.SetGauge(col_1.ElementValue);
+                                                uiElement.SetGauge(row_0.ElementValue);
+                                                uiElement.SetGauge(row_1.ElementValue);
+
+                                                // 저장소에서 비우기
+                                                blocks[row, col] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+
+                                                blocks[row - 1, col + 1] = null;
+                                                blocks[row - 2, col + 1] = null;
+
+                                                // 풀에 반환
+                                                blockPool.ReturnPoolableObject(checkBlock);
+                                                blockPool.ReturnPoolableObject(col_0);
+                                                blockPool.ReturnPoolableObject(col_1);
+                                                blockPool.ReturnPoolableObject(row_0);
+                                                blockPool.ReturnPoolableObject(row_1);
+                                            }
+                                            else
+                                            {
+                                                /*
+                                                 * O O O
+                                                 *     O
+                                                 *     O
+                                                 */
+                                                row_0 = blocks[row - 1, col + 2];
+                                                row_1 = blocks[row - 2, col + 2];
+
+                                                if (row_0 != null && row_1 != null)
+                                                {
+                                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
+                                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                                    {
+                                                        // 점수 업데이트
+                                                        DM.SetScore(checkBlock.BlockScore);
+                                                        DM.SetScore(col_0.BlockScore);
+                                                        DM.SetScore(col_1.BlockScore);
+                                                        DM.SetScore(row_0.BlockScore);
+                                                        DM.SetScore(row_1.BlockScore);
+
+                                                        // 스킬 게이지 업데이트
+                                                        uiElement.SetGauge(checkBlock.ElementValue);
+                                                        uiElement.SetGauge(col_0.ElementValue);
+                                                        uiElement.SetGauge(col_1.ElementValue);
+                                                        uiElement.SetGauge(row_0.ElementValue);
+                                                        uiElement.SetGauge(row_1.ElementValue);
+
+                                                        // 저장소에서 비우기
+                                                        blocks[row, col] = null;
+                                                        blocks[row, col + 1] = null;
+                                                        blocks[row, col + 2] = null;
+
+                                                        blocks[row - 1, col + 2] = null;
+                                                        blocks[row - 2, col + 2] = null;
+
+                                                        // 풀에 반환
+                                                        blockPool.ReturnPoolableObject(checkBlock);
+                                                        blockPool.ReturnPoolableObject(col_0);
+                                                        blockPool.ReturnPoolableObject(col_1);
+                                                        blockPool.ReturnPoolableObject(row_0);
+                                                        blockPool.ReturnPoolableObject(row_1);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+
+                    // Row
+                    if (blocks[row, col] != null)
+                    {
+                        checkBlock = blocks[row, col];
+
+                        if (checkBlock.row != 2 && checkBlock.row != 3)
+                        {
+                            row_0 = blocks[row + 1, col];
+                            row_1 = blocks[row + 2, col];
+
+                            // 1번째 Row 특수 상황 모음집
+                            if ((checkBlock.col != 2 && checkBlock.col != 3) && (row_0 != null && row_1 != null))
+                            {
+                                /*
+                                 * O
+                                 * O O O
+                                 * O
+                                 */
+                                col_0 = blocks[row + 1, col + 1];
+                                col_1 = blocks[row + 1, col + 2];
+
+                                if (col_0 != null && col_1 != null)
+                                {
+                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
+                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                    {
+                                        // 점수 업데이트
+                                        DM.SetScore(checkBlock.BlockScore);
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(row_0.BlockScore);
+                                        DM.SetScore(row_1.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(checkBlock.ElementValue);
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(row_0.ElementValue);
+                                        uiElement.SetGauge(row_1.ElementValue);
+
+                                        // 저장소에서 비우기
+                                        blocks[row, col] = null;
+                                        blocks[row + 1, col] = null;
+                                        blocks[row + 2, col] = null;
+
+                                        blocks[row + 1, col + 1] = null;
+                                        blocks[row + 1, col + 2] = null;
+
+                                        // 풀에 반환
+                                        blockPool.ReturnPoolableObject(checkBlock);
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(row_0);
+                                        blockPool.ReturnPoolableObject(row_1);
+                                    }
+                                }
+                            }
+
+                            // 2번째 Row 특수 상황 모음집
+                            if ((checkBlock.col != -2 && checkBlock.col != -3) && (row_0 != null && row_1 != null))
+                            {
+                                /*
+                                 *     O
+                                 * O O O
+                                 *     O
+                                 */
+                                col_0 = blocks[row + 1, col - 1];
+                                col_1 = blocks[row + 1, col - 2];
+
+                                if (col_0 != null && col_1 != null)
+                                {
+                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
+                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                    {
+                                        // 점수 업데이트
+                                        DM.SetScore(checkBlock.BlockScore);
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(row_0.BlockScore);
+                                        DM.SetScore(row_1.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(checkBlock.ElementValue);
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(row_0.ElementValue);
+                                        uiElement.SetGauge(row_1.ElementValue);
+
+                                        // 저장소에서 비우기
+                                        blocks[row, col] = null;
+                                        blocks[row + 1, col] = null;
+                                        blocks[row + 2, col] = null;
+
+                                        blocks[row + 1, col - 1] = null;
+                                        blocks[row + 1, col - 2] = null;
+
+                                        // 풀에 반환
+                                        blockPool.ReturnPoolableObject(checkBlock);
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(row_0);
+                                        blockPool.ReturnPoolableObject(row_1);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3X3 블록 파괴 - 일반 상황
             for (int row = 0; row < height; row++)
             {
                 for (int col = 0; col < width; col++)
                 {
                     if (blocks[row, col] != null)
                     {
-                        // Col
-                        if (col != 5 && col != 6)
-                        {
-                            Block checkBlock = blocks[row, col];
-                            Block col_0 = blocks[row, col + 1];
-                            Block col_1 = blocks[row, col + 2];
+                        checkBlock = blocks[row, col];
 
-                            if (col_0 != null && col_1 != null)
+                        if (checkBlock.col != 2 && checkBlock.col != 3)
+                        {
+                            col_0 = blocks[row, col + 1];
+                            col_1 = blocks[row, col + 2];
+
+                            // Col 일반 상황
+                            if (checkBlock != null && col_0 != null && col_1 != null)
                             {
-                                if (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType)
+                                if (checkBlock.elementType == col_0.elementType &&
+                                    checkBlock.elementType == col_1.elementType)
                                 {
                                     // 점수 업데이트
-                                    DM.SetScore(blocks[row, col].BlockScore);
-                                    DM.SetScore(blocks[row, col + 1].BlockScore);
-                                    DM.SetScore(blocks[row, col + 2].BlockScore);
+                                    DM.SetScore(checkBlock.BlockScore);
+                                    DM.SetScore(col_0.BlockScore);
+                                    DM.SetScore(col_1.BlockScore);
 
                                     // 스킬 게이지 업데이트
-                                    uiElement.SetGauge(blocks[row, col].ElementValue);
-                                    uiElement.SetGauge(blocks[row, col + 1].ElementValue);
-                                    uiElement.SetGauge(blocks[row, col + 2].ElementValue);
+                                    uiElement.SetGauge(checkBlock.ElementValue);
+                                    uiElement.SetGauge(col_0.ElementValue);
+                                    uiElement.SetGauge(col_1.ElementValue);
 
+                                    // 저장소에서 비우기
                                     blocks[row, col] = null;
                                     blocks[row, col + 1] = null;
                                     blocks[row, col + 2] = null;
 
-                                    // 블럭 제거
+                                    // 풀에 반환
                                     blockPool.ReturnPoolableObject(checkBlock);
                                     blockPool.ReturnPoolableObject(col_0);
                                     blockPool.ReturnPoolableObject(col_1);
                                 }
                             }
                         }
-                    }
 
-                    if (blocks[row, col] != null)
-                    {
-                        // Row
-                        if (row != 5 && row != 6)
+                        if (checkBlock.row != 2 && checkBlock.row != 3)
                         {
-                            Block checkBlock = blocks[row, col];
-                            Block row_0 = blocks[row + 1, col];
-                            Block row_1 = blocks[row + 2, col];
+                            row_0 = blocks[row + 1, col];
+                            row_1 = blocks[row + 2, col];
 
+                            // Row 일반 상황
                             if (row_0 != null && row_1 != null)
                             {
                                 if (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType)
                                 {
+
                                     // 점수 업데이트
                                     DM.SetScore(blocks[row, col].BlockScore);
                                     DM.SetScore(blocks[row + 1, col].BlockScore);
@@ -226,6 +646,7 @@ namespace XR_3MatchGame_Object
                                 }
                             }
                         }
+
                     }
                 }
             }
@@ -274,8 +695,6 @@ namespace XR_3MatchGame_Object
                     }
                 }
             }
-
-            yield return new WaitForSeconds(.3f);
 
             // 빈 공간 블럭 생성
             int newCol = -3;
@@ -347,7 +766,7 @@ namespace XR_3MatchGame_Object
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
-            var isMake = false;
+            bool isMake = false;
 
             Block block_0 = null;
             Block block_1 = null;
@@ -366,10 +785,10 @@ namespace XR_3MatchGame_Object
                             if (blocks[row, col] == moveBlock)
                             {
                                 // Col
-                                switch (blocks[row, col].col)
+                                switch (moveBlock.col)
                                 {
                                     case -3:
-                                        // XOOO
+                                        // ★OOO
                                         block_0 = blocks[row, col + 1];
                                         block_1 = blocks[row, col + 2];
                                         block_2 = blocks[row, col + 3];
@@ -413,7 +832,7 @@ namespace XR_3MatchGame_Object
                                         break;
 
                                     case -2:
-                                        // XOOO
+                                        // ★OOO
                                         block_0 = blocks[row, col + 1];
                                         block_1 = blocks[row, col + 2];
                                         block_2 = blocks[row, col + 3];
@@ -456,7 +875,7 @@ namespace XR_3MatchGame_Object
                                         }
                                         else
                                         {
-                                            // OXOO
+                                            // O★OO
                                             block_0 = blocks[row, col - 1];
                                             block_1 = blocks[row, col + 1];
                                             block_2 = blocks[row, col + 2];
@@ -502,7 +921,7 @@ namespace XR_3MatchGame_Object
 
                                     case -1:
                                     case 0:
-                                        // XOOO
+                                        // ★OOO
                                         block_0 = blocks[row, col + 1];
                                         block_1 = blocks[row, col + 2];
                                         block_2 = blocks[row, col + 3];
@@ -545,7 +964,7 @@ namespace XR_3MatchGame_Object
                                         }
                                         else
                                         {
-                                            // OXOO
+                                            // O★OO
                                             block_0 = blocks[row, col - 1];
                                             block_1 = blocks[row, col + 1];
                                             block_2 = blocks[row, col + 2];
@@ -588,7 +1007,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OOXO
+                                                // OO★O
                                                 block_0 = blocks[row, col - 1];
                                                 block_1 = blocks[row, col - 2];
                                                 block_2 = blocks[row, col + 1];
@@ -634,7 +1053,7 @@ namespace XR_3MatchGame_Object
                                         break;
 
                                     case 1:
-                                        // OOOX
+                                        // OOO★
                                         block_0 = blocks[row, col - 1];
                                         block_1 = blocks[row, col - 2];
                                         block_2 = blocks[row, col - 3];
@@ -677,7 +1096,7 @@ namespace XR_3MatchGame_Object
                                         }
                                         else
                                         {
-                                            // OOXO
+                                            // OO★O
                                             block_0 = blocks[row, col - 1];
                                             block_1 = blocks[row, col - 2];
                                             block_2 = blocks[row, col + 1];
@@ -720,7 +1139,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OXOO
+                                                // O★OO
                                                 block_0 = blocks[row, col - 1];
                                                 block_1 = blocks[row, col + 1];
                                                 block_2 = blocks[row, col + 2];
@@ -766,7 +1185,7 @@ namespace XR_3MatchGame_Object
                                         break;
 
                                     case 2:
-                                        // OOOX
+                                        // OOO★
                                         block_0 = blocks[row, col - 1];
                                         block_1 = blocks[row, col - 2];
                                         block_2 = blocks[row, col - 3];
@@ -809,7 +1228,7 @@ namespace XR_3MatchGame_Object
                                         }
                                         else
                                         {
-                                            // OOXO
+                                            // OO★O
                                             block_0 = blocks[row, col - 1];
                                             block_1 = blocks[row, col - 2];
                                             block_2 = blocks[row, col + 1];
@@ -854,7 +1273,7 @@ namespace XR_3MatchGame_Object
                                         break;
 
                                     case 3:
-                                        // OOOX
+                                        // OOO★
                                         block_0 = blocks[row, col - 1];
                                         block_1 = blocks[row, col - 2];
                                         block_2 = blocks[row, col - 3];
@@ -899,10 +1318,10 @@ namespace XR_3MatchGame_Object
                                 }
 
                                 // Row 
-                                switch (blocks[row, col].row)
+                                switch (moveBlock.row)
                                 {
                                     case -3:
-                                        // XOOO
+                                        // ★OOO
                                         block_0 = blocks[row + 1, col];
                                         block_1 = blocks[row + 2, col];
                                         block_2 = blocks[row + 3, col];
@@ -939,7 +1358,7 @@ namespace XR_3MatchGame_Object
                                         break;
 
                                     case -2:
-                                        // XOOO
+                                        // ★OOO
                                         block_0 = blocks[row + 1, col];
                                         block_1 = blocks[row + 2, col];
                                         block_2 = blocks[row + 3, col];
@@ -975,7 +1394,7 @@ namespace XR_3MatchGame_Object
                                         }
                                         else
                                         {
-                                            // OXOO
+                                            // O★OO
                                             block_0 = blocks[row - 1, col];
                                             block_1 = blocks[row + 1, col];
                                             block_2 = blocks[row + 2, col];
@@ -1014,7 +1433,7 @@ namespace XR_3MatchGame_Object
 
                                     case -1:
                                     case 0:
-                                        // XOOO
+                                        // ★OOO
                                         block_0 = blocks[row + 1, col];
                                         block_1 = blocks[row + 2, col];
                                         block_2 = blocks[row + 3, col];
@@ -1050,7 +1469,7 @@ namespace XR_3MatchGame_Object
                                         }
                                         else
                                         {
-                                            // OXOO
+                                            // O★OO
                                             block_0 = blocks[row - 1, col];
                                             block_1 = blocks[row + 1, col];
                                             block_2 = blocks[row + 2, col];
@@ -1086,7 +1505,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OOXO
+                                                // OO★O
                                                 block_0 = blocks[row - 1, col];
                                                 block_1 = blocks[row - 2, col];
                                                 block_2 = blocks[row + 1, col];
@@ -1125,7 +1544,7 @@ namespace XR_3MatchGame_Object
                                         break;
 
                                     case 1:
-                                        // OOOX
+                                        // OOO★
                                         block_0 = blocks[row - 1, col];
                                         block_1 = blocks[row - 2, col];
                                         block_2 = blocks[row - 3, col];
@@ -1161,7 +1580,7 @@ namespace XR_3MatchGame_Object
                                         }
                                         else
                                         {
-                                            // OOXO
+                                            // OO★O
                                             block_0 = blocks[row + 1, col];
                                             block_1 = blocks[row - 1, col];
                                             block_2 = blocks[row - 2, col];
@@ -1197,7 +1616,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OXOO
+                                                // O★OO
                                                 block_0 = blocks[row + 1, col];
                                                 block_1 = blocks[row + 2, col];
                                                 block_2 = blocks[row - 1, col];
@@ -1236,7 +1655,7 @@ namespace XR_3MatchGame_Object
                                         break;
 
                                     case 2:
-                                        // OOOX
+                                        // OOO★
                                         block_0 = blocks[row - 1, col];
                                         block_1 = blocks[row - 2, col];
                                         block_2 = blocks[row - 3, col];
@@ -1272,7 +1691,7 @@ namespace XR_3MatchGame_Object
                                         }
                                         else
                                         {
-                                            // OOXO
+                                            // OO★O
                                             block_0 = blocks[row + 1, col];
                                             block_1 = blocks[row - 1, col];
                                             block_2 = blocks[row - 2, col];
@@ -1310,7 +1729,7 @@ namespace XR_3MatchGame_Object
                                         break;
 
                                     case 3:
-                                        // OOOX
+                                        // OOO★
                                         block_0 = blocks[row - 1, col];
                                         block_1 = blocks[row - 2, col];
                                         block_2 = blocks[row - 3, col];
@@ -1348,7 +1767,7 @@ namespace XR_3MatchGame_Object
                                 }
                             }
 
-                            Debug.Log(moveBlock.otherBlock.elementType);
+                            Debug.Log(moveBlock.otherBlock);
 
                             /// 여기서 Null
                             if (moveBlock.otherBlock != null)
@@ -1357,10 +1776,10 @@ namespace XR_3MatchGame_Object
                                 if (blocks[row, col] == moveBlock.otherBlock)
                                 {
                                     // Col
-                                    switch (blocks[row, col].col)
+                                    switch (moveBlock.otherBlock.col)
                                     {
                                         case -3:
-                                            // XOOO
+                                            // ★OOO
                                             block_0 = blocks[row, col + 1];
                                             block_1 = blocks[row, col + 2];
                                             block_2 = blocks[row, col + 3];
@@ -1397,7 +1816,7 @@ namespace XR_3MatchGame_Object
                                             break;
 
                                         case -2:
-                                            // XOOO
+                                            // ★OOO
                                             block_0 = blocks[row, col + 1];
                                             block_1 = blocks[row, col + 2];
                                             block_2 = blocks[row, col + 3];
@@ -1433,7 +1852,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OXOO
+                                                // O★OO
                                                 block_0 = blocks[row, col - 1];
                                                 block_1 = blocks[row, col + 1];
                                                 block_2 = blocks[row, col + 2];
@@ -1471,118 +1890,8 @@ namespace XR_3MatchGame_Object
                                             break;
 
                                         case -1:
-                                            // XOOO
-                                            block_0 = blocks[row, col + 1];
-                                            block_1 = blocks[row, col + 2];
-                                            block_2 = blocks[row, col + 3];
-
-                                            if (moveBlock.otherBlock.elementType == block_0.elementType &&
-                                                moveBlock.otherBlock.elementType == block_1.elementType &&
-                                                moveBlock.otherBlock.elementType == block_2.elementType)
-                                            {
-                                                block_0.col = moveBlock.otherBlock.col;
-                                                block_1.col = moveBlock.otherBlock.col;
-                                                block_2.col = moveBlock.otherBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(block_0);
-                                                blockPool.ReturnPoolableObject(block_1);
-                                                blockPool.ReturnPoolableObject(block_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(block_0.BlockScore);
-                                                DM.SetScore(block_1.BlockScore);
-                                                DM.SetScore(block_2.BlockScore);
-
-                                                blocks[row, col + 1] = null;
-                                                blocks[row, col + 2] = null;
-                                                blocks[row, col + 3] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // OXOO
-                                                block_0 = blocks[row, col - 1];
-                                                block_1 = blocks[row, col + 1];
-                                                block_2 = blocks[row, col + 2];
-
-                                                if (moveBlock.otherBlock.elementType == block_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == block_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == block_2.elementType)
-                                                {
-                                                    block_0.col = moveBlock.otherBlock.col;
-                                                    block_1.col = moveBlock.otherBlock.col;
-                                                    block_2.col = moveBlock.otherBlock.col;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(block_0);
-                                                    blockPool.ReturnPoolableObject(block_1);
-                                                    blockPool.ReturnPoolableObject(block_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(block_0.BlockScore);
-                                                    DM.SetScore(block_1.BlockScore);
-                                                    DM.SetScore(block_2.BlockScore);
-
-                                                    blocks[row, col - 1] = null;
-                                                    blocks[row, col + 1] = null;
-                                                    blocks[row, col + 2] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                                else
-                                                {
-                                                    // OOXO
-                                                    block_0 = blocks[row, col - 1];
-                                                    block_1 = blocks[row, col - 2];
-                                                    block_2 = blocks[row, col + 1];
-
-                                                    if (moveBlock.otherBlock.elementType == block_0.elementType &&
-                                                        moveBlock.otherBlock.elementType == block_1.elementType &&
-                                                        moveBlock.otherBlock.elementType == block_2.elementType)
-                                                    {
-                                                        block_0.col = moveBlock.otherBlock.col;
-                                                        block_1.col = moveBlock.otherBlock.col;
-                                                        block_2.col = moveBlock.otherBlock.col;
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        blockPool.ReturnPoolableObject(block_0);
-                                                        blockPool.ReturnPoolableObject(block_1);
-                                                        blockPool.ReturnPoolableObject(block_2);
-
-                                                        // 점수를 더합니다!
-                                                        DM.SetScore(block_0.BlockScore);
-                                                        DM.SetScore(block_1.BlockScore);
-                                                        DM.SetScore(block_2.BlockScore);
-
-                                                        blocks[row, col - 1] = null;
-                                                        blocks[row, col - 2] = null;
-                                                        blocks[row, col + 1] = null;
-
-                                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                        moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                        moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                        isMake = true;
-                                                    }
-                                                }
-                                            }
-                                            break;
-
                                         case 0:
-                                            // XOOO
+                                            // ★OOO
                                             block_0 = blocks[row, col + 1];
                                             block_1 = blocks[row, col + 2];
                                             block_2 = blocks[row, col + 3];
@@ -1618,7 +1927,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OXOO
+                                                // O★OO
                                                 block_0 = blocks[row, col - 1];
                                                 block_1 = blocks[row, col + 1];
                                                 block_2 = blocks[row, col + 2];
@@ -1654,7 +1963,7 @@ namespace XR_3MatchGame_Object
                                                 }
                                                 else
                                                 {
-                                                    // OOXO
+                                                    // OO★O
                                                     block_0 = blocks[row, col - 1];
                                                     block_1 = blocks[row, col - 2];
                                                     block_2 = blocks[row, col + 1];
@@ -1687,50 +1996,13 @@ namespace XR_3MatchGame_Object
                                                         moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
 
                                                         isMake = true;
-                                                    }
-                                                    else
-                                                    {
-                                                        // OOOX
-                                                        block_0 = blocks[row, col - 1];
-                                                        block_1 = blocks[row, col - 2];
-                                                        block_2 = blocks[row, col - 3];
-
-                                                        if (moveBlock.otherBlock.elementType == block_0.elementType &&
-                                                            moveBlock.otherBlock.elementType == block_1.elementType &&
-                                                            moveBlock.otherBlock.elementType == block_2.elementType)
-                                                        {
-                                                            block_0.col = moveBlock.otherBlock.col;
-                                                            block_1.col = moveBlock.otherBlock.col;
-                                                            block_2.col = moveBlock.otherBlock.col;
-
-                                                            yield return new WaitForSeconds(.3f);
-
-                                                            blockPool.ReturnPoolableObject(block_0);
-                                                            blockPool.ReturnPoolableObject(block_1);
-                                                            blockPool.ReturnPoolableObject(block_2);
-
-                                                            // 점수를 더합니다!
-                                                            DM.SetScore(block_0.BlockScore);
-                                                            DM.SetScore(block_1.BlockScore);
-                                                            DM.SetScore(block_2.BlockScore);
-
-                                                            blocks[row, col - 1] = null;
-                                                            blocks[row, col - 2] = null;
-                                                            blocks[row, col - 3] = null;
-
-                                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                            moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                            moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                            isMake = true;
-                                                        }
                                                     }
                                                 }
                                             }
                                             break;
 
                                         case 1:
-                                            // OOOX
+                                            // OOO★
                                             block_0 = blocks[row, col - 1];
                                             block_1 = blocks[row, col - 2];
                                             block_2 = blocks[row, col - 3];
@@ -1766,7 +2038,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OOXO
+                                                // OO★O
                                                 block_0 = blocks[row, col - 1];
                                                 block_1 = blocks[row, col - 2];
                                                 block_2 = blocks[row, col + 1];
@@ -1798,7 +2070,7 @@ namespace XR_3MatchGame_Object
                                                 }
                                                 else
                                                 {
-                                                    // OXOO
+                                                    // O★OO
                                                     block_0 = blocks[row, col - 1];
                                                     block_1 = blocks[row, col + 1];
                                                     block_2 = blocks[row, col + 2];
@@ -1837,7 +2109,7 @@ namespace XR_3MatchGame_Object
                                             break;
 
                                         case 2:
-                                            // OOOX
+                                            // OOO★
                                             block_0 = blocks[row, col - 1];
                                             block_1 = blocks[row, col - 2];
                                             block_2 = blocks[row, col - 3];
@@ -1873,7 +2145,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OOXO
+                                                // OO★O
                                                 block_0 = blocks[row, col - 1];
                                                 block_1 = blocks[row, col - 2];
                                                 block_2 = blocks[row, col + 1];
@@ -1911,7 +2183,7 @@ namespace XR_3MatchGame_Object
                                             break;
 
                                         case 3:
-                                            // OOOX
+                                            // OOO★
                                             block_0 = blocks[row, col - 1];
                                             block_1 = blocks[row, col - 2];
                                             block_2 = blocks[row, col - 3];
@@ -1949,10 +2221,10 @@ namespace XR_3MatchGame_Object
                                     }
 
                                     // Row
-                                    switch (blocks[row, col].row)
+                                    switch (moveBlock.otherBlock.row)
                                     {
                                         case -3:
-                                            // XOOO
+                                            // ★OOO
                                             block_0 = blocks[row + 1, col];
                                             block_1 = blocks[row + 2, col];
                                             block_2 = blocks[row + 3, col];
@@ -1989,7 +2261,7 @@ namespace XR_3MatchGame_Object
                                             break;
 
                                         case -2:
-                                            // XOOO
+                                            // ★OOO
                                             block_0 = blocks[row + 1, col];
                                             block_1 = blocks[row + 2, col];
                                             block_2 = blocks[row + 3, col];
@@ -2025,7 +2297,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OXOO
+                                                // O★OO
                                                 block_0 = blocks[row - 1, col];
                                                 block_1 = blocks[row + 1, col];
                                                 block_2 = blocks[row + 2, col];
@@ -2064,7 +2336,7 @@ namespace XR_3MatchGame_Object
 
                                         case -1:
                                         case 0:
-                                            // XOOO
+                                            // ★OOO
                                             block_0 = blocks[row + 1, col];
                                             block_1 = blocks[row + 2, col];
                                             block_2 = blocks[row + 3, col];
@@ -2100,7 +2372,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OXOO
+                                                // O★OO
                                                 block_0 = blocks[row - 1, col];
                                                 block_1 = blocks[row + 1, col];
                                                 block_2 = blocks[row + 2, col];
@@ -2136,7 +2408,7 @@ namespace XR_3MatchGame_Object
                                                 }
                                                 else
                                                 {
-                                                    // OOXO
+                                                    // OO★O
                                                     block_0 = blocks[row - 1, col];
                                                     block_1 = blocks[row - 2, col];
                                                     block_2 = blocks[row + 1, col];
@@ -2175,7 +2447,7 @@ namespace XR_3MatchGame_Object
                                             break;
 
                                         case 1:
-                                            // OOOX
+                                            // OOO★
                                             block_0 = blocks[row - 1, col];
                                             block_1 = blocks[row - 2, col];
                                             block_2 = blocks[row - 3, col];
@@ -2211,7 +2483,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OOXO
+                                                // OO★O
                                                 block_0 = blocks[row + 1, col];
                                                 block_1 = blocks[row - 1, col];
                                                 block_2 = blocks[row - 2, col];
@@ -2247,7 +2519,7 @@ namespace XR_3MatchGame_Object
                                                 }
                                                 else
                                                 {
-                                                    // OXOO
+                                                    // O★OO
                                                     block_0 = blocks[row + 1, col];
                                                     block_1 = blocks[row + 2, col];
                                                     block_2 = blocks[row - 1, col];
@@ -2286,7 +2558,7 @@ namespace XR_3MatchGame_Object
                                             break;
 
                                         case 2:
-                                            // OOOX
+                                            // OOO★
                                             block_0 = blocks[row - 1, col];
                                             block_1 = blocks[row - 2, col];
                                             block_2 = blocks[row - 3, col];
@@ -2322,7 +2594,7 @@ namespace XR_3MatchGame_Object
                                             }
                                             else
                                             {
-                                                // OOXO
+                                                // OO★O
                                                 block_0 = blocks[row + 1, col];
                                                 block_1 = blocks[row - 1, col];
                                                 block_2 = blocks[row - 2, col];
@@ -2360,7 +2632,7 @@ namespace XR_3MatchGame_Object
                                             break;
 
                                         case 3:
-                                            // OOOX
+                                            // OOO★
                                             block_0 = blocks[row - 1, col];
                                             block_1 = blocks[row - 2, col];
                                             block_2 = blocks[row - 3, col];
@@ -2399,6 +2671,7 @@ namespace XR_3MatchGame_Object
                                 }
                             }
 
+                            // 빈 자리에 블럭 채우는 작업
                             if (isMake)
                             {
                                 // 블럭 다운 카운트 계산
@@ -2520,11 +2793,10 @@ namespace XR_3MatchGame_Object
                 {
                     for (int col = 0; col < width; col++)
                     {
-                        if (blocks[row, col] != null && GM.GameState != GameState.Move)
+                        if (blocks[row, col] != null)
                         {
                             Block checkBlock = blocks[row, col];
 
-                            // Col이 음수 또는 0
                             if (checkBlock.col <= 0)
                             {
                                 block_0 = blocks[row, col + 1];
@@ -2563,7 +2835,6 @@ namespace XR_3MatchGame_Object
                                     isMake = true;
                                 }
                             }
-                            // Col이 양수
                             else if (checkBlock.col > 0)
                             {
                                 block_0 = blocks[row, col - 1];
@@ -2602,7 +2873,6 @@ namespace XR_3MatchGame_Object
                                     isMake = true;
                                 }
                             }
-                            // Row이 음수 또는 0
                             else if (checkBlock.row <= 0)
                             {
                                 block_0 = blocks[row + 1, col];
@@ -2641,7 +2911,6 @@ namespace XR_3MatchGame_Object
                                     isMake = true;
                                 }
                             }
-                            // Row이 양수
                             else if (checkBlock.row > 0)
                             {
                                 block_0 = blocks[row - 1, col];
@@ -2784,8 +3053,12 @@ namespace XR_3MatchGame_Object
                                     newRow = 3;
                                 }
 
+                                /// Test
+                                yield return new WaitForSeconds(.3f);
+
                                 isMake = false;
 
+                                // 블록 정렬
                                 BlockSort();
                             }
                         }
@@ -2951,13 +3224,16 @@ namespace XR_3MatchGame_Object
                 newRow = 3;
             }
 
+            // 블록 정렬
+            BlockSort();
+
+            yield return new WaitForSeconds(.3f);
+
             // GameState -> Play
             GM.SetGameState(GameState.Play);
 
             /// 블럭 생성 되고 매칭 되는 블럭 있는지 체크 하기
             /// 있다면 매칭 시작
-
-            yield return null;
         }
 
         /// <summary>
