@@ -1,5 +1,6 @@
+using System;
 using System.Collections;
-using System.Data;
+using System.Collections.Generic;
 using UnityEngine;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Data;
@@ -19,6 +20,8 @@ namespace XR_3MatchGame_Object
 
         public Block[,] blocks = new Block[7, 7];
 
+        public List<Block> delBlocks = new List<Block>();
+
         public Block moveBlock;
         public Block boomBlock;
 
@@ -32,7 +35,6 @@ namespace XR_3MatchGame_Object
         private DataManager DM;
 
         #endregion
-
 
         private Block checkBlock;
 
@@ -66,7 +68,6 @@ namespace XR_3MatchGame_Object
                 BlockSort();
 
                 GM.isMatch = false;
-
                 StartCoroutine(BlockMatch());
             }
         }
@@ -152,6 +153,27 @@ namespace XR_3MatchGame_Object
             StartCoroutine(BlockMatch());
         }
 
+        private void DelBlockFuntion(Block boom = null)
+        {
+            var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+            var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
+
+            for (int i = 0; i < delBlocks.Count; i++)
+            {
+                blockPool.ReturnPoolableObject(delBlocks[i]);
+                DM.SetScore(delBlocks[i].BlockScore);
+                uiElement.SetGauge(delBlocks[i].ElementValue);
+            }
+
+            if (boom != null)
+            {
+                boom.elementType = ElementType.Balance;
+                boom.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+            }
+
+            delBlocks.Clear();
+        }
+
         /// <summary>
         /// 블럭 매칭을 시작하는 코루틴
         /// </summary>
@@ -160,6 +182,1403 @@ namespace XR_3MatchGame_Object
         {
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
+
+            // 4X4 - 이동 블록
+            if (moveBlock != null)
+            {
+                for (int row = 0; row < height; row++)
+                {
+                    for (int col = 0; col < width; col++)
+                    {
+                        if (blocks[row, col] != null && GM.GameState != GameState.Move)
+                        {
+                            if (blocks[row, col] == moveBlock)
+                            {
+                                // Col
+                                switch (moveBlock.col)
+                                {
+                                    case -2:
+                                        // O★OO
+                                        if (blocks[row, col - 1] != null && blocks[row, col + 1] != null && blocks[row, col + 2] != null)
+                                        {
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col + 1];
+                                            col_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = moveBlock.col;
+                                                col_1.col = moveBlock.col;
+                                                col_2.col = moveBlock.col;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                DelBlockFuntion(moveBlock);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+                                            }
+                                        }
+                                        break;
+
+                                    case -1:
+                                    case 0:
+                                        if (blocks[row, col - 1] != null && blocks[row, col + 1] != null && blocks[row, col + 2] != null)
+                                        {
+                                            // O★OO
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col + 1];
+                                            col_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.col = moveBlock.col;
+                                                col_1.col = moveBlock.col;
+                                                col_2.col = moveBlock.col;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+                                            }
+                                            else
+                                            {
+                                                // OO★O
+                                                if (blocks[row, col - 1] != null && blocks[row, col - 2] != null && blocks[row, col + 1] != null)
+                                                {
+                                                    col_0 = blocks[row, col - 1];
+                                                    col_1 = blocks[row, col - 2];
+                                                    col_2 = blocks[row, col + 1];
+
+                                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                                    {
+                                                        col_0.col = moveBlock.col;
+                                                        col_1.col = moveBlock.col;
+                                                        col_2.col = moveBlock.col;
+
+                                                        delBlocks.Add(col_0);
+                                                        delBlocks.Add(col_1);
+                                                        delBlocks.Add(col_2);
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFuntion(moveBlock);
+
+                                                        blocks[row, col - 1] = null;
+                                                        blocks[row, col - 2] = null;
+                                                        blocks[row, col + 1] = null;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 1:
+                                        // OO★O
+                                        if (blocks[row, col - 1] != null && blocks[row, col - 2] != null && blocks[row, col + 1] != null)
+                                        {
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col - 2];
+                                            col_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = moveBlock.col;
+                                                col_1.col = moveBlock.col;
+                                                col_2.col = moveBlock.col;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col - 2] = null;
+                                                blocks[row, col + 1] = null;
+                                            }
+                                            else
+                                            {
+                                                // O★OO
+                                                if (blocks[row, col - 1] != null && blocks[row, col + 1] != null && blocks[row, col + 2] != null)
+                                                {
+                                                    col_0 = blocks[row, col - 1];
+                                                    col_1 = blocks[row, col + 1];
+                                                    col_2 = blocks[row, col + 2];
+
+                                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                                    {
+                                                        // 블럭 이동
+                                                        col_0.col = moveBlock.col;
+                                                        col_1.col = moveBlock.col;
+                                                        col_2.col = moveBlock.col;
+
+                                                        delBlocks.Add(col_0);
+                                                        delBlocks.Add(col_1);
+                                                        delBlocks.Add(col_2);
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFuntion(moveBlock);
+
+                                                        blocks[row, col - 1] = null;
+                                                        blocks[row, col + 1] = null;
+                                                        blocks[row, col + 2] = null;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 2:
+                                        // OO★O
+                                        if (blocks[row, col - 1] != null && blocks[row, col - 2] != null && blocks[row, col + 1] != null)
+                                        {
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col - 2];
+                                            col_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = moveBlock.col;
+                                                col_1.col = moveBlock.col;
+                                                col_2.col = moveBlock.col;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col - 2] = null;
+                                                blocks[row, col + 1] = null;
+                                            }
+                                        }
+                                        break;
+                                }
+
+                                // Row 
+                                switch (moveBlock.row)
+                                {
+                                    case -2:
+                                        // O★OO
+                                        if (blocks[row - 1, col] != null && blocks[row + 1, col] != null && blocks[row + 2, col] != null)
+                                        {
+                                            col_0 = blocks[row - 1, col];
+                                            col_1 = blocks[row + 1, col];
+                                            col_2 = blocks[row + 2, col];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.row;
+                                                col_1.row = moveBlock.row;
+                                                col_2.row = moveBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+                                            }
+                                        }
+                                        break;
+
+                                    case -1:
+                                    case 0:
+                                        // O★OO
+                                        if (blocks[row - 1, col] != null && blocks[row + 1, col] != null && blocks[row + 2, col] != null)
+                                        {
+                                            col_0 = blocks[row - 1, col];
+                                            col_1 = blocks[row + 1, col];
+                                            col_2 = blocks[row + 2, col];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.row;
+                                                col_1.row = moveBlock.row;
+                                                col_2.row = moveBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+                                            }
+                                            else
+                                            {
+                                                // OO★O
+                                                if (blocks[row - 1, col] != null && blocks[row - 2, col] != null && blocks[row + 1, col] != null)
+                                                {
+                                                    col_0 = blocks[row - 1, col];
+                                                    col_1 = blocks[row - 2, col];
+                                                    col_2 = blocks[row + 1, col];
+
+                                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                                    {
+                                                        col_0.row = moveBlock.row;
+                                                        col_1.row = moveBlock.row;
+                                                        col_2.row = moveBlock.row;
+
+                                                        delBlocks.Add(col_0);
+                                                        delBlocks.Add(col_1);
+                                                        delBlocks.Add(col_2);
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFuntion(moveBlock);
+
+                                                        blocks[row - 1, col] = null;
+                                                        blocks[row - 2, col] = null;
+                                                        blocks[row + 1, col] = null;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 1:
+                                        // OO★O
+                                        if (blocks[row + 1, col] != null && blocks[row - 1, col] != null && blocks[row - 2, col] != null)
+                                        {
+                                            col_0 = blocks[row + 1, col];
+                                            col_1 = blocks[row - 1, col];
+                                            col_2 = blocks[row - 2, col];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.row;
+                                                col_1.row = moveBlock.row;
+                                                col_2.row = moveBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock);
+
+                                                blocks[row + 1, col] = null;
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+                                            }
+                                            else
+                                            {
+                                                // O★OO
+                                                if (blocks[row + 1, col] != null && blocks[row + 2, col] != null && blocks[row - 1, col] != null)
+                                                {
+                                                    col_0 = blocks[row + 1, col];
+                                                    col_1 = blocks[row + 2, col];
+                                                    col_2 = blocks[row - 1, col];
+
+                                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                                    {
+                                                        col_0.row = moveBlock.row;
+                                                        col_1.row = moveBlock.row;
+                                                        col_2.row = moveBlock.row;
+
+                                                        delBlocks.Add(col_0);
+                                                        delBlocks.Add(col_1);
+                                                        delBlocks.Add(col_2);
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFuntion(moveBlock);
+
+                                                        blocks[row + 1, col] = null;
+                                                        blocks[row + 2, col] = null;
+                                                        blocks[row - 1, col] = null;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 2:
+                                        // OO★O
+                                        if (blocks[row + 1, col] != null && blocks[row - 1, col] != null && blocks[row - 2, col] != null)
+                                        {
+                                            col_0 = blocks[row + 1, col];
+                                            col_1 = blocks[row - 1, col];
+                                            col_2 = blocks[row - 2, col];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.row;
+                                                col_1.row = moveBlock.row;
+                                                col_2.row = moveBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock);
+
+                                                blocks[row + 1, col] = null;
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+
+                            if (blocks[row, col] == moveBlock.otherBlock)
+                            {
+
+                                // Col
+                                switch (moveBlock.otherBlock.col)
+                                {
+                                    case -2:
+                                        // O★OO
+                                        if (blocks[row, col - 1] != null && blocks[row, col + 1] != null && blocks[row, col + 2] != null)
+                                        {
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col + 1];
+                                            col_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = moveBlock.otherBlock.col;
+                                                col_1.col = moveBlock.otherBlock.col;
+                                                col_2.col = moveBlock.otherBlock.col;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                DelBlockFuntion(moveBlock.otherBlock);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+                                            }
+                                        }
+                                        break;
+
+                                    case -1:
+                                    case 0:
+                                        if (blocks[row, col - 1] != null && blocks[row, col + 1] != null && blocks[row, col + 2] != null)
+                                        {
+                                            // O★OO
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col + 1];
+                                            col_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.col = moveBlock.otherBlock.col;
+                                                col_1.col = moveBlock.otherBlock.col;
+                                                col_2.col = moveBlock.otherBlock.col;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock.otherBlock);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+                                            }
+                                            else
+                                            {
+                                                // OO★O
+                                                if (blocks[row, col - 1] != null && blocks[row, col - 2] != null && blocks[row, col + 1] != null)
+                                                {
+                                                    col_0 = blocks[row, col - 1];
+                                                    col_1 = blocks[row, col - 2];
+                                                    col_2 = blocks[row, col + 1];
+
+                                                    if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                                    {
+                                                        col_0.col = moveBlock.otherBlock.col;
+                                                        col_1.col = moveBlock.otherBlock.col;
+                                                        col_2.col = moveBlock.otherBlock.col;
+
+                                                        delBlocks.Add(col_0);
+                                                        delBlocks.Add(col_1);
+                                                        delBlocks.Add(col_2);
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFuntion(moveBlock.otherBlock);
+
+                                                        blocks[row, col - 1] = null;
+                                                        blocks[row, col - 2] = null;
+                                                        blocks[row, col + 1] = null;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 1:
+                                        // OO★O
+                                        if (blocks[row, col - 1] != null && blocks[row, col - 2] != null && blocks[row, col + 1] != null)
+                                        {
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col - 2];
+                                            col_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = moveBlock.otherBlock.col;
+                                                col_1.col = moveBlock.otherBlock.col;
+                                                col_2.col = moveBlock.otherBlock.col;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock.otherBlock);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col - 2] = null;
+                                                blocks[row, col + 1] = null;
+                                            }
+                                            else
+                                            {
+                                                // O★OO
+                                                if (blocks[row, col - 1] != null && blocks[row, col + 1] != null && blocks[row, col + 2] != null)
+                                                {
+                                                    col_0 = blocks[row, col - 1];
+                                                    col_1 = blocks[row, col + 1];
+                                                    col_2 = blocks[row, col + 2];
+
+                                                    if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                                    {
+                                                        // 블럭 이동
+                                                        col_0.col = moveBlock.otherBlock.col;
+                                                        col_1.col = moveBlock.otherBlock.col;
+                                                        col_2.col = moveBlock.otherBlock.col;
+
+                                                        delBlocks.Add(col_0);
+                                                        delBlocks.Add(col_1);
+                                                        delBlocks.Add(col_2);
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFuntion(moveBlock.otherBlock);
+
+                                                        blocks[row, col - 1] = null;
+                                                        blocks[row, col + 1] = null;
+                                                        blocks[row, col + 2] = null;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 2:
+                                        // OO★O
+                                        if (blocks[row, col - 1] != null && blocks[row, col - 2] != null && blocks[row, col + 1] != null)
+                                        {
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col - 2];
+                                            col_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = moveBlock.otherBlock.col;
+                                                col_1.col = moveBlock.otherBlock.col;
+                                                col_2.col = moveBlock.otherBlock.col;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock.otherBlock);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col - 2] = null;
+                                                blocks[row, col + 1] = null;
+                                            }
+                                        }
+                                        break;
+                                }
+
+                                // Row 
+                                switch (moveBlock.otherBlock.row)
+                                {
+                                    case -2:
+                                        // O★OO
+                                        if (blocks[row - 1, col] != null && blocks[row + 1, col] != null && blocks[row + 2, col] != null)
+                                        {
+                                            col_0 = blocks[row - 1, col];
+                                            col_1 = blocks[row + 1, col];
+                                            col_2 = blocks[row + 2, col];
+
+                                            if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.otherBlock.row;
+                                                col_1.row = moveBlock.otherBlock.row;
+                                                col_2.row = moveBlock.otherBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock.otherBlock);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+                                            }
+                                        }
+                                        break;
+
+                                    case -1:
+                                    case 0:
+                                        // O★OO
+                                        if (blocks[row - 1, col] != null && blocks[row + 1, col] != null && blocks[row + 2, col] != null)
+                                        {
+                                            col_0 = blocks[row - 1, col];
+                                            col_1 = blocks[row + 1, col];
+                                            col_2 = blocks[row + 2, col];
+
+                                            if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.otherBlock.row;
+                                                col_1.row = moveBlock.otherBlock.row;
+                                                col_2.row = moveBlock.otherBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock.otherBlock);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+                                            }
+                                            else
+                                            {
+                                                // OO★O
+                                                if (blocks[row - 1, col] != null && blocks[row - 2, col] != null && blocks[row + 1, col] != null)
+                                                {
+                                                    col_0 = blocks[row - 1, col];
+                                                    col_1 = blocks[row - 2, col];
+                                                    col_2 = blocks[row + 1, col];
+
+                                                    if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                                    {
+                                                        col_0.row = moveBlock.otherBlock.row;
+                                                        col_1.row = moveBlock.otherBlock.row;
+                                                        col_2.row = moveBlock.otherBlock.row;
+
+                                                        delBlocks.Add(col_0);
+                                                        delBlocks.Add(col_1);
+                                                        delBlocks.Add(col_2);
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFuntion(moveBlock.otherBlock);
+
+                                                        blocks[row - 1, col] = null;
+                                                        blocks[row - 2, col] = null;
+                                                        blocks[row + 1, col] = null;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 1:
+                                        // OO★O
+                                        if (blocks[row + 1, col] != null && blocks[row - 1, col] != null && blocks[row - 2, col] != null)
+                                        {
+                                            col_0 = blocks[row + 1, col];
+                                            col_1 = blocks[row - 1, col];
+                                            col_2 = blocks[row - 2, col];
+
+                                            if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.otherBlock.row;
+                                                col_1.row = moveBlock.otherBlock.row;
+                                                col_2.row = moveBlock.otherBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock.otherBlock);
+
+                                                blocks[row + 1, col] = null;
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+                                            }
+                                            else
+                                            {
+                                                // O★OO
+                                                if (blocks[row + 1, col] != null && blocks[row + 2, col] != null && blocks[row - 1, col] != null)
+                                                {
+                                                    col_0 = blocks[row + 1, col];
+                                                    col_1 = blocks[row + 2, col];
+                                                    col_2 = blocks[row - 1, col];
+
+                                                    if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                                    {
+                                                        col_0.row = moveBlock.otherBlock.row;
+                                                        col_1.row = moveBlock.otherBlock.row;
+                                                        col_2.row = moveBlock.otherBlock.row;
+
+                                                        delBlocks.Add(col_0);
+                                                        delBlocks.Add(col_1);
+                                                        delBlocks.Add(col_2);
+
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFuntion(moveBlock.otherBlock);
+
+                                                        blocks[row + 1, col] = null;
+                                                        blocks[row + 2, col] = null;
+                                                        blocks[row - 1, col] = null;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        break;
+
+                                    case 2:
+                                        // OO★O
+                                        if (blocks[row + 1, col] != null && blocks[row - 1, col] != null && blocks[row - 2, col] != null)
+                                        {
+                                            col_0 = blocks[row + 1, col];
+                                            col_1 = blocks[row - 1, col];
+                                            col_2 = blocks[row - 2, col];
+
+                                            if (moveBlock.otherBlock.elementType == col_0.elementType && moveBlock.otherBlock.elementType == col_1.elementType && moveBlock.otherBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.otherBlock.row;
+                                                col_1.row = moveBlock.otherBlock.row;
+                                                col_2.row = moveBlock.otherBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(moveBlock.otherBlock);
+
+                                                blocks[row + 1, col] = null;
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                moveBlock = null;
+            }
+
+            // 4X4 - 특수 상황
+            for (int row = 0; row < height; row++)
+            {
+                for (int col = 0; col < width; col++)
+                {
+                    // Col
+                    if (blocks[row, col] != null)
+                    {
+                        checkBlock = blocks[row, col];
+
+                        if (checkBlock.col <= 0)
+                        {
+                            if (blocks[row, col + 1] != null && blocks[row, col + 2] != null && blocks[row, col + 3] != null)
+                            {
+                                col_0 = blocks[row, col + 1];
+                                col_1 = blocks[row, col + 2];
+                                col_2 = blocks[row, col + 3];
+
+                                // 4X4 특수 상황 모음집 1탄
+                                if (checkBlock.row <= 0)
+                                {
+                                    /*
+                                     * O
+                                     * O
+                                     * O
+                                     * O O O O
+                                     */
+                                    if (blocks[row + 1, col] != null && blocks[row + 2, col] != null && blocks[row + 3, col] != null)
+                                    {
+                                        row_0 = blocks[row + 1, col];
+                                        row_1 = blocks[row + 2, col];
+                                        row_2 = blocks[row + 3, col];
+
+                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                        {
+                                            // 블럭 이동
+                                            col_0.col = checkBlock.col;
+                                            col_1.col = checkBlock.col;
+                                            col_2.col = checkBlock.col;
+
+                                            row_0.row = checkBlock.row;
+                                            row_1.row = checkBlock.row;
+                                            row_2.row = checkBlock.row;
+
+                                            delBlocks.Add(col_0);
+                                            delBlocks.Add(col_1);
+                                            delBlocks.Add(col_2);
+
+                                            delBlocks.Add(row_0);
+                                            delBlocks.Add(row_1);
+                                            delBlocks.Add(row_2);
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            DelBlockFuntion(checkBlock);
+
+                                            // 블럭 제거
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+                                        }
+                                        else
+                                        {
+                                            /*
+                                             *   O
+                                             *   O
+                                             *   O
+                                             * O O O O
+                                             */
+                                            checkBlock = blocks[row, col + 1];
+                                            col_0 = blocks[row, col];
+
+                                            if (blocks[row + 1, col + 1] != null && blocks[row + 2, col + 1] != null && blocks[row + 3, col] != null)
+                                            {
+                                                row_0 = blocks[row + 1, col + 1];
+                                                row_1 = blocks[row + 2, col + 1];
+                                                row_2 = blocks[row + 3, col + 1];
+
+                                                if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                                {
+                                                    // 블럭 이동
+                                                    col_0.col = checkBlock.col;
+                                                    col_1.col = checkBlock.col;
+                                                    col_2.col = checkBlock.col;
+
+                                                    row_0.row = checkBlock.row;
+                                                    row_1.row = checkBlock.row;
+                                                    row_2.row = checkBlock.row;
+
+                                                    delBlocks.Add(col_0);
+                                                    delBlocks.Add(col_1);
+                                                    delBlocks.Add(col_2);
+
+                                                    delBlocks.Add(row_0);
+                                                    delBlocks.Add(row_1);
+                                                    delBlocks.Add(row_2);
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    DelBlockFuntion(checkBlock);
+
+                                                    // 블럭 제거
+                                                    blocks[row, col] = null;
+                                                    blocks[row, col + 2] = null;
+                                                    blocks[row, col + 3] = null;
+
+                                                    blocks[row + 1, col + 1] = null;
+                                                    blocks[row + 2, col + 1] = null;
+                                                    blocks[row + 3, col + 1] = null;
+                                                }
+                                                else
+                                                {
+                                                    /*   
+                                                     *      O
+                                                     *      O
+                                                     *      O
+                                                     *  O O O O
+                                                     */
+                                                    checkBlock = blocks[row, col + 2];
+                                                    col_0 = blocks[row, col];
+                                                    col_1 = blocks[row, col + 1];
+
+                                                    if (blocks[row + 1, col + 2] != null && blocks[row + 2, col + 2] != null & blocks[row + 3, col + 2] != null)
+                                                    {
+                                                        row_0 = blocks[row + 1, col + 2];
+                                                        row_1 = blocks[row + 2, col + 2];
+                                                        row_2 = blocks[row + 3, col + 2];
+
+                                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                                        {
+                                                            col_0.col = checkBlock.col;
+                                                            col_1.col = checkBlock.col;
+                                                            col_2.col = checkBlock.col;
+
+                                                            row_0.row = checkBlock.row;
+                                                            row_1.row = checkBlock.row;
+                                                            row_2.row = checkBlock.row;
+
+                                                            delBlocks.Add(col_0);
+                                                            delBlocks.Add(col_1);
+                                                            delBlocks.Add(col_2);
+
+                                                            delBlocks.Add(row_0);
+                                                            delBlocks.Add(row_1);
+                                                            delBlocks.Add(row_2);
+
+                                                            yield return new WaitForSeconds(.3f);
+
+                                                            DelBlockFuntion(checkBlock);
+
+                                                            blocks[row, col + 1] = null;
+                                                            blocks[row, col + 2] = null;
+                                                            blocks[row, col + 3] = null;
+
+                                                            blocks[row + 1, col + 2] = null;
+                                                            blocks[row + 2, col + 2] = null;
+                                                            blocks[row + 3, col + 2] = null;
+                                                        }
+                                                        else
+                                                        {
+                                                            /*
+                                                             *        O
+                                                             *        O
+                                                             *        O
+                                                             *  O O O O
+                                                             */
+                                                            checkBlock = blocks[row, col + 3];
+
+                                                            col_0 = blocks[row, col];
+                                                            col_1 = blocks[row, col + 1];
+                                                            col_2 = blocks[row, col + 2];
+
+                                                            if (blocks[row + 1, col + 3] != null && blocks[row + 2, col + 3] != null & blocks[row + 3, col + 3] != null)
+                                                            {
+                                                                row_0 = blocks[row + 1, col + 3];
+                                                                row_1 = blocks[row + 2, col + 3];
+                                                                row_2 = blocks[row + 3, col + 3];
+
+                                                                if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                                                {
+                                                                    col_0.col = checkBlock.col;
+                                                                    col_1.col = checkBlock.col;
+                                                                    col_2.col = checkBlock.col;
+
+                                                                    row_0.row = checkBlock.row;
+                                                                    row_1.row = checkBlock.row;
+                                                                    row_2.row = checkBlock.row;
+
+                                                                    delBlocks.Add(col_0);
+                                                                    delBlocks.Add(col_1);
+                                                                    delBlocks.Add(col_2);
+
+                                                                    delBlocks.Add(row_0);
+                                                                    delBlocks.Add(row_1);
+                                                                    delBlocks.Add(row_2);
+
+                                                                    yield return new WaitForSeconds(.3f);
+
+                                                                    DelBlockFuntion(checkBlock);
+
+                                                                    blocks[row, col] = null;
+                                                                    blocks[row, col + 1] = null;
+                                                                    blocks[row, col + 2] = null;
+
+                                                                    blocks[row + 1, col + 3] = null;
+                                                                    blocks[row + 2, col + 3] = null;
+                                                                    blocks[row + 3, col + 3] = null;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // 4X4 특수 상황 모음집 2탄
+                                if (checkBlock.row >= 0)
+                                {
+                                    /*
+                                     * O O O O
+                                     * O
+                                     * O
+                                     * O
+                                     */
+                                    if (blocks[row - 1, col] != null && blocks[row - 2, col] != null && blocks[row - 3, col] != null)
+                                    {
+                                        row_0 = blocks[row - 1, col];
+                                        row_1 = blocks[row - 2, col];
+                                        row_2 = blocks[row - 3, col];
+
+                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                        {
+                                            col_0.col = checkBlock.col;
+                                            col_1.col = checkBlock.col;
+                                            col_2.col = checkBlock.col;
+
+                                            row_0.row = checkBlock.row;
+                                            row_1.row = checkBlock.row;
+                                            row_2.row = checkBlock.row;
+
+                                            delBlocks.Add(col_0);
+                                            delBlocks.Add(col_1);
+                                            delBlocks.Add(col_2);
+
+                                            delBlocks.Add(row_0);
+                                            delBlocks.Add(row_1);
+                                            delBlocks.Add(row_2);
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            DelBlockFuntion(checkBlock);
+
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row, col + 3] = null;
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+                                            blocks[row - 3, col] = null;
+                                        }
+                                        else
+                                        {
+                                            /*
+                                             * O O O O
+                                             *   O
+                                             *   O
+                                             *   O
+                                             */
+                                            checkBlock = blocks[row, col + 1];
+                                            col_0 = blocks[row, col];
+
+                                            if (blocks[row - 1, col + 1] != null && blocks[row - 2, col + 1] != null && blocks[row - 3, col + 1] != null)
+                                            {
+                                                row_0 = blocks[row - 1, col + 1];
+                                                row_1 = blocks[row - 2, col + 1];
+                                                row_2 = blocks[row - 3, col + 1];
+
+                                                if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                                {
+                                                    col_0.col = checkBlock.col;
+                                                    col_1.col = checkBlock.col;
+                                                    col_2.col = checkBlock.col;
+
+                                                    row_0.row = checkBlock.row;
+                                                    row_1.row = checkBlock.row;
+                                                    row_2.row = checkBlock.row;
+
+                                                    delBlocks.Add(col_0);
+                                                    delBlocks.Add(col_1);
+                                                    delBlocks.Add(col_2);
+
+                                                    delBlocks.Add(row_0);
+                                                    delBlocks.Add(row_1);
+                                                    delBlocks.Add(row_2);
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    DelBlockFuntion(checkBlock);
+
+                                                    blocks[row, col] = null;
+                                                    blocks[row, col + 2] = null;
+                                                    blocks[row, col + 3] = null;
+
+                                                    blocks[row - 1, col + 1] = null;
+                                                    blocks[row - 2, col + 1] = null;
+                                                    blocks[row - 3, col + 1] = null;
+                                                }
+                                                else
+                                                {
+                                                    /*
+                                                     * O O O O
+                                                     *     O
+                                                     *     O
+                                                     *     O
+                                                     */
+                                                    checkBlock = blocks[row, col + 2];
+                                                    col_0 = blocks[row, col];
+                                                    col_1 = blocks[row, col + 1];
+
+                                                    if (blocks[row - 1, col + 2] != null && blocks[row - 2, col + 2] != null && blocks[row - 3, col + 2] != null)
+                                                    {
+                                                        row_0 = blocks[row - 1, col + 2];
+                                                        row_1 = blocks[row - 2, col + 2];
+                                                        row_2 = blocks[row - 3, col + 2];
+
+                                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                                        {
+                                                            col_0.col = checkBlock.col;
+                                                            col_1.col = checkBlock.col;
+                                                            col_2.col = checkBlock.col;
+
+                                                            row_0.row = checkBlock.row;
+                                                            row_1.row = checkBlock.row;
+                                                            row_2.row = checkBlock.row;
+
+                                                            delBlocks.Add(col_0);
+                                                            delBlocks.Add(col_1);
+                                                            delBlocks.Add(col_2);
+
+                                                            delBlocks.Add(row_0);
+                                                            delBlocks.Add(row_1);
+                                                            delBlocks.Add(row_2);
+
+                                                            yield return new WaitForSeconds(.3f);
+
+                                                            DelBlockFuntion(checkBlock);
+
+                                                            blocks[row, col] = null;
+                                                            blocks[row, col + 1] = null;
+                                                            blocks[row, col + 3] = null;
+
+                                                            blocks[row - 1, col + 2] = null;
+                                                            blocks[row - 2, col + 2] = null;
+                                                            blocks[row - 3, col + 2] = null;
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        /*
+                                                         * O O O O
+                                                         *       O
+                                                         *       O
+                                                         *       O
+                                                         */
+                                                        checkBlock = blocks[row, col + 3];
+                                                        col_0 = blocks[row, col];
+                                                        col_1 = blocks[row, col + 1];
+                                                        col_2 = blocks[row, col + 2];
+
+                                                        if (blocks[row - 1, col + 3] != null && blocks[row - 2, col + 3] != null && blocks[row - 3, col + 3] != null)
+                                                        {
+                                                            row_0 = blocks[row - 1, col + 3];
+                                                            row_1 = blocks[row - 2, col + 3];
+                                                            row_2 = blocks[row - 3, col + 3];
+
+                                                            if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                                            {
+                                                                col_0.col = checkBlock.col;
+                                                                col_1.col = checkBlock.col;
+                                                                col_2.col = checkBlock.col;
+
+                                                                row_0.row = checkBlock.row;
+                                                                row_1.row = checkBlock.row;
+                                                                row_2.row = checkBlock.row;
+
+                                                                delBlocks.Add(col_0);
+                                                                delBlocks.Add(col_1);
+                                                                delBlocks.Add(col_2);
+
+                                                                delBlocks.Add(row_0);
+                                                                delBlocks.Add(row_1);
+                                                                delBlocks.Add(row_2);
+
+                                                                yield return new WaitForSeconds(.3f);
+
+                                                                DelBlockFuntion(checkBlock);
+
+                                                                blocks[row, col] = null;
+                                                                blocks[row, col + 1] = null;
+                                                                blocks[row, col + 2] = null;
+
+                                                                blocks[row - 1, col + 3] = null;
+                                                                blocks[row - 2, col + 3] = null;
+                                                                blocks[row - 3, col + 3] = null;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Row
+                    if (blocks[row, col] != null)
+                    {
+                        checkBlock = blocks[row, col];
+
+                        if (checkBlock.row <= 0)
+                        {
+                            if (blocks[row + 1, col] != null && blocks[row + 2, col] != null && blocks[row + 3, col])
+                            {
+                                row_0 = blocks[row + 1, col];
+                                row_1 = blocks[row + 2, col];
+                                row_2 = blocks[row + 3, col];
+
+                                // 4X4 특수 상황
+                                if (checkBlock.col <= 0)
+                                {
+                                    /*
+                                     * O
+                                     * O
+                                     * O O O O
+                                     * O
+                                     */
+                                    checkBlock = blocks[row + 1, col];
+                                    row_0 = blocks[row, col];
+
+                                    if (blocks[row + 1, col + 1] != null && blocks[row + 1, col + 2] != null && blocks[row + 1, col + 3] != null)
+                                    {
+                                        col_0 = blocks[row + 1, col + 1];
+                                        col_1 = blocks[row + 1, col + 2];
+                                        col_2 = blocks[row + 1, col + 3];
+
+                                        if ((checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType) && (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType))
+                                        {
+                                            // 블럭 이동
+                                            col_0.col = checkBlock.col;
+                                            col_1.col = checkBlock.col;
+                                            col_2.col = checkBlock.col;
+
+                                            row_0.row = checkBlock.row;
+                                            row_1.row = checkBlock.row;
+                                            row_2.row = checkBlock.row;
+
+                                            delBlocks.Add(col_0);
+                                            delBlocks.Add(col_1);
+                                            delBlocks.Add(col_2);
+
+                                            delBlocks.Add(row_0);
+                                            delBlocks.Add(row_1);
+                                            delBlocks.Add(row_2);
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            DelBlockFuntion(checkBlock);
+
+                                            // 블럭 제거
+                                            blocks[row, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+
+                                            blocks[row + 1, col + 1] = null;
+                                            blocks[row + 1, col + 2] = null;
+                                            blocks[row + 1, col + 3] = null;
+
+                                            checkBlock.elementType = ElementType.Balance;
+                                            checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+                                        }
+                                        else
+                                        {
+                                            /*
+                                             * O
+                                             * O O O O
+                                             * O
+                                             * O
+                                             */
+                                            checkBlock = blocks[row + 2, col];
+                                            row_1 = blocks[row + 1, col];
+
+                                            if (blocks[row + 2, col + 1] != null && blocks[row + 2, col + 2] != null && blocks[row + 2, col + 3] != null)
+                                            {
+                                                col_0 = blocks[row + 2, col + 1];
+                                                col_1 = blocks[row + 2, col + 2];
+                                                col_2 = blocks[row + 2, col + 3];
+
+                                                if ((checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType) && (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType))
+                                                {
+                                                    // 블럭 이동
+                                                    col_0.col = checkBlock.col;
+                                                    col_1.col = checkBlock.col;
+                                                    col_2.col = checkBlock.col;
+
+                                                    row_0.row = checkBlock.row;
+                                                    row_1.row = checkBlock.row;
+                                                    row_2.row = checkBlock.row;
+
+                                                    delBlocks.Add(col_0);
+                                                    delBlocks.Add(col_1);
+                                                    delBlocks.Add(col_2);
+
+                                                    delBlocks.Add(row_0);
+                                                    delBlocks.Add(row_1);
+                                                    delBlocks.Add(row_2);
+
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    DelBlockFuntion(checkBlock);
+
+                                                    // 블럭 제거
+                                                    blocks[row, col] = null;
+                                                    blocks[row + 1, col] = null;
+                                                    blocks[row + 3, col] = null;
+
+                                                    blocks[row + 2, col + 1] = null;
+                                                    blocks[row + 2, col + 2] = null;
+                                                    blocks[row + 2, col + 3] = null;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // 4X4 특수 상황
+                                if (checkBlock.col >= 0)
+                                {
+                                    /*
+                                     *       O
+                                     *       O
+                                     * O O O O
+                                     *       O
+                                     */
+                                    checkBlock = blocks[row + 1, col];
+                                    row_0 = blocks[row, col];
+
+                                    if (blocks[row + 1, col - 1] && blocks[row + 1, col - 2] && blocks[row + 1, col - 3])
+                                    {
+                                        col_0 = blocks[row + 1, col - 1];
+                                        col_1 = blocks[row + 1, col - 2];
+                                        col_2 = blocks[row + 1, col - 3];
+
+                                        if ((checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType) && (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType))
+                                        {
+                                            // 블럭 이동
+                                            col_0.col = checkBlock.col;
+                                            col_1.col = checkBlock.col;
+                                            col_2.col = checkBlock.col;
+
+                                            row_0.row = checkBlock.row;
+                                            row_1.row = checkBlock.row;
+                                            row_2.row = checkBlock.row;
+
+                                            delBlocks.Add(col_0);
+                                            delBlocks.Add(col_1);
+                                            delBlocks.Add(col_2);
+
+                                            delBlocks.Add(row_0);
+                                            delBlocks.Add(row_1);
+                                            delBlocks.Add(row_2);
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            DelBlockFuntion(checkBlock);
+
+                                            // 블럭 제거
+                                            blocks[row, col] = null;
+                                            blocks[row + 2, col] = null;
+                                            blocks[row + 3, col] = null;
+
+                                            blocks[row + 1, col - 1] = null;
+                                            blocks[row + 1, col - 2] = null;
+                                            blocks[row + 1, col - 3] = null;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        /*
+                                         *       O
+                                         * O O O O
+                                         *       O
+                                         *       O
+                                         */
+                                        checkBlock = blocks[row + 2, col];
+                                        row_1 = blocks[row + 1, col];
+
+                                        if (blocks[row + 2, col - 1] != null && blocks[row + 2, col - 2] != null && blocks[row + 2, col - 3] != null)
+                                        {
+                                            col_0 = blocks[row + 2, col - 1];
+                                            col_1 = blocks[row + 2, col - 2];
+                                            col_2 = blocks[row + 2, col - 3];
+
+                                            if ((checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType) && (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType))
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = checkBlock.col;
+                                                col_1.col = checkBlock.col;
+                                                col_2.col = checkBlock.col;
+
+                                                row_0.row = checkBlock.row;
+                                                row_1.row = checkBlock.row;
+                                                row_2.row = checkBlock.row;
+
+                                                delBlocks.Add(col_0);
+                                                delBlocks.Add(col_1);
+                                                delBlocks.Add(col_2);
+
+                                                delBlocks.Add(row_0);
+                                                delBlocks.Add(row_1);
+                                                delBlocks.Add(row_2);
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFuntion(checkBlock);
+
+                                                // 블럭 제거
+                                                blocks[row, col] = null;
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 3, col] = null;
+
+                                                blocks[row + 2, col - 1] = null;
+                                                blocks[row + 2, col - 2] = null;
+                                                blocks[row + 2, col - 3] = null;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             // 4X4 - 일반 상황
             for (int row = 0; row < height; row++)
@@ -172,80 +1591,60 @@ namespace XR_3MatchGame_Object
 
                         if (checkBlock.col <= 0)
                         {
-                            col_0 = blocks[row, col + 1];
-                            col_1 = blocks[row, col + 2];
-                            col_2 = blocks[row, col + 3];
-
-                            if (col_0 != null && col_1 != null && col_2 != null)
+                            if (blocks[row, col + 1] != null && blocks[row, col + 2] != null && blocks[row, col + 3] != null)
                             {
-                                if (checkBlock.elementType == col_0.elementType &&
-                                    checkBlock.elementType == col_1.elementType &&
-                                    checkBlock.elementType == col_2.elementType)
+                                col_0 = blocks[row, col + 1];
+                                col_1 = blocks[row, col + 2];
+                                col_2 = blocks[row, col + 3];
+
+                                if (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType)
                                 {
                                     col_0.col = checkBlock.col;
                                     col_1.col = checkBlock.col;
                                     col_2.col = checkBlock.col;
 
+                                    delBlocks.Add(col_0);
+                                    delBlocks.Add(col_1);
+                                    delBlocks.Add(col_2);
+
                                     yield return new WaitForSeconds(.3f);
 
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(col_0);
-                                    blockPool.ReturnPoolableObject(col_1);
-                                    blockPool.ReturnPoolableObject(col_2);
-
-                                    // 점수를 더합니다!
-                                    DM.SetScore(col_0.BlockScore);
-                                    DM.SetScore(col_1.BlockScore);
-                                    DM.SetScore(col_2.BlockScore);
+                                    DelBlockFuntion(checkBlock);
 
                                     // 블럭 저장소에서 제거
                                     blocks[row, col + 1] = null;
                                     blocks[row, col + 2] = null;
                                     blocks[row, col + 3] = null;
-
-                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                    checkBlock.elementType = ElementType.Balance;
-                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
                                 }
                             }
                         }
 
                         if (checkBlock.row <= 0)
                         {
-                            row_0 = blocks[row + 1, col];
-                            row_1 = blocks[row + 2, col];
-                            row_2 = blocks[row + 3, col];
-
-                            if (row_0 != null && row_1 != null && row_2 != null)
+                            if (blocks[row + 1, col] != null && blocks[row + 2, col] != null && blocks[row + 3, col] != null)
                             {
-                                if (checkBlock.elementType == row_0.elementType &&
-                                    checkBlock.elementType == row_1.elementType &&
-                                    checkBlock.elementType == row_2.elementType)
+                                row_0 = blocks[row + 1, col];
+                                row_1 = blocks[row + 2, col];
+                                row_2 = blocks[row + 3, col];
+
+                                if (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType)
                                 {
                                     row_0.row = checkBlock.row;
                                     row_1.row = checkBlock.row;
                                     row_2.row = checkBlock.row;
 
+                                    delBlocks.Add(row_0);
+                                    delBlocks.Add(row_1);
+                                    delBlocks.Add(row_2);
+
                                     yield return new WaitForSeconds(.3f);
 
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(row_0);
-                                    blockPool.ReturnPoolableObject(row_1);
-                                    blockPool.ReturnPoolableObject(row_2);
-
-                                    // 점수를 더합니다!
-                                    DM.SetScore(row_0.BlockScore);
-                                    DM.SetScore(row_1.BlockScore);
-                                    DM.SetScore(row_2.BlockScore);
+                                    DelBlockFuntion(checkBlock);
 
                                     // 블럭 저장소에서 제거
                                     blocks[row + 1, col] = null;
                                     blocks[row + 2, col] = null;
                                     blocks[row + 3, col] = null;
-
-                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                    checkBlock.elementType = ElementType.Balance;
-                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
                                 }
                             }
                         }
@@ -267,283 +1666,198 @@ namespace XR_3MatchGame_Object
 
                         if (checkBlock.col != 2 && checkBlock.col != 3)
                         {
-                            col_0 = blocks[row, col + 1];
-                            col_1 = blocks[row, col + 2];
-
-                            // 1번째 Col 특수 상황 모음집 
-                            if ((checkBlock.row != 2 && checkBlock.row != 3) && (col_0 != null && col_1 != null))
+                            if (blocks[row, col + 1] != null && blocks[row, col + 2] != null)
                             {
-                                /*
-                                 * O
-                                 * O
-                                 * O O O
-                                 */
-                                row_0 = blocks[row + 1, col];
-                                row_1 = blocks[row + 2, col];
+                                col_0 = blocks[row, col + 1];
+                                col_1 = blocks[row, col + 2];
 
-                                if (row_0 != null && row_1 != null)
+                                // 1번째 Col 특수 상황 모음집 
+                                if ((checkBlock.row != 2 && checkBlock.row != 3))
                                 {
-                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
-                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                    /*
+                                     * O
+                                     * O
+                                     * O O O
+                                     */
+                                    if (blocks[row + 1, col] != null && blocks[row + 2, col] != null)
                                     {
-                                        Debug.Log("특수 상황");
+                                        row_0 = blocks[row + 1, col];
+                                        row_1 = blocks[row + 2, col];
 
-                                        // 점수 업데이트
-                                        DM.SetScore(checkBlock.BlockScore);
-                                        DM.SetScore(col_0.BlockScore);
-                                        DM.SetScore(col_1.BlockScore);
-                                        DM.SetScore(row_0.BlockScore);
-                                        DM.SetScore(row_1.BlockScore);
-
-                                        // 스킬 게이지 업데이트
-                                        uiElement.SetGauge(checkBlock.ElementValue);
-                                        uiElement.SetGauge(col_0.ElementValue);
-                                        uiElement.SetGauge(col_1.ElementValue);
-                                        uiElement.SetGauge(row_0.ElementValue);
-                                        uiElement.SetGauge(row_1.ElementValue);
-
-                                        // 저장소에서 비우기
-                                        blocks[row, col] = null;
-                                        blocks[row, col + 1] = null;
-                                        blocks[row, col + 2] = null;
-
-                                        blocks[row + 1, col] = null;
-                                        blocks[row + 2, col] = null;
-
-                                        // 풀에 반환
-                                        blockPool.ReturnPoolableObject(checkBlock);
-                                        blockPool.ReturnPoolableObject(col_0);
-                                        blockPool.ReturnPoolableObject(col_1);
-                                        blockPool.ReturnPoolableObject(row_0);
-                                        blockPool.ReturnPoolableObject(row_1);
-                                    }
-                                    else
-                                    {
-                                        /*
-                                         *   O 
-                                         *   O 
-                                         * O O O
-                                         */
-                                        row_0 = blocks[row + 1, col + 1];
-                                        row_1 = blocks[row + 2, col + 1];
-
-                                        if (row_0 != null && row_1 != null)
+                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
                                         {
-                                            if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
-                                                (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                            delBlocks.Add(checkBlock);
+                                            delBlocks.Add(col_0);
+                                            delBlocks.Add(col_1);
+                                            delBlocks.Add(row_0);
+                                            delBlocks.Add(row_1);
+
+                                            DelBlockFuntion();
+
+                                            blocks[row, col] = null;
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+                                        }
+                                        else
+                                        {
+                                            /*
+                                             *   O 
+                                             *   O 
+                                             * O O O
+                                             */
+                                            if (blocks[row + 1, col + 1] != null && blocks[row + 2, col + 1] != null)
                                             {
-                                                // 점수 업데이트
-                                                DM.SetScore(checkBlock.BlockScore);
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(row_0.BlockScore);
-                                                DM.SetScore(row_1.BlockScore);
+                                                row_0 = blocks[row + 1, col + 1];
+                                                row_1 = blocks[row + 2, col + 1];
 
-                                                // 스킬 게이지 업데이트
-                                                uiElement.SetGauge(checkBlock.ElementValue);
-                                                uiElement.SetGauge(col_0.ElementValue);
-                                                uiElement.SetGauge(col_1.ElementValue);
-                                                uiElement.SetGauge(row_0.ElementValue);
-                                                uiElement.SetGauge(row_1.ElementValue);
-
-                                                // 저장소에서 비우기
-                                                blocks[row, col] = null;
-                                                blocks[row, col + 1] = null;
-                                                blocks[row, col + 2] = null;
-
-                                                blocks[row + 1, col + 1] = null;
-                                                blocks[row + 2, col + 1] = null;
-
-                                                // 풀에 반환
-                                                blockPool.ReturnPoolableObject(checkBlock);
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(row_0);
-                                                blockPool.ReturnPoolableObject(row_1);
-                                            }
-                                            else
-                                            {
-                                                /*
-                                                 *     O
-                                                 *     O
-                                                 * O O O
-                                                 */
-                                                row_0 = blocks[row + 1, col + 2];
-                                                row_1 = blocks[row + 2, col + 2];
-
-                                                if (row_0 != null && row_1 != null)
+                                                if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
                                                 {
-                                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
-                                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                                    delBlocks.Add(checkBlock);
+                                                    delBlocks.Add(col_0);
+                                                    delBlocks.Add(col_1);
+                                                    delBlocks.Add(row_0);
+                                                    delBlocks.Add(row_1);
+
+                                                    DelBlockFuntion();
+
+                                                    // 저장소에서 비우기
+                                                    blocks[row, col] = null;
+                                                    blocks[row, col + 1] = null;
+                                                    blocks[row, col + 2] = null;
+
+                                                    blocks[row + 1, col + 1] = null;
+                                                    blocks[row + 2, col + 1] = null;
+                                                }
+                                                else
+                                                {
+                                                    /*
+                                                     *     O
+                                                     *     O
+                                                     * O O O
+                                                     */
+                                                    if (blocks[row + 1, col + 2] != null && blocks[row + 2, col + 2] != null)
                                                     {
-                                                        // 점수 업데이트
-                                                        DM.SetScore(checkBlock.BlockScore);
-                                                        DM.SetScore(col_0.BlockScore);
-                                                        DM.SetScore(col_1.BlockScore);
-                                                        DM.SetScore(row_0.BlockScore);
-                                                        DM.SetScore(row_1.BlockScore);
+                                                        row_0 = blocks[row + 1, col + 2];
+                                                        row_1 = blocks[row + 2, col + 2];
 
-                                                        // 스킬 게이지 업데이트
-                                                        uiElement.SetGauge(checkBlock.ElementValue);
-                                                        uiElement.SetGauge(col_0.ElementValue);
-                                                        uiElement.SetGauge(col_1.ElementValue);
-                                                        uiElement.SetGauge(row_0.ElementValue);
-                                                        uiElement.SetGauge(row_1.ElementValue);
+                                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                                        {
+                                                            delBlocks.Add(checkBlock);
+                                                            delBlocks.Add(col_0);
+                                                            delBlocks.Add(col_1);
+                                                            delBlocks.Add(row_0);
+                                                            delBlocks.Add(row_1);
 
-                                                        // 저장소에서 비우기
-                                                        blocks[row, col] = null;
-                                                        blocks[row, col + 1] = null;
-                                                        blocks[row, col + 2] = null;
+                                                            DelBlockFuntion();
 
-                                                        blocks[row + 1, col + 2] = null;
-                                                        blocks[row + 2, col + 2] = null;
+                                                            // 저장소에서 비우기
+                                                            blocks[row, col] = null;
+                                                            blocks[row, col + 1] = null;
+                                                            blocks[row, col + 2] = null;
 
-                                                        // 풀에 반환
-                                                        blockPool.ReturnPoolableObject(checkBlock);
-                                                        blockPool.ReturnPoolableObject(col_0);
-                                                        blockPool.ReturnPoolableObject(col_1);
-                                                        blockPool.ReturnPoolableObject(row_0);
-                                                        blockPool.ReturnPoolableObject(row_1);
+                                                            blocks[row + 1, col + 2] = null;
+                                                            blocks[row + 2, col + 2] = null;
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            // 2번째 Col 특수 상황 모음집
-                            if ((checkBlock.row != -2 && checkBlock.row != -3) && (col_0 != null && col_1 != null))
-                            {
-                                /*
-                                 * O O O
-                                 * O
-                                 * O
-                                 */
-                                row_0 = blocks[row - 1, col];
-                                row_1 = blocks[row - 2, col];
-
-                                if (row_0 != null && row_1 != null)
+                                // 2번째 Col 특수 상황 모음집
+                                if ((checkBlock.row != -2 && checkBlock.row != -3))
                                 {
-                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
-                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                    /*
+                                     * O O O
+                                     * O
+                                     * O
+                                     */
+                                    if (blocks[row - 1, col] != null && blocks[row - 2, col] != null)
                                     {
-                                        // 점수 업데이트
-                                        DM.SetScore(checkBlock.BlockScore);
-                                        DM.SetScore(col_0.BlockScore);
-                                        DM.SetScore(col_1.BlockScore);
-                                        DM.SetScore(row_0.BlockScore);
-                                        DM.SetScore(row_1.BlockScore);
+                                        row_0 = blocks[row - 1, col];
+                                        row_1 = blocks[row - 2, col];
 
-                                        // 스킬 게이지 업데이트
-                                        uiElement.SetGauge(checkBlock.ElementValue);
-                                        uiElement.SetGauge(col_0.ElementValue);
-                                        uiElement.SetGauge(col_1.ElementValue);
-                                        uiElement.SetGauge(row_0.ElementValue);
-                                        uiElement.SetGauge(row_1.ElementValue);
-
-                                        // 저장소에서 비우기
-                                        blocks[row, col] = null;
-                                        blocks[row, col + 1] = null;
-                                        blocks[row, col + 2] = null;
-
-                                        blocks[row - 1, col] = null;
-                                        blocks[row - 2, col] = null;
-
-                                        // 풀에 반환
-                                        blockPool.ReturnPoolableObject(checkBlock);
-                                        blockPool.ReturnPoolableObject(col_0);
-                                        blockPool.ReturnPoolableObject(col_1);
-                                        blockPool.ReturnPoolableObject(row_0);
-                                        blockPool.ReturnPoolableObject(row_1);
-                                    }
-                                    else
-                                    {
-                                        /*
-                                         * O O O 
-                                         *   O 
-                                         *   O
-                                         */
-                                        row_0 = blocks[row - 1, col + 1];
-                                        row_1 = blocks[row - 2, col + 1];
-
-                                        if (row_0 != null && row_1 != null)
+                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
                                         {
-                                            if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
-                                                (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                            delBlocks.Add(checkBlock);
+                                            delBlocks.Add(col_0);
+                                            delBlocks.Add(col_1);
+                                            delBlocks.Add(row_0);
+                                            delBlocks.Add(row_1);
+
+                                            DelBlockFuntion();
+
+                                            // 저장소에서 비우기
+                                            blocks[row, col] = null;
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+                                        }
+                                        else
+                                        {
+                                            /*
+                                             * O O O 
+                                             *   O 
+                                             *   O
+                                             */
+                                            if (blocks[row - 1, col + 1] != null && blocks[row - 2, col + 1] != null)
                                             {
-                                                // 점수 업데이트
-                                                DM.SetScore(checkBlock.BlockScore);
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(row_0.BlockScore);
-                                                DM.SetScore(row_1.BlockScore);
+                                                row_0 = blocks[row - 1, col + 1];
+                                                row_1 = blocks[row - 2, col + 1];
 
-                                                // 스킬 게이지 업데이트
-                                                uiElement.SetGauge(checkBlock.ElementValue);
-                                                uiElement.SetGauge(col_0.ElementValue);
-                                                uiElement.SetGauge(col_1.ElementValue);
-                                                uiElement.SetGauge(row_0.ElementValue);
-                                                uiElement.SetGauge(row_1.ElementValue);
-
-                                                // 저장소에서 비우기
-                                                blocks[row, col] = null;
-                                                blocks[row, col + 1] = null;
-                                                blocks[row, col + 2] = null;
-
-                                                blocks[row - 1, col + 1] = null;
-                                                blocks[row - 2, col + 1] = null;
-
-                                                // 풀에 반환
-                                                blockPool.ReturnPoolableObject(checkBlock);
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(row_0);
-                                                blockPool.ReturnPoolableObject(row_1);
-                                            }
-                                            else
-                                            {
-                                                /*
-                                                 * O O O
-                                                 *     O
-                                                 *     O
-                                                 */
-                                                row_0 = blocks[row - 1, col + 2];
-                                                row_1 = blocks[row - 2, col + 2];
-
-                                                if (row_0 != null && row_1 != null)
+                                                if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
                                                 {
-                                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
-                                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                                    delBlocks.Add(checkBlock);
+                                                    delBlocks.Add(col_0);
+                                                    delBlocks.Add(col_1);
+                                                    delBlocks.Add(row_0);
+                                                    delBlocks.Add(row_1);
+
+                                                    DelBlockFuntion();
+
+                                                    // 저장소에서 비우기
+                                                    blocks[row, col] = null;
+                                                    blocks[row, col + 1] = null;
+                                                    blocks[row, col + 2] = null;
+
+                                                    blocks[row - 1, col + 1] = null;
+                                                    blocks[row - 2, col + 1] = null;
+                                                }
+                                                else
+                                                {
+                                                    /*
+                                                     * O O O
+                                                     *     O
+                                                     *     O
+                                                     */
+                                                    if (blocks[row - 1, col + 2] != null && blocks[row - 2, col + 2] != null)
                                                     {
-                                                        // 점수 업데이트
-                                                        DM.SetScore(checkBlock.BlockScore);
-                                                        DM.SetScore(col_0.BlockScore);
-                                                        DM.SetScore(col_1.BlockScore);
-                                                        DM.SetScore(row_0.BlockScore);
-                                                        DM.SetScore(row_1.BlockScore);
+                                                        row_0 = blocks[row - 1, col + 2];
+                                                        row_1 = blocks[row - 2, col + 2];
 
-                                                        // 스킬 게이지 업데이트
-                                                        uiElement.SetGauge(checkBlock.ElementValue);
-                                                        uiElement.SetGauge(col_0.ElementValue);
-                                                        uiElement.SetGauge(col_1.ElementValue);
-                                                        uiElement.SetGauge(row_0.ElementValue);
-                                                        uiElement.SetGauge(row_1.ElementValue);
+                                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                                        {
+                                                            delBlocks.Add(checkBlock);
+                                                            delBlocks.Add(col_0);
+                                                            delBlocks.Add(col_1);
+                                                            delBlocks.Add(row_0);
+                                                            delBlocks.Add(row_1);
 
-                                                        // 저장소에서 비우기
-                                                        blocks[row, col] = null;
-                                                        blocks[row, col + 1] = null;
-                                                        blocks[row, col + 2] = null;
+                                                            DelBlockFuntion();
 
-                                                        blocks[row - 1, col + 2] = null;
-                                                        blocks[row - 2, col + 2] = null;
+                                                            // 저장소에서 비우기
+                                                            blocks[row, col] = null;
+                                                            blocks[row, col + 1] = null;
+                                                            blocks[row, col + 2] = null;
 
-                                                        // 풀에 반환
-                                                        blockPool.ReturnPoolableObject(checkBlock);
-                                                        blockPool.ReturnPoolableObject(col_0);
-                                                        blockPool.ReturnPoolableObject(col_1);
-                                                        blockPool.ReturnPoolableObject(row_0);
-                                                        blockPool.ReturnPoolableObject(row_1);
+                                                            blocks[row - 1, col + 2] = null;
+                                                            blocks[row - 2, col + 2] = null;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -561,101 +1875,76 @@ namespace XR_3MatchGame_Object
 
                         if (checkBlock.row != 2 && checkBlock.row != 3)
                         {
-                            row_0 = blocks[row + 1, col];
-                            row_1 = blocks[row + 2, col];
-
-                            // 1번째 Row 특수 상황 모음집
-                            if ((checkBlock.col != 2 && checkBlock.col != 3) && (row_0 != null && row_1 != null))
+                            if (blocks[row + 1, col] != null && blocks[row + 2, col])
                             {
-                                /*
-                                 * O
-                                 * O O O
-                                 * O
-                                 */
-                                col_0 = blocks[row + 1, col + 1];
-                                col_1 = blocks[row + 1, col + 2];
+                                row_0 = blocks[row + 1, col];
+                                row_1 = blocks[row + 2, col];
 
-                                if (col_0 != null && col_1 != null)
+                                // 1번째 Row 특수 상황 모음집
+                                if ((checkBlock.col != 2 && checkBlock.col != 3))
                                 {
-                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
-                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                    /*
+                                     * O
+                                     * O O O
+                                     * O
+                                     */
+                                    if (blocks[row + 1, col + 1] != null && blocks[row + 1, col + 2] != null)
                                     {
-                                        // 점수 업데이트
-                                        DM.SetScore(checkBlock.BlockScore);
-                                        DM.SetScore(col_0.BlockScore);
-                                        DM.SetScore(col_1.BlockScore);
-                                        DM.SetScore(row_0.BlockScore);
-                                        DM.SetScore(row_1.BlockScore);
+                                        col_0 = blocks[row + 1, col + 1];
+                                        col_1 = blocks[row + 1, col + 2];
 
-                                        // 스킬 게이지 업데이트
-                                        uiElement.SetGauge(checkBlock.ElementValue);
-                                        uiElement.SetGauge(col_0.ElementValue);
-                                        uiElement.SetGauge(col_1.ElementValue);
-                                        uiElement.SetGauge(row_0.ElementValue);
-                                        uiElement.SetGauge(row_1.ElementValue);
+                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                        {
+                                            delBlocks.Add(checkBlock);
+                                            delBlocks.Add(col_0);
+                                            delBlocks.Add(col_1);
+                                            delBlocks.Add(row_0);
+                                            delBlocks.Add(row_1);
 
-                                        // 저장소에서 비우기
-                                        blocks[row, col] = null;
-                                        blocks[row + 1, col] = null;
-                                        blocks[row + 2, col] = null;
+                                            DelBlockFuntion();
 
-                                        blocks[row + 1, col + 1] = null;
-                                        blocks[row + 1, col + 2] = null;
+                                            // 저장소에서 비우기
+                                            blocks[row, col] = null;
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
 
-                                        // 풀에 반환
-                                        blockPool.ReturnPoolableObject(checkBlock);
-                                        blockPool.ReturnPoolableObject(col_0);
-                                        blockPool.ReturnPoolableObject(col_1);
-                                        blockPool.ReturnPoolableObject(row_0);
-                                        blockPool.ReturnPoolableObject(row_1);
+                                            blocks[row + 1, col + 1] = null;
+                                            blocks[row + 1, col + 2] = null;
+                                        }
                                     }
                                 }
-                            }
 
-                            // 2번째 Row 특수 상황 모음집
-                            if ((checkBlock.col != -2 && checkBlock.col != -3) && (row_0 != null && row_1 != null))
-                            {
-                                /*
-                                 *     O
-                                 * O O O
-                                 *     O
-                                 */
-                                col_0 = blocks[row + 1, col - 1];
-                                col_1 = blocks[row + 1, col - 2];
-
-                                if (col_0 != null && col_1 != null)
+                                // 2번째 Row 특수 상황 모음집
+                                if ((checkBlock.col != -2 && checkBlock.col != -3))
                                 {
-                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) &&
-                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                    /*
+                                     *     O
+                                     * O O O
+                                     *     O
+                                     */
+                                    if (blocks[row + 1, col - 1] != null && blocks[row + 1, col - 2] != null)
                                     {
-                                        // 점수 업데이트
-                                        DM.SetScore(checkBlock.BlockScore);
-                                        DM.SetScore(col_0.BlockScore);
-                                        DM.SetScore(col_1.BlockScore);
-                                        DM.SetScore(row_0.BlockScore);
-                                        DM.SetScore(row_1.BlockScore);
+                                        col_0 = blocks[row + 1, col - 1];
+                                        col_1 = blocks[row + 1, col - 2];
 
-                                        // 스킬 게이지 업데이트
-                                        uiElement.SetGauge(checkBlock.ElementValue);
-                                        uiElement.SetGauge(col_0.ElementValue);
-                                        uiElement.SetGauge(col_1.ElementValue);
-                                        uiElement.SetGauge(row_0.ElementValue);
-                                        uiElement.SetGauge(row_1.ElementValue);
+                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType) && (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType))
+                                        {
+                                            delBlocks.Add(checkBlock);
+                                            delBlocks.Add(col_0);
+                                            delBlocks.Add(col_1);
+                                            delBlocks.Add(row_0);
+                                            delBlocks.Add(row_1);
 
-                                        // 저장소에서 비우기
-                                        blocks[row, col] = null;
-                                        blocks[row + 1, col] = null;
-                                        blocks[row + 2, col] = null;
+                                            DelBlockFuntion();
 
-                                        blocks[row + 1, col - 1] = null;
-                                        blocks[row + 1, col - 2] = null;
+                                            // 저장소에서 비우기
+                                            blocks[row, col] = null;
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
 
-                                        // 풀에 반환
-                                        blockPool.ReturnPoolableObject(checkBlock);
-                                        blockPool.ReturnPoolableObject(col_0);
-                                        blockPool.ReturnPoolableObject(col_1);
-                                        blockPool.ReturnPoolableObject(row_0);
-                                        blockPool.ReturnPoolableObject(row_1);
+                                            blocks[row + 1, col - 1] = null;
+                                            blocks[row + 1, col - 2] = null;
+                                        }
                                     }
                                 }
                             }
@@ -676,33 +1965,23 @@ namespace XR_3MatchGame_Object
                         // Col 일반 상황
                         if (checkBlock.col != 2 && checkBlock.col != 3)
                         {
-                            col_0 = blocks[row, col + 1];
-                            col_1 = blocks[row, col + 2];
-
-                            if (checkBlock != null && col_0 != null && col_1 != null)
+                            if (blocks[row, col + 1] != null && blocks[row, col + 2] != null)
                             {
-                                if (checkBlock.elementType == col_0.elementType &&
-                                    checkBlock.elementType == col_1.elementType)
-                                {
-                                    // 점수 업데이트
-                                    DM.SetScore(checkBlock.BlockScore);
-                                    DM.SetScore(col_0.BlockScore);
-                                    DM.SetScore(col_1.BlockScore);
+                                col_0 = blocks[row, col + 1];
+                                col_1 = blocks[row, col + 2];
 
-                                    // 스킬 게이지 업데이트
-                                    uiElement.SetGauge(checkBlock.ElementValue);
-                                    uiElement.SetGauge(col_0.ElementValue);
-                                    uiElement.SetGauge(col_1.ElementValue);
+                                if (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType)
+                                {
+                                    delBlocks.Add(checkBlock);
+                                    delBlocks.Add(col_0);
+                                    delBlocks.Add(col_1);
+
+                                    DelBlockFuntion();
 
                                     // 저장소에서 비우기
                                     blocks[row, col] = null;
                                     blocks[row, col + 1] = null;
                                     blocks[row, col + 2] = null;
-
-                                    // 풀에 반환
-                                    blockPool.ReturnPoolableObject(checkBlock);
-                                    blockPool.ReturnPoolableObject(col_0);
-                                    blockPool.ReturnPoolableObject(col_1);
                                 }
                             }
                         }
@@ -710,32 +1989,22 @@ namespace XR_3MatchGame_Object
                         // Row 일반 상황
                         if (checkBlock.row != 2 && checkBlock.row != 3)
                         {
-                            row_0 = blocks[row + 1, col];
-                            row_1 = blocks[row + 2, col];
-
-                            if (checkBlock != null && row_0 != null && row_1 != null)
+                            if (blocks[row + 1, col] != null && blocks[row + 2, col])
                             {
+                                row_0 = blocks[row + 1, col];
+                                row_1 = blocks[row + 2, col];
+
                                 if (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType)
                                 {
+                                    delBlocks.Add(checkBlock);
+                                    delBlocks.Add(row_0);
+                                    delBlocks.Add(row_1);
 
-                                    // 점수 업데이트
-                                    DM.SetScore(blocks[row, col].BlockScore);
-                                    DM.SetScore(blocks[row + 1, col].BlockScore);
-                                    DM.SetScore(blocks[row + 2, col].BlockScore);
-
-                                    // 스킬 게이지 업데이트
-                                    uiElement.SetGauge(blocks[row, col].ElementValue);
-                                    uiElement.SetGauge(blocks[row + 1, col].ElementValue);
-                                    uiElement.SetGauge(blocks[row + 2, col].ElementValue);
+                                    DelBlockFuntion();
 
                                     blocks[row, col] = null;
                                     blocks[row + 1, col] = null;
                                     blocks[row + 2, col] = null;
-
-                                    // 블럭 제거
-                                    blockPool.ReturnPoolableObject(checkBlock);
-                                    blockPool.ReturnPoolableObject(row_0);
-                                    blockPool.ReturnPoolableObject(row_1);
                                 }
                             }
                         }
@@ -852,7 +2121,6 @@ namespace XR_3MatchGame_Object
             }
             else
             {
-
                 // GameState -> Play
                 GM.SetGameState(GameState.Play);
             }
@@ -996,2066 +2264,543 @@ namespace XR_3MatchGame_Object
             blocks = testArr;
         }
 
-        public IEnumerator MakeBoom()
+        public IEnumerator MoveMatch()
         {
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
-            bool isMake = false;
-
-            // 이동 블럭이 있는 경우
-            if (moveBlock)
-            {
-                for (int row = 0; row < height; row++)
-                {
-                    for (int col = 0; col < width; col++)
-                    {
-                        if (blocks[row, col] != null && GM.GameState != GameState.Move)
-                        {
-                            // MoveBlock
-                            if (blocks[row, col] == moveBlock)
-                            {
-                                // Col
-                                switch (moveBlock.col)
-                                {
-                                    case -3:
-                                        // ★OOO
-                                        col_0 = blocks[row, col + 1];
-                                        col_1 = blocks[row, col + 2];
-                                        col_2 = blocks[row, col + 3];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            // 블럭 이동
-                                            col_0.col = moveBlock.col;
-                                            col_1.col = moveBlock.col;
-                                            col_2.col = moveBlock.col;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            // 블럭 제거
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수 업데이트
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            // 스킬 게이지 업데이트
-                                            uiElement.SetGauge(col_0.ElementValue);
-                                            uiElement.SetGauge(col_1.ElementValue);
-                                            uiElement.SetGauge(col_2.ElementValue);
-
-                                            blocks[row, col + 1] = null;
-                                            blocks[row, col + 2] = null;
-                                            blocks[row, col + 3] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        break;
-
-                                    case -2:
-                                        // ★OOO
-                                        col_0 = blocks[row, col + 1];
-                                        col_1 = blocks[row, col + 2];
-                                        col_2 = blocks[row, col + 3];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            // 블럭 이동
-                                            col_0.col = moveBlock.col;
-                                            col_1.col = moveBlock.col;
-                                            col_2.col = moveBlock.col;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            // 블럭 제거
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수 업데이트
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            // 스킬 게이지 업데이트
-                                            uiElement.SetGauge(col_0.ElementValue);
-                                            uiElement.SetGauge(col_1.ElementValue);
-                                            uiElement.SetGauge(col_2.ElementValue);
-
-                                            blocks[row, col + 1] = null;
-                                            blocks[row, col + 2] = null;
-                                            blocks[row, col + 3] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        else
-                                        {
-                                            // O★OO
-                                            col_0 = blocks[row, col - 1];
-                                            col_1 = blocks[row, col + 1];
-                                            col_2 = blocks[row, col + 2];
-
-                                            if (moveBlock.elementType == col_0.elementType &&
-                                                moveBlock.elementType == col_1.elementType &&
-                                                moveBlock.elementType == col_2.elementType)
-                                            {
-                                                // 블럭 이동
-                                                col_0.col = moveBlock.col;
-                                                col_1.col = moveBlock.col;
-                                                col_2.col = moveBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                // 블럭 제거
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수 업데이트
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                // 스킬 게이지 업데이트
-                                                uiElement.SetGauge(col_0.ElementValue);
-                                                uiElement.SetGauge(col_1.ElementValue);
-                                                uiElement.SetGauge(col_2.ElementValue);
-
-                                                blocks[row, col - 1] = null;
-                                                blocks[row, col + 1] = null;
-                                                blocks[row, col + 2] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.elementType = ElementType.Balance;
-                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                        }
-                                        break;
-
-                                    case -1:
-                                    case 0:
-                                        // ★OOO
-                                        col_0 = blocks[row, col + 1];
-                                        col_1 = blocks[row, col + 2];
-                                        col_2 = blocks[row, col + 3];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            // 블럭 이동
-                                            col_0.col = moveBlock.col;
-                                            col_1.col = moveBlock.col;
-                                            col_2.col = moveBlock.col;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            // 블럭 제거
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수 업데이트
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            // 스킬 게이지 업데이트
-                                            uiElement.SetGauge(col_0.ElementValue);
-                                            uiElement.SetGauge(col_1.ElementValue);
-                                            uiElement.SetGauge(col_2.ElementValue);
-
-                                            blocks[row, col + 1] = null;
-                                            blocks[row, col + 2] = null;
-                                            blocks[row, col + 3] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        else
-                                        {
-                                            // O★OO
-                                            col_0 = blocks[row, col - 1];
-                                            col_1 = blocks[row, col + 1];
-                                            col_2 = blocks[row, col + 2];
-
-                                            if (moveBlock.elementType == col_0.elementType &&
-                                                moveBlock.elementType == col_1.elementType &&
-                                                moveBlock.elementType == col_2.elementType)
-                                            {
-                                                // 블럭 이동
-                                                col_0.col = moveBlock.col;
-                                                col_1.col = moveBlock.col;
-                                                col_2.col = moveBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                // 블럭 제거
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수 업데이트
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                // 스킬 게이지 업데이트
-                                                uiElement.SetGauge(col_0.ElementValue);
-                                                uiElement.SetGauge(col_1.ElementValue);
-                                                uiElement.SetGauge(col_2.ElementValue);
-
-                                                blocks[row, col - 1] = null;
-                                                blocks[row, col + 1] = null;
-                                                blocks[row, col + 2] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.elementType = ElementType.Balance;
-                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // OO★O
-                                                col_0 = blocks[row, col - 1];
-                                                col_1 = blocks[row, col - 2];
-                                                col_2 = blocks[row, col + 1];
-
-                                                if (moveBlock.elementType == col_0.elementType &&
-                                                    moveBlock.elementType == col_1.elementType &&
-                                                    moveBlock.elementType == col_2.elementType)
-                                                {
-                                                    // 블럭 이동
-                                                    col_0.col = moveBlock.col;
-                                                    col_1.col = moveBlock.col;
-                                                    col_2.col = moveBlock.col;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    // 블럭 제거
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수 업데이트
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    // 스킬 게이지 업데이트
-                                                    uiElement.SetGauge(col_0.ElementValue);
-                                                    uiElement.SetGauge(col_1.ElementValue);
-                                                    uiElement.SetGauge(col_2.ElementValue);
-
-                                                    blocks[row, col - 1] = null;
-                                                    blocks[row, col - 2] = null;
-                                                    blocks[row, col + 1] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.elementType = ElementType.Balance;
-                                                    moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                            }
-                                        }
-                                        break;
-
-                                    case 1:
-                                        // OOO★
-                                        col_0 = blocks[row, col - 1];
-                                        col_1 = blocks[row, col - 2];
-                                        col_2 = blocks[row, col - 3];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            // 블럭 이동
-                                            col_0.col = moveBlock.col;
-                                            col_1.col = moveBlock.col;
-                                            col_2.col = moveBlock.col;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            // 블럭 제거
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수 업데이트
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            // 스킬 게이지 업데이트
-                                            uiElement.SetGauge(col_0.ElementValue);
-                                            uiElement.SetGauge(col_1.ElementValue);
-                                            uiElement.SetGauge(col_2.ElementValue);
-
-                                            blocks[row, col - 1] = null;
-                                            blocks[row, col - 2] = null;
-                                            blocks[row, col - 3] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        else
-                                        {
-                                            // OO★O
-                                            col_0 = blocks[row, col - 1];
-                                            col_1 = blocks[row, col - 2];
-                                            col_2 = blocks[row, col + 1];
-
-                                            if (moveBlock.elementType == col_0.elementType &&
-                                                moveBlock.elementType == col_1.elementType &&
-                                                moveBlock.elementType == col_2.elementType)
-                                            {
-                                                // 블럭 이동
-                                                col_0.col = moveBlock.col;
-                                                col_1.col = moveBlock.col;
-                                                col_2.col = moveBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                // 블럭 제거
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수 업데이트
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                // 스킬 게이지 업데이트
-                                                uiElement.SetGauge(col_0.ElementValue);
-                                                uiElement.SetGauge(col_1.ElementValue);
-                                                uiElement.SetGauge(col_2.ElementValue);
-
-                                                blocks[row, col - 1] = null;
-                                                blocks[row, col - 2] = null;
-                                                blocks[row, col + 1] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.elementType = ElementType.Balance;
-                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // O★OO
-                                                col_0 = blocks[row, col - 1];
-                                                col_1 = blocks[row, col + 1];
-                                                col_2 = blocks[row, col + 2];
-
-                                                if (moveBlock.elementType == col_0.elementType &&
-                                                    moveBlock.elementType == col_1.elementType &&
-                                                    moveBlock.elementType == col_2.elementType)
-                                                {
-                                                    // 블럭 이동
-                                                    col_0.col = moveBlock.col;
-                                                    col_1.col = moveBlock.col;
-                                                    col_2.col = moveBlock.col;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    // 블럭 제거
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수 업데이트
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    // 스킬 게이지 업데이트
-                                                    uiElement.SetGauge(col_0.ElementValue);
-                                                    uiElement.SetGauge(col_1.ElementValue);
-                                                    uiElement.SetGauge(col_2.ElementValue);
-
-                                                    blocks[row, col - 1] = null;
-                                                    blocks[row, col + 1] = null;
-                                                    blocks[row, col + 2] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.elementType = ElementType.Balance;
-                                                    moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                            }
-                                        }
-                                        break;
-
-                                    case 2:
-                                        // OOO★
-                                        col_0 = blocks[row, col - 1];
-                                        col_1 = blocks[row, col - 2];
-                                        col_2 = blocks[row, col - 3];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            // 블럭 이동
-                                            col_0.col = moveBlock.col;
-                                            col_1.col = moveBlock.col;
-                                            col_2.col = moveBlock.col;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            // 블럭 제거
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수 업데이트
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            // 스킬 게이지 업데이트
-                                            uiElement.SetGauge(col_0.ElementValue);
-                                            uiElement.SetGauge(col_1.ElementValue);
-                                            uiElement.SetGauge(col_2.ElementValue);
-
-                                            blocks[row, col - 1] = null;
-                                            blocks[row, col - 2] = null;
-                                            blocks[row, col - 3] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        else
-                                        {
-                                            // OO★O
-                                            col_0 = blocks[row, col - 1];
-                                            col_1 = blocks[row, col - 2];
-                                            col_2 = blocks[row, col + 1];
-
-                                            if (moveBlock.elementType == col_0.elementType &&
-                                                moveBlock.elementType == col_1.elementType &&
-                                                moveBlock.elementType == col_2.elementType)
-                                            {
-                                                // 블럭 이동
-                                                col_0.col = moveBlock.col;
-                                                col_1.col = moveBlock.col;
-                                                col_2.col = moveBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                // 블럭 제거
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수 업데이트
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                // 스킬 게이지 업데이트
-                                                uiElement.SetGauge(col_0.ElementValue);
-                                                uiElement.SetGauge(col_1.ElementValue);
-                                                uiElement.SetGauge(col_2.ElementValue);
-
-                                                blocks[row, col - 1] = null;
-                                                blocks[row, col - 2] = null;
-                                                blocks[row, col + 1] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.elementType = ElementType.Balance;
-                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                        }
-                                        break;
-
-                                    case 3:
-                                        // OOO★
-                                        col_0 = blocks[row, col - 1];
-                                        col_1 = blocks[row, col - 2];
-                                        col_2 = blocks[row, col - 3];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            // 블럭 이동
-                                            col_0.col = moveBlock.col;
-                                            col_1.col = moveBlock.col;
-                                            col_2.col = moveBlock.col;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            // 블럭 제거
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수 업데이트
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            // 스킬 게이지 업데이트
-                                            uiElement.SetGauge(col_0.ElementValue);
-                                            uiElement.SetGauge(col_1.ElementValue);
-                                            uiElement.SetGauge(col_2.ElementValue);
-
-                                            blocks[row, col - 1] = null;
-                                            blocks[row, col - 2] = null;
-                                            blocks[row, col - 3] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        break;
-                                }
-
-                                // Row 
-                                switch (moveBlock.row)
-                                {
-                                    case -3:
-                                        // ★OOO
-                                        col_0 = blocks[row + 1, col];
-                                        col_1 = blocks[row + 2, col];
-                                        col_2 = blocks[row + 3, col];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            col_0.row = moveBlock.row;
-                                            col_1.row = moveBlock.row;
-                                            col_2.row = moveBlock.row;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수를 더합니다!
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            blocks[row + 1, col] = null;
-                                            blocks[row + 2, col] = null;
-                                            blocks[row + 3, col] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        break;
-
-                                    case -2:
-                                        // ★OOO
-                                        col_0 = blocks[row + 1, col];
-                                        col_1 = blocks[row + 2, col];
-                                        col_2 = blocks[row + 3, col];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            col_0.row = moveBlock.row;
-                                            col_1.row = moveBlock.row;
-                                            col_2.row = moveBlock.row;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수를 더합니다!
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            blocks[row + 1, col] = null;
-                                            blocks[row + 2, col] = null;
-                                            blocks[row + 3, col] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        else
-                                        {
-                                            // O★OO
-                                            col_0 = blocks[row - 1, col];
-                                            col_1 = blocks[row + 1, col];
-                                            col_2 = blocks[row + 2, col];
-
-                                            if (moveBlock.elementType == col_0.elementType &&
-                                                moveBlock.elementType == col_1.elementType &&
-                                                moveBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.row;
-                                                col_1.row = moveBlock.row;
-                                                col_2.row = moveBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row - 1, col] = null;
-                                                blocks[row + 1, col] = null;
-                                                blocks[row + 2, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.elementType = ElementType.Balance;
-                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                        }
-                                        break;
-
-                                    case -1:
-                                    case 0:
-                                        // ★OOO
-                                        col_0 = blocks[row + 1, col];
-                                        col_1 = blocks[row + 2, col];
-                                        col_2 = blocks[row + 3, col];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            col_0.row = moveBlock.row;
-                                            col_1.row = moveBlock.row;
-                                            col_2.row = moveBlock.row;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수를 더합니다!
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            blocks[row + 1, col] = null;
-                                            blocks[row + 2, col] = null;
-                                            blocks[row + 3, col] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        else
-                                        {
-                                            // O★OO
-                                            col_0 = blocks[row - 1, col];
-                                            col_1 = blocks[row + 1, col];
-                                            col_2 = blocks[row + 2, col];
-
-                                            if (moveBlock.elementType == col_0.elementType &&
-                                                moveBlock.elementType == col_1.elementType &&
-                                                moveBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.row;
-                                                col_1.row = moveBlock.row;
-                                                col_2.row = moveBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row - 1, col] = null;
-                                                blocks[row + 1, col] = null;
-                                                blocks[row + 2, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.elementType = ElementType.Balance;
-                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // OO★O
-                                                col_0 = blocks[row - 1, col];
-                                                col_1 = blocks[row - 2, col];
-                                                col_2 = blocks[row + 1, col];
-
-                                                if (moveBlock.elementType == col_0.elementType &&
-                                                    moveBlock.elementType == col_1.elementType &&
-                                                    moveBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.row = moveBlock.row;
-                                                    col_1.row = moveBlock.row;
-                                                    col_2.row = moveBlock.row;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row - 1, col] = null;
-                                                    blocks[row - 2, col] = null;
-                                                    blocks[row + 1, col] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.elementType = ElementType.Balance;
-                                                    moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                            }
-                                        }
-                                        break;
-
-                                    case 1:
-                                        // OOO★
-                                        col_0 = blocks[row - 1, col];
-                                        col_1 = blocks[row - 2, col];
-                                        col_2 = blocks[row - 3, col];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            col_0.row = moveBlock.row;
-                                            col_1.row = moveBlock.row;
-                                            col_2.row = moveBlock.row;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수를 더합니다!
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            blocks[row - 1, col] = null;
-                                            blocks[row - 2, col] = null;
-                                            blocks[row - 3, col] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        else
-                                        {
-                                            // OO★O
-                                            col_0 = blocks[row + 1, col];
-                                            col_1 = blocks[row - 1, col];
-                                            col_2 = blocks[row - 2, col];
-
-                                            if (moveBlock.elementType == col_0.elementType &&
-                                                moveBlock.elementType == col_1.elementType &&
-                                                moveBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.row;
-                                                col_1.row = moveBlock.row;
-                                                col_2.row = moveBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row + 1, col] = null;
-                                                blocks[row - 1, col] = null;
-                                                blocks[row - 2, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.elementType = ElementType.Balance;
-                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // O★OO
-                                                col_0 = blocks[row + 1, col];
-                                                col_1 = blocks[row + 2, col];
-                                                col_2 = blocks[row - 1, col];
-
-                                                if (moveBlock.elementType == col_0.elementType &&
-                                                    moveBlock.elementType == col_1.elementType &&
-                                                    moveBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.row = moveBlock.row;
-                                                    col_1.row = moveBlock.row;
-                                                    col_2.row = moveBlock.row;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row + 1, col] = null;
-                                                    blocks[row + 2, col] = null;
-                                                    blocks[row - 1, col] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.elementType = ElementType.Balance;
-                                                    moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                            }
-                                        }
-                                        break;
-
-                                    case 2:
-                                        // OOO★
-                                        col_0 = blocks[row - 1, col];
-                                        col_1 = blocks[row - 2, col];
-                                        col_2 = blocks[row - 3, col];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            col_0.row = moveBlock.row;
-                                            col_1.row = moveBlock.row;
-                                            col_2.row = moveBlock.row;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수를 더합니다!
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            blocks[row - 1, col] = null;
-                                            blocks[row - 2, col] = null;
-                                            blocks[row - 3, col] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        else
-                                        {
-                                            // OO★O
-                                            col_0 = blocks[row + 1, col];
-                                            col_1 = blocks[row - 1, col];
-                                            col_2 = blocks[row - 2, col];
-
-                                            if (moveBlock.elementType == col_0.elementType &&
-                                                moveBlock.elementType == col_1.elementType &&
-                                                moveBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.row;
-                                                col_1.row = moveBlock.row;
-                                                col_2.row = moveBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row + 1, col] = null;
-                                                blocks[row - 1, col] = null;
-                                                blocks[row - 2, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.elementType = ElementType.Balance;
-                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                        }
-                                        break;
-
-                                    case 3:
-                                        // OOO★
-                                        col_0 = blocks[row - 1, col];
-                                        col_1 = blocks[row - 2, col];
-                                        col_2 = blocks[row - 3, col];
-
-                                        if (moveBlock.elementType == col_0.elementType &&
-                                            moveBlock.elementType == col_1.elementType &&
-                                            moveBlock.elementType == col_2.elementType)
-                                        {
-                                            col_0.row = moveBlock.row;
-                                            col_1.row = moveBlock.row;
-                                            col_2.row = moveBlock.row;
-
-                                            yield return new WaitForSeconds(.3f);
-
-                                            blockPool.ReturnPoolableObject(col_0);
-                                            blockPool.ReturnPoolableObject(col_1);
-                                            blockPool.ReturnPoolableObject(col_2);
-
-                                            // 점수를 더합니다!
-                                            DM.SetScore(col_0.BlockScore);
-                                            DM.SetScore(col_1.BlockScore);
-                                            DM.SetScore(col_2.BlockScore);
-
-                                            blocks[row - 1, col] = null;
-                                            blocks[row - 2, col] = null;
-                                            blocks[row - 3, col] = null;
-
-                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                            moveBlock.elementType = ElementType.Balance;
-                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                            isMake = true;
-                                        }
-                                        break;
-                                }
-                            }
-
-                            /// 여기서 Null
-                            if (moveBlock.otherBlock != null)
-                            {
-                                // OtherBlock
-                                if (blocks[row, col] == moveBlock.otherBlock)
-                                {
-                                    // Col
-                                    switch (moveBlock.otherBlock.col)
-                                    {
-                                        case -3:
-                                            // ★OOO
-                                            col_0 = blocks[row, col + 1];
-                                            col_1 = blocks[row, col + 2];
-                                            col_2 = blocks[row, col + 3];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.col = moveBlock.otherBlock.col;
-                                                col_1.col = moveBlock.otherBlock.col;
-                                                col_2.col = moveBlock.otherBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row, col + 1] = null;
-                                                blocks[row, col + 2] = null;
-                                                blocks[row, col + 3] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            break;
-
-                                        case -2:
-                                            // ★OOO
-                                            col_0 = blocks[row, col + 1];
-                                            col_1 = blocks[row, col + 2];
-                                            col_2 = blocks[row, col + 3];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.col = moveBlock.otherBlock.col;
-                                                col_1.col = moveBlock.otherBlock.col;
-                                                col_2.col = moveBlock.otherBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row, col + 1] = null;
-                                                blocks[row, col + 2] = null;
-                                                blocks[row, col + 3] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // O★OO
-                                                col_0 = blocks[row, col - 1];
-                                                col_1 = blocks[row, col + 1];
-                                                col_2 = blocks[row, col + 2];
-
-                                                if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.col = moveBlock.otherBlock.col;
-                                                    col_1.col = moveBlock.otherBlock.col;
-                                                    col_2.col = moveBlock.otherBlock.col;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row, col - 1] = null;
-                                                    blocks[row, col + 1] = null;
-                                                    blocks[row, col + 2] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                            }
-                                            break;
-
-                                        case -1:
-                                        case 0:
-                                            // ★OOO
-                                            col_0 = blocks[row, col + 1];
-                                            col_1 = blocks[row, col + 2];
-                                            col_2 = blocks[row, col + 3];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.col = moveBlock.otherBlock.col;
-                                                col_1.col = moveBlock.otherBlock.col;
-                                                col_2.col = moveBlock.otherBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row, col + 1] = null;
-                                                blocks[row, col + 2] = null;
-                                                blocks[row, col + 3] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // O★OO
-                                                col_0 = blocks[row, col - 1];
-                                                col_1 = blocks[row, col + 1];
-                                                col_2 = blocks[row, col + 2];
-
-                                                if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.col = moveBlock.otherBlock.col;
-                                                    col_1.col = moveBlock.otherBlock.col;
-                                                    col_2.col = moveBlock.otherBlock.col;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row, col - 1] = null;
-                                                    blocks[row, col + 1] = null;
-                                                    blocks[row, col + 2] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                                else
-                                                {
-                                                    // OO★O
-                                                    col_0 = blocks[row, col - 1];
-                                                    col_1 = blocks[row, col - 2];
-                                                    col_2 = blocks[row, col + 1];
-
-                                                    if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                        moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                        moveBlock.otherBlock.elementType == col_2.elementType)
-                                                    {
-                                                        col_0.col = moveBlock.otherBlock.col;
-                                                        col_1.col = moveBlock.otherBlock.col;
-                                                        col_2.col = moveBlock.otherBlock.col;
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        blockPool.ReturnPoolableObject(col_0);
-                                                        blockPool.ReturnPoolableObject(col_1);
-                                                        blockPool.ReturnPoolableObject(col_2);
-
-                                                        // 점수를 더합니다!
-                                                        DM.SetScore(col_0.BlockScore);
-                                                        DM.SetScore(col_1.BlockScore);
-                                                        DM.SetScore(col_2.BlockScore);
-
-                                                        blocks[row, col - 1] = null;
-                                                        blocks[row, col - 2] = null;
-                                                        blocks[row, col + 1] = null;
-
-                                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                        moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                        moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                        isMake = true;
-                                                    }
-                                                }
-                                            }
-                                            break;
-
-                                        case 1:
-                                            // OOO★
-                                            col_0 = blocks[row, col - 1];
-                                            col_1 = blocks[row, col - 2];
-                                            col_2 = blocks[row, col - 3];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.col = moveBlock.otherBlock.col;
-                                                col_1.col = moveBlock.otherBlock.col;
-                                                col_2.col = moveBlock.otherBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row, col - 1] = null;
-                                                blocks[row, col - 2] = null;
-                                                blocks[row, col - 3] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // OO★O
-                                                col_0 = blocks[row, col - 1];
-                                                col_1 = blocks[row, col - 2];
-                                                col_2 = blocks[row, col + 1];
-
-                                                if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.col = moveBlock.otherBlock.col;
-                                                    col_1.col = moveBlock.otherBlock.col;
-                                                    col_2.col = moveBlock.otherBlock.col;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                                else
-                                                {
-                                                    // O★OO
-                                                    col_0 = blocks[row, col - 1];
-                                                    col_1 = blocks[row, col + 1];
-                                                    col_2 = blocks[row, col + 2];
-
-                                                    if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                        moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                        moveBlock.otherBlock.elementType == col_2.elementType)
-                                                    {
-                                                        col_0.col = moveBlock.otherBlock.col;
-                                                        col_1.col = moveBlock.otherBlock.col;
-                                                        col_2.col = moveBlock.otherBlock.col;
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        blockPool.ReturnPoolableObject(col_0);
-                                                        blockPool.ReturnPoolableObject(col_1);
-                                                        blockPool.ReturnPoolableObject(col_2);
-
-                                                        // 점수를 더합니다!
-                                                        DM.SetScore(col_0.BlockScore);
-                                                        DM.SetScore(col_1.BlockScore);
-                                                        DM.SetScore(col_2.BlockScore);
-
-                                                        blocks[row, col - 1] = null;
-                                                        blocks[row, col + 1] = null;
-                                                        blocks[row, col + 2] = null;
-
-                                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                        moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                        moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                        isMake = true;
-                                                    }
-                                                }
-                                            }
-                                            break;
-
-                                        case 2:
-                                            // OOO★
-                                            col_0 = blocks[row, col - 1];
-                                            col_1 = blocks[row, col - 2];
-                                            col_2 = blocks[row, col - 3];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.col = moveBlock.otherBlock.col;
-                                                col_1.col = moveBlock.otherBlock.col;
-                                                col_2.col = moveBlock.otherBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row, col - 1] = null;
-                                                blocks[row, col - 2] = null;
-                                                blocks[row, col - 3] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // OO★O
-                                                col_0 = blocks[row, col - 1];
-                                                col_1 = blocks[row, col - 2];
-                                                col_2 = blocks[row, col + 1];
-
-                                                if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.col = moveBlock.otherBlock.col;
-                                                    col_1.col = moveBlock.otherBlock.col;
-                                                    col_2.col = moveBlock.otherBlock.col;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row, col - 1] = null;
-                                                    blocks[row, col - 2] = null;
-                                                    blocks[row, col + 1] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                            }
-                                            break;
-
-                                        case 3:
-                                            // OOO★
-                                            col_0 = blocks[row, col - 1];
-                                            col_1 = blocks[row, col - 2];
-                                            col_2 = blocks[row, col - 3];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.col = moveBlock.otherBlock.col;
-                                                col_1.col = moveBlock.otherBlock.col;
-                                                col_2.col = moveBlock.otherBlock.col;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row, col - 1] = null;
-                                                blocks[row, col - 2] = null;
-                                                blocks[row, col - 3] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            break;
-                                    }
-
-                                    // Row
-                                    switch (moveBlock.otherBlock.row)
-                                    {
-                                        case -3:
-                                            // ★OOO
-                                            col_0 = blocks[row + 1, col];
-                                            col_1 = blocks[row + 2, col];
-                                            col_2 = blocks[row + 3, col];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.otherBlock.row;
-                                                col_1.row = moveBlock.otherBlock.row;
-                                                col_2.row = moveBlock.otherBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row + 1, col] = null;
-                                                blocks[row + 2, col] = null;
-                                                blocks[row + 3, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            break;
-
-                                        case -2:
-                                            // ★OOO
-                                            col_0 = blocks[row + 1, col];
-                                            col_1 = blocks[row + 2, col];
-                                            col_2 = blocks[row + 3, col];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.otherBlock.row;
-                                                col_1.row = moveBlock.otherBlock.row;
-                                                col_2.row = moveBlock.otherBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row + 1, col] = null;
-                                                blocks[row + 2, col] = null;
-                                                blocks[row + 3, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // O★OO
-                                                col_0 = blocks[row - 1, col];
-                                                col_1 = blocks[row + 1, col];
-                                                col_2 = blocks[row + 2, col];
-
-                                                if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.row = moveBlock.otherBlock.row;
-                                                    col_1.row = moveBlock.otherBlock.row;
-                                                    col_2.row = moveBlock.otherBlock.row;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row - 1, col] = null;
-                                                    blocks[row + 1, col] = null;
-                                                    blocks[row + 2, col] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                            }
-                                            break;
-
-                                        case -1:
-                                        case 0:
-                                            // ★OOO
-                                            col_0 = blocks[row + 1, col];
-                                            col_1 = blocks[row + 2, col];
-                                            col_2 = blocks[row + 3, col];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.otherBlock.row;
-                                                col_1.row = moveBlock.otherBlock.row;
-                                                col_2.row = moveBlock.otherBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row + 1, col] = null;
-                                                blocks[row + 2, col] = null;
-                                                blocks[row + 3, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // O★OO
-                                                col_0 = blocks[row - 1, col];
-                                                col_1 = blocks[row + 1, col];
-                                                col_2 = blocks[row + 2, col];
-
-                                                if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.row = moveBlock.row;
-                                                    col_1.row = moveBlock.row;
-                                                    col_2.row = moveBlock.row;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row - 1, col] = null;
-                                                    blocks[row + 1, col] = null;
-                                                    blocks[row + 2, col] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                                else
-                                                {
-                                                    // OO★O
-                                                    col_0 = blocks[row - 1, col];
-                                                    col_1 = blocks[row - 2, col];
-                                                    col_2 = blocks[row + 1, col];
-
-                                                    if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                        moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                        moveBlock.otherBlock.elementType == col_2.elementType)
-                                                    {
-                                                        col_0.row = moveBlock.otherBlock.row;
-                                                        col_1.row = moveBlock.otherBlock.row;
-                                                        col_2.row = moveBlock.otherBlock.row;
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        blockPool.ReturnPoolableObject(col_0);
-                                                        blockPool.ReturnPoolableObject(col_1);
-                                                        blockPool.ReturnPoolableObject(col_2);
-
-                                                        // 점수를 더합니다!
-                                                        DM.SetScore(col_0.BlockScore);
-                                                        DM.SetScore(col_1.BlockScore);
-                                                        DM.SetScore(col_2.BlockScore);
-
-                                                        blocks[row - 1, col] = null;
-                                                        blocks[row - 2, col] = null;
-                                                        blocks[row + 1, col] = null;
-
-                                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                        moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                        moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                        isMake = true;
-                                                    }
-                                                }
-                                            }
-                                            break;
-
-                                        case 1:
-                                            // OOO★
-                                            col_0 = blocks[row - 1, col];
-                                            col_1 = blocks[row - 2, col];
-                                            col_2 = blocks[row - 3, col];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.otherBlock.row;
-                                                col_1.row = moveBlock.otherBlock.row;
-                                                col_2.row = moveBlock.otherBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row - 1, col] = null;
-                                                blocks[row - 2, col] = null;
-                                                blocks[row - 3, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // OO★O
-                                                col_0 = blocks[row + 1, col];
-                                                col_1 = blocks[row - 1, col];
-                                                col_2 = blocks[row - 2, col];
-
-                                                if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.row = moveBlock.otherBlock.row;
-                                                    col_1.row = moveBlock.otherBlock.row;
-                                                    col_2.row = moveBlock.otherBlock.row;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row + 1, col] = null;
-                                                    blocks[row - 1, col] = null;
-                                                    blocks[row - 2, col] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                                else
-                                                {
-                                                    // O★OO
-                                                    col_0 = blocks[row + 1, col];
-                                                    col_1 = blocks[row + 2, col];
-                                                    col_2 = blocks[row - 1, col];
-
-                                                    if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                        moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                        moveBlock.otherBlock.elementType == col_2.elementType)
-                                                    {
-                                                        col_0.row = moveBlock.otherBlock.row;
-                                                        col_1.row = moveBlock.otherBlock.row;
-                                                        col_2.row = moveBlock.otherBlock.row;
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        blockPool.ReturnPoolableObject(col_0);
-                                                        blockPool.ReturnPoolableObject(col_1);
-                                                        blockPool.ReturnPoolableObject(col_2);
-
-                                                        // 점수를 더합니다!
-                                                        DM.SetScore(col_0.BlockScore);
-                                                        DM.SetScore(col_1.BlockScore);
-                                                        DM.SetScore(col_2.BlockScore);
-
-                                                        blocks[row + 1, col] = null;
-                                                        blocks[row + 2, col] = null;
-                                                        blocks[row - 1, col] = null;
-
-                                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                        moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                        moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                        isMake = true;
-                                                    }
-                                                }
-                                            }
-                                            break;
-
-                                        case 2:
-                                            // OOO★
-                                            col_0 = blocks[row - 1, col];
-                                            col_1 = blocks[row - 2, col];
-                                            col_2 = blocks[row - 3, col];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.otherBlock.row;
-                                                col_1.row = moveBlock.otherBlock.row;
-                                                col_2.row = moveBlock.otherBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row - 1, col] = null;
-                                                blocks[row - 2, col] = null;
-                                                blocks[row - 3, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                // OO★O
-                                                col_0 = blocks[row + 1, col];
-                                                col_1 = blocks[row - 1, col];
-                                                col_2 = blocks[row - 2, col];
-
-                                                if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                    moveBlock.otherBlock.elementType == col_2.elementType)
-                                                {
-                                                    col_0.row = moveBlock.otherBlock.row;
-                                                    col_1.row = moveBlock.otherBlock.row;
-                                                    col_2.row = moveBlock.otherBlock.row;
-
-                                                    yield return new WaitForSeconds(.3f);
-
-                                                    blockPool.ReturnPoolableObject(col_0);
-                                                    blockPool.ReturnPoolableObject(col_1);
-                                                    blockPool.ReturnPoolableObject(col_2);
-
-                                                    // 점수를 더합니다!
-                                                    DM.SetScore(col_0.BlockScore);
-                                                    DM.SetScore(col_1.BlockScore);
-                                                    DM.SetScore(col_2.BlockScore);
-
-                                                    blocks[row + 1, col] = null;
-                                                    blocks[row - 1, col] = null;
-                                                    blocks[row - 2, col] = null;
-
-                                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                    moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                    moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                    isMake = true;
-                                                }
-                                            }
-                                            break;
-
-                                        case 3:
-                                            // OOO★
-                                            col_0 = blocks[row - 1, col];
-                                            col_1 = blocks[row - 2, col];
-                                            col_2 = blocks[row - 3, col];
-
-                                            if (moveBlock.otherBlock.elementType == col_0.elementType &&
-                                                moveBlock.otherBlock.elementType == col_1.elementType &&
-                                                moveBlock.otherBlock.elementType == col_2.elementType)
-                                            {
-                                                col_0.row = moveBlock.otherBlock.row;
-                                                col_1.row = moveBlock.otherBlock.row;
-                                                col_2.row = moveBlock.otherBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                // 점수를 더합니다!
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                blocks[row - 1, col] = null;
-                                                blocks[row - 2, col] = null;
-                                                blocks[row - 3, col] = null;
-
-                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                                moveBlock.otherBlock.elementType = ElementType.Balance;
-                                                moveBlock.otherBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            break;
-                                    }
-                                }
-                            }
-
-                            // 파괴 이후 작업
-                            if (isMake)
-                            {
-                                // 블럭 다운 카운트 계산
-                                int downCount = 0;
-
-                                for (int c_Col = 0; c_Col < width; c_Col++)
-                                {
-                                    for (int c_Row = 0; c_Row < height; c_Row++)
-                                    {
-                                        if (blocks[c_Row, c_Col] == null)
-                                        {
-                                            downCount++;
-                                        }
-                                        else
-                                        {
-                                            blocks[c_Row, c_Col].downCount = downCount;
-                                        }
-                                    }
-
-                                    downCount = 0;
-                                }
-
-                                yield return new WaitForSeconds(.3f);
-
-                                // 블럭 내리기 작업
-                                for (int d_Row = 0; d_Row < height; d_Row++)
-                                {
-                                    for (int d_Col = 0; d_Col < width; d_Col++)
-                                    {
-                                        if (blocks[d_Row, d_Col] != null)
-                                        {
-                                            if (blocks[d_Row, d_Col].downCount > 0)
-                                            {
-                                                // 내릴 공간이 존재한다
-
-                                                var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
-
-                                                if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
-                                                {
-                                                    Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
-                                                    blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
-                                                }
-
-                                                // 다운 카운트 초기화
-                                                blocks[d_Row, d_Col].downCount = 0;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                yield return new WaitForSeconds(.3f);
-
-                                // 빈 공간 블럭 생성
-                                int newCol = -3;
-                                int newRow = 3;
-
-                                for (int n_Col = 0; n_Col < width; n_Col++)
-                                {
-                                    for (int n_Row = 0; n_Row < height; n_Row++)
-                                    {
-                                        if (blocks[n_Row, n_Col] == null)
-                                        {
-                                            // 어? 여기 비어있는데? 탈모인데?
-                                            // 그러면 머리 심어줘야자~
-                                            Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-
-                                            // 부모 설정
-                                            newBlock.transform.SetParent(this.transform);
-
-                                            // 위치값 설정
-                                            newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
-
-                                            // 회전값 설정
-                                            newBlock.transform.localRotation = Quaternion.identity;
-
-                                            // 사이즈값 설정
-                                            newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
-
-                                            // 활성화
-                                            newBlock.gameObject.SetActive(true);
-
-                                            // 블럭 초기화
-                                            newBlock.Initialize(newCol, 4 + n_Row);
-
-                                            // 블럭 저장
-                                            blocks[n_Row, n_Col] = newBlock;
-
-                                            var targetrow = (newBlock.row = newRow);
-
-                                            if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
-                                            {
-                                                Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
-                                                newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
-                                            }
-
-                                            newRow--;
-                                        }
-                                    }
-
-                                    newCol++;
-                                    newRow = 3;
-                                }
-
-                                isMake = false;
-
-                                BlockSort();
-                            }
-                        }
-                    }
-                }
-
-            }
-
-            // 4X4 - 특수 상황
             for (int row = 0; row < height; row++)
             {
                 for (int col = 0; col < width; col++)
                 {
-                    // Col
-                    if (blocks[row, col] != null)
+                    if (blocks[row, col] != null && GM.GameState != GameState.Move && moveBlock != null)
                     {
-                        checkBlock = blocks[row, col];
-
-                        if (checkBlock.col <= 0)
+                        // MoveBlock
+                        if (blocks[row, col] == moveBlock)
                         {
-                            col_0 = blocks[row, col + 1];
-                            col_1 = blocks[row, col + 2];
-                            col_2 = blocks[row, col + 3];
-
-                            // 4X4 특수 상황 모음집 1탄
-                            if (checkBlock.row <= 0 && (col_0 != null && col_1 != null && col_2 != null))
+                            // Col
+                            switch (moveBlock.col)
                             {
-                                /*
-                                 * O
-                                 * O
-                                 * O
-                                 * O O O O
-                                 */
-                                row_0 = blocks[row + 1, col];
-                                row_1 = blocks[row + 2, col];
-                                row_2 = blocks[row + 3, col];
+                                case -3:
+                                    // ★OOO
+                                    col_0 = blocks[row, col + 1];
+                                    col_1 = blocks[row, col + 2];
+                                    col_2 = blocks[row, col + 3];
 
-                                if (row_0 != null && row_1 != null & row_2 != null)
-                                {
-                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) &&
-                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
                                     {
                                         // 블럭 이동
-                                        col_0.col = checkBlock.col;
-                                        col_1.col = checkBlock.col;
-                                        col_2.col = checkBlock.col;
+                                        col_0.col = moveBlock.col;
+                                        col_1.col = moveBlock.col;
+                                        col_2.col = moveBlock.col;
 
-                                        row_0.row = checkBlock.row;
-                                        row_1.row = checkBlock.row;
-                                        row_2.row = checkBlock.row;
+                                        yield return new WaitForSeconds(.3f);
+
+                                        // 블럭 제거
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(col_2);
+
+                                        // 점수 업데이트
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(col_2.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(col_2.ElementValue);
+
+                                        blocks[row, col + 1] = null;
+                                        blocks[row, col + 2] = null;
+                                        blocks[row, col + 3] = null;
+
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                        moveBlock = null;
+                                    }
+                                    break;
+
+                                case -2:
+                                    // ★OOO
+                                    col_0 = blocks[row, col + 1];
+                                    col_1 = blocks[row, col + 2];
+                                    col_2 = blocks[row, col + 3];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                    {
+                                        // 블럭 이동
+                                        col_0.col = moveBlock.col;
+                                        col_1.col = moveBlock.col;
+                                        col_2.col = moveBlock.col;
+
+                                        yield return new WaitForSeconds(.3f);
+
+                                        // 블럭 제거
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(col_2);
+
+                                        // 점수 업데이트
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(col_2.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(col_2.ElementValue);
+
+                                        blocks[row, col + 1] = null;
+                                        blocks[row, col + 2] = null;
+                                        blocks[row, col + 3] = null;
+
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                        moveBlock = null;
+                                    }
+                                    else
+                                    {
+                                        // O★OO
+                                        col_0 = blocks[row, col - 1];
+                                        col_1 = blocks[row, col + 1];
+                                        col_2 = blocks[row, col + 2];
+
+                                        if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            col_0.col = moveBlock.col;
+                                            col_1.col = moveBlock.col;
+                                            col_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(col_0);
+                                            blockPool.ReturnPoolableObject(col_1);
+                                            blockPool.ReturnPoolableObject(col_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(col_0.BlockScore);
+                                            DM.SetScore(col_1.BlockScore);
+                                            DM.SetScore(col_2.BlockScore);
+
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(col_0.ElementValue);
+                                            uiElement.SetGauge(col_1.ElementValue);
+                                            uiElement.SetGauge(col_2.ElementValue);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            moveBlock = null;
+                                        }
+                                    }
+                                    break;
+
+                                case -1:
+                                case 0:
+                                    // ★OOO
+                                    col_0 = blocks[row, col + 1];
+                                    col_1 = blocks[row, col + 2];
+                                    col_2 = blocks[row, col + 3];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                    {
+                                        // 블럭 이동
+                                        col_0.col = moveBlock.col;
+                                        col_1.col = moveBlock.col;
+                                        col_2.col = moveBlock.col;
+
+                                        yield return new WaitForSeconds(.3f);
+
+                                        // 블럭 제거
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(col_2);
+
+                                        // 점수 업데이트
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(col_2.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(col_2.ElementValue);
+
+                                        blocks[row, col + 1] = null;
+                                        blocks[row, col + 2] = null;
+                                        blocks[row, col + 3] = null;
+
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                        moveBlock = null;
+                                    }
+                                    else
+                                    {
+                                        // O★OO
+                                        col_0 = blocks[row, col - 1];
+                                        col_1 = blocks[row, col + 1];
+                                        col_2 = blocks[row, col + 2];
+
+                                        if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            col_0.col = moveBlock.col;
+                                            col_1.col = moveBlock.col;
+                                            col_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(col_0);
+                                            blockPool.ReturnPoolableObject(col_1);
+                                            blockPool.ReturnPoolableObject(col_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(col_0.BlockScore);
+                                            DM.SetScore(col_1.BlockScore);
+                                            DM.SetScore(col_2.BlockScore);
+
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(col_0.ElementValue);
+                                            uiElement.SetGauge(col_1.ElementValue);
+                                            uiElement.SetGauge(col_2.ElementValue);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col + 1] = null;
+                                            blocks[row, col + 2] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            moveBlock = null;
+                                        }
+                                        else
+                                        {
+                                            // OO★O
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col - 2];
+                                            col_2 = blocks[row, col + 1];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = moveBlock.col;
+                                                col_1.col = moveBlock.col;
+                                                col_2.col = moveBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                // 블럭 제거
+                                                blockPool.ReturnPoolableObject(col_0);
+                                                blockPool.ReturnPoolableObject(col_1);
+                                                blockPool.ReturnPoolableObject(col_2);
+
+                                                // 점수 업데이트
+                                                DM.SetScore(col_0.BlockScore);
+                                                DM.SetScore(col_1.BlockScore);
+                                                DM.SetScore(col_2.BlockScore);
+
+                                                // 스킬 게이지 업데이트
+                                                uiElement.SetGauge(col_0.ElementValue);
+                                                uiElement.SetGauge(col_1.ElementValue);
+                                                uiElement.SetGauge(col_2.ElementValue);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col - 2] = null;
+                                                blocks[row, col + 1] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                moveBlock = null;
+                                            }
+                                        }
+                                    }
+                                    break;
+
+                                case 1:
+                                    // OOO★
+                                    col_0 = blocks[row, col - 1];
+                                    col_1 = blocks[row, col - 2];
+                                    col_2 = blocks[row, col - 3];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                    {
+                                        // 블럭 이동
+                                        col_0.col = moveBlock.col;
+                                        col_1.col = moveBlock.col;
+                                        col_2.col = moveBlock.col;
+
+                                        yield return new WaitForSeconds(.3f);
+
+                                        // 블럭 제거
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(col_2);
+
+                                        // 점수 업데이트
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(col_2.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(col_2.ElementValue);
+
+                                        blocks[row, col - 1] = null;
+                                        blocks[row, col - 2] = null;
+                                        blocks[row, col - 3] = null;
+
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                        moveBlock = null;
+                                    }
+                                    else
+                                    {
+                                        // OO★O
+                                        col_0 = blocks[row, col - 1];
+                                        col_1 = blocks[row, col - 2];
+                                        col_2 = blocks[row, col + 1];
+
+                                        if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            col_0.col = moveBlock.col;
+                                            col_1.col = moveBlock.col;
+                                            col_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(col_0);
+                                            blockPool.ReturnPoolableObject(col_1);
+                                            blockPool.ReturnPoolableObject(col_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(col_0.BlockScore);
+                                            DM.SetScore(col_1.BlockScore);
+                                            DM.SetScore(col_2.BlockScore);
+
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(col_0.ElementValue);
+                                            uiElement.SetGauge(col_1.ElementValue);
+                                            uiElement.SetGauge(col_2.ElementValue);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col - 2] = null;
+                                            blocks[row, col + 1] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            moveBlock = null;
+                                        }
+                                        else
+                                        {
+                                            // O★OO
+                                            col_0 = blocks[row, col - 1];
+                                            col_1 = blocks[row, col + 1];
+                                            col_2 = blocks[row, col + 2];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                // 블럭 이동
+                                                col_0.col = moveBlock.col;
+                                                col_1.col = moveBlock.col;
+                                                col_2.col = moveBlock.col;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                // 블럭 제거
+                                                blockPool.ReturnPoolableObject(col_0);
+                                                blockPool.ReturnPoolableObject(col_1);
+                                                blockPool.ReturnPoolableObject(col_2);
+
+                                                // 점수 업데이트
+                                                DM.SetScore(col_0.BlockScore);
+                                                DM.SetScore(col_1.BlockScore);
+                                                DM.SetScore(col_2.BlockScore);
+
+                                                // 스킬 게이지 업데이트
+                                                uiElement.SetGauge(col_0.ElementValue);
+                                                uiElement.SetGauge(col_1.ElementValue);
+                                                uiElement.SetGauge(col_2.ElementValue);
+
+                                                blocks[row, col - 1] = null;
+                                                blocks[row, col + 1] = null;
+                                                blocks[row, col + 2] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                moveBlock = null;
+                                            }
+                                        }
+                                    }
+                                    break;
+
+                                case 2:
+                                    // OOO★
+                                    col_0 = blocks[row, col - 1];
+                                    col_1 = blocks[row, col - 2];
+                                    col_2 = blocks[row, col - 3];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                    {
+                                        // 블럭 이동
+                                        col_0.col = moveBlock.col;
+                                        col_1.col = moveBlock.col;
+                                        col_2.col = moveBlock.col;
+
+                                        yield return new WaitForSeconds(.3f);
+
+                                        // 블럭 제거
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(col_2);
+
+                                        // 점수 업데이트
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(col_2.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(col_2.ElementValue);
+
+                                        blocks[row, col - 1] = null;
+                                        blocks[row, col - 2] = null;
+                                        blocks[row, col - 3] = null;
+
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                        moveBlock = null;
+                                    }
+                                    else
+                                    {
+                                        // OO★O
+                                        col_0 = blocks[row, col - 1];
+                                        col_1 = blocks[row, col - 2];
+                                        col_2 = blocks[row, col + 1];
+
+                                        if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                        {
+                                            // 블럭 이동
+                                            col_0.col = moveBlock.col;
+                                            col_1.col = moveBlock.col;
+                                            col_2.col = moveBlock.col;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            // 블럭 제거
+                                            blockPool.ReturnPoolableObject(col_0);
+                                            blockPool.ReturnPoolableObject(col_1);
+                                            blockPool.ReturnPoolableObject(col_2);
+
+                                            // 점수 업데이트
+                                            DM.SetScore(col_0.BlockScore);
+                                            DM.SetScore(col_1.BlockScore);
+                                            DM.SetScore(col_2.BlockScore);
+
+                                            // 스킬 게이지 업데이트
+                                            uiElement.SetGauge(col_0.ElementValue);
+                                            uiElement.SetGauge(col_1.ElementValue);
+                                            uiElement.SetGauge(col_2.ElementValue);
+
+                                            blocks[row, col - 1] = null;
+                                            blocks[row, col - 2] = null;
+                                            blocks[row, col + 1] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            moveBlock = null;
+                                        }
+                                    }
+                                    break;
+
+                                case 3:
+                                    // OOO★
+                                    col_0 = blocks[row, col - 1];
+                                    col_1 = blocks[row, col - 2];
+                                    col_2 = blocks[row, col - 3];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                    {
+                                        // 블럭 이동
+                                        col_0.col = moveBlock.col;
+                                        col_1.col = moveBlock.col;
+                                        col_2.col = moveBlock.col;
+
+                                        yield return new WaitForSeconds(.3f);
+
+                                        // 블럭 제거
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(col_2);
+
+                                        // 점수 업데이트
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(col_2.BlockScore);
+
+                                        // 스킬 게이지 업데이트
+                                        uiElement.SetGauge(col_0.ElementValue);
+                                        uiElement.SetGauge(col_1.ElementValue);
+                                        uiElement.SetGauge(col_2.ElementValue);
+
+                                        blocks[row, col - 1] = null;
+                                        blocks[row, col - 2] = null;
+                                        blocks[row, col - 3] = null;
+
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                        moveBlock = null;
+                                    }
+                                    break;
+                            }
+
+                            // Row 
+                            switch (moveBlock.row)
+                            {
+                                case -3:
+                                    // ★OOO
+                                    col_0 = blocks[row + 1, col];
+                                    col_1 = blocks[row + 2, col];
+                                    col_2 = blocks[row + 3, col];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                    {
+                                        col_0.row = moveBlock.row;
+                                        col_1.row = moveBlock.row;
+                                        col_2.row = moveBlock.row;
 
                                         yield return new WaitForSeconds(.3f);
 
@@ -3063,363 +2808,34 @@ namespace XR_3MatchGame_Object
                                         blockPool.ReturnPoolableObject(col_1);
                                         blockPool.ReturnPoolableObject(col_2);
 
-                                        blockPool.ReturnPoolableObject(row_0);
-                                        blockPool.ReturnPoolableObject(row_1);
-                                        blockPool.ReturnPoolableObject(row_2);
-
+                                        // 점수를 더합니다!
                                         DM.SetScore(col_0.BlockScore);
                                         DM.SetScore(col_1.BlockScore);
                                         DM.SetScore(col_2.BlockScore);
-
-                                        DM.SetScore(row_0.BlockScore);
-                                        DM.SetScore(row_1.BlockScore);
-                                        DM.SetScore(row_2.BlockScore);
-
-                                        // 블럭 제거
-                                        blocks[row, col + 1] = null;
-                                        blocks[row, col + 2] = null;
-                                        blocks[row, col + 3] = null;
 
                                         blocks[row + 1, col] = null;
                                         blocks[row + 2, col] = null;
                                         blocks[row + 3, col] = null;
 
-                                        checkBlock.elementType = ElementType.Balance;
-                                        checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
 
-                                        isMake = true;
+                                        moveBlock = null;
                                     }
-                                    else
+                                    break;
+
+                                case -2:
+                                    // ★OOO
+                                    col_0 = blocks[row + 1, col];
+                                    col_1 = blocks[row + 2, col];
+                                    col_2 = blocks[row + 3, col];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
                                     {
-                                        /*
-                                         *   O
-                                         *   O
-                                         *   O
-                                         * O O O O
-                                         */
-                                        checkBlock = blocks[row, col + 1];
-
-                                        col_0 = blocks[row, col];
-
-                                        row_0 = blocks[row + 1, col + 1];
-                                        row_1 = blocks[row + 2, col + 1];
-                                        row_2 = blocks[row + 3, col + 1];
-
-                                        if (row_0 != null && row_1 != null & row_2 != null)
-                                        {
-                                            if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) &&
-                                                (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
-                                            {
-                                                // 블럭 이동
-                                                col_0.col = checkBlock.col;
-                                                col_1.col = checkBlock.col;
-                                                col_2.col = checkBlock.col;
-
-                                                row_0.row = checkBlock.row;
-                                                row_1.row = checkBlock.row;
-                                                row_2.row = checkBlock.row;
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                blockPool.ReturnPoolableObject(col_0);
-                                                blockPool.ReturnPoolableObject(col_1);
-                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                blockPool.ReturnPoolableObject(row_0);
-                                                blockPool.ReturnPoolableObject(row_1);
-                                                blockPool.ReturnPoolableObject(row_2);
-
-                                                DM.SetScore(col_0.BlockScore);
-                                                DM.SetScore(col_1.BlockScore);
-                                                DM.SetScore(col_2.BlockScore);
-
-                                                DM.SetScore(row_0.BlockScore);
-                                                DM.SetScore(row_1.BlockScore);
-                                                DM.SetScore(row_2.BlockScore);
-
-                                                // 블럭 제거
-                                                blocks[row, col] = null;
-                                                blocks[row, col + 2] = null;
-                                                blocks[row, col + 3] = null;
-
-                                                blocks[row + 1, col + 1] = null;
-                                                blocks[row + 2, col + 1] = null;
-                                                blocks[row + 3, col + 1] = null;
-
-                                                checkBlock.elementType = ElementType.Balance;
-                                                checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                /*   
-                                                 *      O
-                                                 *      O
-                                                 *      O
-                                                 *  O O O O
-                                                 */
-                                                checkBlock = blocks[row, col + 2];
-
-                                                col_0 = blocks[row, col];
-                                                col_1 = blocks[row, col + 1];
-
-                                                row_0 = blocks[row + 1, col + 2];
-                                                row_1 = blocks[row + 2, col + 2];
-                                                row_2 = blocks[row + 3, col + 2];
-
-                                                if (row_0 != null && row_1 != null & row_2 != null)
-                                                {
-                                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) &&
-                                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
-                                                    {
-                                                        col_0.col = checkBlock.col;
-                                                        col_1.col = checkBlock.col;
-                                                        col_2.col = checkBlock.col;
-
-                                                        row_0.row = checkBlock.row;
-                                                        row_1.row = checkBlock.row;
-                                                        row_2.row = checkBlock.row;
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        blockPool.ReturnPoolableObject(col_0);
-                                                        blockPool.ReturnPoolableObject(col_1);
-                                                        blockPool.ReturnPoolableObject(col_2);
-
-                                                        blockPool.ReturnPoolableObject(row_0);
-                                                        blockPool.ReturnPoolableObject(row_1);
-                                                        blockPool.ReturnPoolableObject(row_2);
-
-                                                        DM.SetScore(col_0.BlockScore);
-                                                        DM.SetScore(col_1.BlockScore);
-                                                        DM.SetScore(col_2.BlockScore);
-
-                                                        DM.SetScore(row_0.BlockScore);
-                                                        DM.SetScore(row_1.BlockScore);
-                                                        DM.SetScore(row_2.BlockScore);
-
-                                                        blocks[row, col + 1] = null;
-                                                        blocks[row, col + 2] = null;
-                                                        blocks[row, col + 3] = null;
-
-                                                        blocks[row + 1, col + 2] = null;
-                                                        blocks[row + 2, col + 2] = null;
-                                                        blocks[row + 3, col + 2] = null;
-
-                                                        checkBlock.elementType = ElementType.Balance;
-                                                        checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                        isMake = true;
-                                                    }
-                                                    else
-                                                    {
-                                                        /*
-                                                         *        O
-                                                         *        O
-                                                         *        O
-                                                         *  O O O O
-                                                         */
-                                                        checkBlock = blocks[row, col + 3];
-
-                                                        col_0 = blocks[row, col];
-                                                        col_1 = blocks[row, col + 1];
-                                                        col_2 = blocks[row, col + 2];
-
-                                                        row_0 = blocks[row + 1, col + 3];
-                                                        row_1 = blocks[row + 2, col + 3];
-                                                        row_2 = blocks[row + 3, col + 3];
-
-                                                        if (row_0 != null && row_1 != null & row_2 != null)
-                                                        {
-                                                            if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) &&
-                                                                (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
-                                                            {
-                                                                col_0.col = checkBlock.col;
-                                                                col_1.col = checkBlock.col;
-                                                                col_2.col = checkBlock.col;
-
-                                                                row_0.row = checkBlock.row;
-                                                                row_1.row = checkBlock.row;
-                                                                row_2.row = checkBlock.row;
-
-                                                                yield return new WaitForSeconds(.3f);
-
-                                                                blockPool.ReturnPoolableObject(col_0);
-                                                                blockPool.ReturnPoolableObject(col_1);
-                                                                blockPool.ReturnPoolableObject(col_2);
-
-                                                                blockPool.ReturnPoolableObject(row_0);
-                                                                blockPool.ReturnPoolableObject(row_1);
-                                                                blockPool.ReturnPoolableObject(row_2);
-
-                                                                DM.SetScore(col_0.BlockScore);
-                                                                DM.SetScore(col_1.BlockScore);
-                                                                DM.SetScore(col_2.BlockScore);
-
-                                                                DM.SetScore(row_0.BlockScore);
-                                                                DM.SetScore(row_1.BlockScore);
-                                                                DM.SetScore(row_2.BlockScore);
-
-                                                                blocks[row, col] = null;
-                                                                blocks[row, col + 1] = null;
-                                                                blocks[row, col + 2] = null;
-
-                                                                blocks[row + 1, col + 3] = null;
-                                                                blocks[row + 2, col + 3] = null;
-                                                                blocks[row + 3, col + 3] = null;
-
-                                                                checkBlock.elementType = ElementType.Balance;
-                                                                checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                                isMake = true;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                //if (isMake)
-                                {
-                                    // 블럭 다운 카운트 계산
-                                    int downCount = 0;
-
-                                    for (int c_Col = 0; c_Col < width; c_Col++)
-                                    {
-                                        for (int c_Row = 0; c_Row < height; c_Row++)
-                                        {
-                                            if (blocks[c_Row, c_Col] == null)
-                                            {
-                                                downCount++;
-                                            }
-                                            else
-                                            {
-                                                blocks[c_Row, c_Col].downCount = downCount;
-                                            }
-                                        }
-
-                                        downCount = 0;
-                                    }
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 블럭 내리기 작업
-                                    for (int d_Row = 0; d_Row < height; d_Row++)
-                                    {
-                                        for (int d_Col = 0; d_Col < width; d_Col++)
-                                        {
-                                            if (blocks[d_Row, d_Col] != null)
-                                            {
-                                                if (blocks[d_Row, d_Col].downCount > 0)
-                                                {
-                                                    // 내릴 공간이 존재한다
-
-                                                    var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
-
-                                                    if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
-                                                    {
-                                                        Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
-                                                        blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
-                                                    }
-
-                                                    // 다운 카운트 초기화
-                                                    blocks[d_Row, d_Col].downCount = 0;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 빈 공간 블럭 생성
-                                    int newCol = -3;
-                                    int newRow = 3;
-
-                                    for (int n_Col = 0; n_Col < width; n_Col++)
-                                    {
-                                        for (int n_Row = 0; n_Row < height; n_Row++)
-                                        {
-                                            if (blocks[n_Row, n_Col] == null)
-                                            {
-                                                // 어? 여기 비어있는데? 탈모인데?
-                                                // 그러면 머리 심어줘야자~
-                                                Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-
-                                                // 부모 설정
-                                                newBlock.transform.SetParent(this.transform);
-
-                                                // 위치값 설정
-                                                newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
-
-                                                // 회전값 설정
-                                                newBlock.transform.localRotation = Quaternion.identity;
-
-                                                // 사이즈값 설정
-                                                newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
-
-                                                // 활성화
-                                                newBlock.gameObject.SetActive(true);
-
-                                                // 블럭 초기화
-                                                newBlock.Initialize(newCol, 4 + n_Row);
-
-                                                // 블럭 저장
-                                                blocks[n_Row, n_Col] = newBlock;
-
-                                                var targetrow = (newBlock.row = newRow);
-
-                                                if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
-                                                {
-                                                    Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
-                                                    newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
-                                                }
-
-                                                newRow--;
-                                            }
-                                        }
-
-                                        newCol++;
-                                        newRow = 3;
-                                    }
-
-                                    /// Test
-                                    yield return new WaitForSeconds(.3f);
-
-                                    isMake = false;
-
-                                    // 블록 정렬
-                                    BlockSort();
-                                }
-                            }
-
-                            // 4X4 특수 상황 모음집 2탄
-                            if (checkBlock.row >= 0 && (col_0 != null && col_1 != null && col_2 != null))
-                            {
-                                /*
-                                 * O O O O
-                                 * O
-                                 * O
-                                 * O
-                                 */
-                                row_0 = blocks[row - 1, col];
-                                row_1 = blocks[row - 2, col];
-                                row_2 = blocks[row - 3, col];
-
-                                if (row_0 != null && row_1 != null && row_2 != null)
-                                {
-                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) &&
-                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
-                                    {
-                                        col_0.col = checkBlock.col;
-                                        col_1.col = checkBlock.col;
-                                        col_2.col = checkBlock.col;
-
-                                        row_0.row = checkBlock.row;
-                                        row_1.row = checkBlock.row;
-                                        row_2.row = checkBlock.row;
+                                        col_0.row = moveBlock.row;
+                                        col_1.row = moveBlock.row;
+                                        col_2.row = moveBlock.row;
 
                                         yield return new WaitForSeconds(.3f);
 
@@ -3427,59 +2843,241 @@ namespace XR_3MatchGame_Object
                                         blockPool.ReturnPoolableObject(col_1);
                                         blockPool.ReturnPoolableObject(col_2);
 
-                                        blockPool.ReturnPoolableObject(row_0);
-                                        blockPool.ReturnPoolableObject(row_1);
-                                        blockPool.ReturnPoolableObject(row_2);
-
+                                        // 점수를 더합니다!
                                         DM.SetScore(col_0.BlockScore);
                                         DM.SetScore(col_1.BlockScore);
                                         DM.SetScore(col_2.BlockScore);
 
-                                        DM.SetScore(row_0.BlockScore);
-                                        DM.SetScore(row_1.BlockScore);
-                                        DM.SetScore(row_2.BlockScore);
+                                        blocks[row + 1, col] = null;
+                                        blocks[row + 2, col] = null;
+                                        blocks[row + 3, col] = null;
 
-                                        blocks[row, col + 1] = null;
-                                        blocks[row, col + 2] = null;
-                                        blocks[row, col + 3] = null;
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                        moveBlock = null;
+                                    }
+                                    else
+                                    {
+                                        // O★OO
+                                        col_0 = blocks[row - 1, col];
+                                        col_1 = blocks[row + 1, col];
+                                        col_2 = blocks[row + 2, col];
+
+                                        if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                        {
+                                            col_0.row = moveBlock.row;
+                                            col_1.row = moveBlock.row;
+                                            col_2.row = moveBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(col_0);
+                                            blockPool.ReturnPoolableObject(col_1);
+                                            blockPool.ReturnPoolableObject(col_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(col_0.BlockScore);
+                                            DM.SetScore(col_1.BlockScore);
+                                            DM.SetScore(col_2.BlockScore);
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            moveBlock = null;
+                                        }
+                                    }
+                                    break;
+
+                                case -1:
+                                case 0:
+                                    // ★OOO
+                                    col_0 = blocks[row + 1, col];
+                                    col_1 = blocks[row + 2, col];
+                                    col_2 = blocks[row + 3, col];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                    {
+                                        col_0.row = moveBlock.row;
+                                        col_1.row = moveBlock.row;
+                                        col_2.row = moveBlock.row;
+
+                                        yield return new WaitForSeconds(.3f);
+
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(col_2);
+
+                                        // 점수를 더합니다!
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(col_2.BlockScore);
+
+                                        blocks[row + 1, col] = null;
+                                        blocks[row + 2, col] = null;
+                                        blocks[row + 3, col] = null;
+
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+                                    }
+                                    else
+                                    {
+                                        // O★OO
+                                        col_0 = blocks[row - 1, col];
+                                        col_1 = blocks[row + 1, col];
+                                        col_2 = blocks[row + 2, col];
+
+                                        if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                        {
+                                            col_0.row = moveBlock.row;
+                                            col_1.row = moveBlock.row;
+                                            col_2.row = moveBlock.row;
+
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(col_0);
+                                            blockPool.ReturnPoolableObject(col_1);
+                                            blockPool.ReturnPoolableObject(col_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(col_0.BlockScore);
+                                            DM.SetScore(col_1.BlockScore);
+                                            DM.SetScore(col_2.BlockScore);
+
+                                            blocks[row - 1, col] = null;
+                                            blocks[row + 1, col] = null;
+                                            blocks[row + 2, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            moveBlock = null;
+                                        }
+                                        else
+                                        {
+                                            // OO★O
+                                            col_0 = blocks[row - 1, col];
+                                            col_1 = blocks[row - 2, col];
+                                            col_2 = blocks[row + 1, col];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.row;
+                                                col_1.row = moveBlock.row;
+                                                col_2.row = moveBlock.row;
+
+                                                yield return new WaitForSeconds(.3f);
+
+                                                blockPool.ReturnPoolableObject(col_0);
+                                                blockPool.ReturnPoolableObject(col_1);
+                                                blockPool.ReturnPoolableObject(col_2);
+
+                                                // 점수를 더합니다!
+                                                DM.SetScore(col_0.BlockScore);
+                                                DM.SetScore(col_1.BlockScore);
+                                                DM.SetScore(col_2.BlockScore);
+
+                                                blocks[row - 1, col] = null;
+                                                blocks[row - 2, col] = null;
+                                                blocks[row + 1, col] = null;
+
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                                moveBlock = null;
+                                            }
+                                        }
+                                    }
+                                    break;
+
+                                case 1:
+                                    // OOO★
+                                    col_0 = blocks[row - 1, col];
+                                    col_1 = blocks[row - 2, col];
+                                    col_2 = blocks[row - 3, col];
+
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                    {
+                                        col_0.row = moveBlock.row;
+                                        col_1.row = moveBlock.row;
+                                        col_2.row = moveBlock.row;
+
+                                        yield return new WaitForSeconds(.3f);
+
+                                        blockPool.ReturnPoolableObject(col_0);
+                                        blockPool.ReturnPoolableObject(col_1);
+                                        blockPool.ReturnPoolableObject(col_2);
+
+                                        // 점수를 더합니다!
+                                        DM.SetScore(col_0.BlockScore);
+                                        DM.SetScore(col_1.BlockScore);
+                                        DM.SetScore(col_2.BlockScore);
 
                                         blocks[row - 1, col] = null;
                                         blocks[row - 2, col] = null;
                                         blocks[row - 3, col] = null;
 
-                                        checkBlock.elementType = ElementType.Balance;
-                                        checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
 
-                                        isMake = true;
+                                        moveBlock = null;
                                     }
                                     else
                                     {
-                                        /*
-                                         * O O O O
-                                         *   O
-                                         *   O
-                                         *   O
-                                         */
-                                        checkBlock = blocks[row, col + 1];
+                                        // OO★O
+                                        col_0 = blocks[row + 1, col];
+                                        col_1 = blocks[row - 1, col];
+                                        col_2 = blocks[row - 2, col];
 
-                                        col_0 = blocks[row, col];
-
-                                        row_0 = blocks[row - 1, col + 1];
-                                        row_1 = blocks[row - 2, col + 1];
-                                        row_2 = blocks[row - 3, col + 1];
-
-                                        if (row_0 != null && row_1 != null && row_2 != null)
+                                        if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
                                         {
-                                            if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) &&
-                                                (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
-                                            {
-                                                col_0.col = checkBlock.col;
-                                                col_1.col = checkBlock.col;
-                                                col_2.col = checkBlock.col;
+                                            col_0.row = moveBlock.row;
+                                            col_1.row = moveBlock.row;
+                                            col_2.row = moveBlock.row;
 
-                                                row_0.row = checkBlock.row;
-                                                row_1.row = checkBlock.row;
-                                                row_2.row = checkBlock.row;
+                                            yield return new WaitForSeconds(.3f);
+
+                                            blockPool.ReturnPoolableObject(col_0);
+                                            blockPool.ReturnPoolableObject(col_1);
+                                            blockPool.ReturnPoolableObject(col_2);
+
+                                            // 점수를 더합니다!
+                                            DM.SetScore(col_0.BlockScore);
+                                            DM.SetScore(col_1.BlockScore);
+                                            DM.SetScore(col_2.BlockScore);
+
+                                            blocks[row + 1, col] = null;
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
+
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
+
+                                            moveBlock = null;
+                                        }
+                                        else
+                                        {
+                                            // O★OO
+                                            col_0 = blocks[row + 1, col];
+                                            col_1 = blocks[row + 2, col];
+                                            col_2 = blocks[row - 1, col];
+
+                                            if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
+                                            {
+                                                col_0.row = moveBlock.row;
+                                                col_1.row = moveBlock.row;
+                                                col_2.row = moveBlock.row;
 
                                                 yield return new WaitForSeconds(.3f);
 
@@ -3487,374 +3085,36 @@ namespace XR_3MatchGame_Object
                                                 blockPool.ReturnPoolableObject(col_1);
                                                 blockPool.ReturnPoolableObject(col_2);
 
-                                                blockPool.ReturnPoolableObject(row_0);
-                                                blockPool.ReturnPoolableObject(row_1);
-                                                blockPool.ReturnPoolableObject(row_2);
-
+                                                // 점수를 더합니다!
                                                 DM.SetScore(col_0.BlockScore);
                                                 DM.SetScore(col_1.BlockScore);
                                                 DM.SetScore(col_2.BlockScore);
 
-                                                DM.SetScore(row_0.BlockScore);
-                                                DM.SetScore(row_1.BlockScore);
-                                                DM.SetScore(row_2.BlockScore);
+                                                blocks[row + 1, col] = null;
+                                                blocks[row + 2, col] = null;
+                                                blocks[row - 1, col] = null;
 
-                                                blocks[row, col] = null;
-                                                blocks[row, col + 2] = null;
-                                                blocks[row, col + 3] = null;
+                                                // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                                moveBlock.elementType = ElementType.Balance;
+                                                moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
 
-                                                blocks[row - 1, col + 1] = null;
-                                                blocks[row - 2, col + 1] = null;
-                                                blocks[row - 3, col + 1] = null;
-
-                                                checkBlock.elementType = ElementType.Balance;
-                                                checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                isMake = true;
-                                            }
-                                            else
-                                            {
-                                                /*
-                                                 * O O O O
-                                                 *     O
-                                                 *     O
-                                                 *     O
-                                                 */
-                                                checkBlock = blocks[row, col + 2];
-
-                                                col_0 = blocks[row, col];
-                                                col_1 = blocks[row, col + 1];
-
-                                                row_0 = blocks[row - 1, col + 2];
-                                                row_1 = blocks[row - 2, col + 2];
-                                                row_2 = blocks[row - 3, col + 2];
-
-                                                if (row_0 != null && row_1 != null && row_2 != null)
-                                                {
-                                                    if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) &&
-                                                        (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
-                                                    {
-                                                        col_0.col = checkBlock.col;
-                                                        col_1.col = checkBlock.col;
-                                                        col_2.col = checkBlock.col;
-
-                                                        row_0.row = checkBlock.row;
-                                                        row_1.row = checkBlock.row;
-                                                        row_2.row = checkBlock.row;
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        blockPool.ReturnPoolableObject(col_0);
-                                                        blockPool.ReturnPoolableObject(col_1);
-                                                        blockPool.ReturnPoolableObject(col_2);
-
-                                                        blockPool.ReturnPoolableObject(row_0);
-                                                        blockPool.ReturnPoolableObject(row_1);
-                                                        blockPool.ReturnPoolableObject(row_2);
-
-                                                        DM.SetScore(col_0.BlockScore);
-                                                        DM.SetScore(col_1.BlockScore);
-                                                        DM.SetScore(col_2.BlockScore);
-
-                                                        DM.SetScore(row_0.BlockScore);
-                                                        DM.SetScore(row_1.BlockScore);
-                                                        DM.SetScore(row_2.BlockScore);
-
-                                                        blocks[row, col] = null;
-                                                        blocks[row, col + 1] = null;
-                                                        blocks[row, col + 3] = null;
-
-                                                        blocks[row - 1, col + 2] = null;
-                                                        blocks[row - 2, col + 2] = null;
-                                                        blocks[row - 3, col + 2] = null;
-
-                                                        checkBlock.elementType = ElementType.Balance;
-                                                        checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                        isMake = true;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    /*
-                                                     * O O O O
-                                                     *       O
-                                                     *       O
-                                                     *       O
-                                                     */
-                                                    checkBlock = blocks[row, col + 3];
-
-                                                    col_0 = blocks[row, col];
-                                                    col_1 = blocks[row, col + 1];
-                                                    col_2 = blocks[row, col + 2];
-
-                                                    row_0 = blocks[row - 1, col + 3];
-                                                    row_1 = blocks[row - 2, col + 3];
-                                                    row_2 = blocks[row - 3, col + 3];
-
-                                                    if (row_0 != null && row_1 != null && row_2 != null)
-                                                    {
-                                                        if ((checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType) &&
-                                                            (checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType))
-                                                        {
-                                                            col_0.col = blocks[row, col + 3].col;
-                                                            col_1.col = blocks[row, col + 3].col;
-                                                            col_2.col = blocks[row, col + 3].col;
-
-                                                            row_0.row = blocks[row, col + 3].row;
-                                                            row_1.row = blocks[row, col + 3].row;
-                                                            row_2.row = blocks[row, col + 3].row;
-
-                                                            yield return new WaitForSeconds(.3f);
-
-                                                            blockPool.ReturnPoolableObject(col_0);
-                                                            blockPool.ReturnPoolableObject(col_1);
-                                                            blockPool.ReturnPoolableObject(col_2);
-
-                                                            blockPool.ReturnPoolableObject(row_0);
-                                                            blockPool.ReturnPoolableObject(row_1);
-                                                            blockPool.ReturnPoolableObject(row_2);
-
-                                                            DM.SetScore(col_0.BlockScore);
-                                                            DM.SetScore(col_1.BlockScore);
-                                                            DM.SetScore(col_2.BlockScore);
-
-                                                            DM.SetScore(row_0.BlockScore);
-                                                            DM.SetScore(row_1.BlockScore);
-                                                            DM.SetScore(row_2.BlockScore);
-
-                                                            blocks[row, col] = null;
-                                                            blocks[row, col + 1] = null;
-                                                            blocks[row, col + 2] = null;
-
-                                                            blocks[row - 1, col + 3] = null;
-                                                            blocks[row - 2, col + 3] = null;
-                                                            blocks[row - 3, col + 3] = null;
-
-                                                            checkBlock.elementType = ElementType.Balance;
-                                                            checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                                            isMake = true;
-                                                        }
-                                                    }
-                                                }
+                                                moveBlock = null;
                                             }
                                         }
                                     }
-                                }
+                                    break;
 
-                                //if (isMake)
-                                {
-                                    // 블럭 다운 카운트 계산
-                                    int downCount = 0;
+                                case 2:
+                                    // OOO★
+                                    col_0 = blocks[row - 1, col];
+                                    col_1 = blocks[row - 2, col];
+                                    col_2 = blocks[row - 3, col];
 
-                                    for (int c_Col = 0; c_Col < width; c_Col++)
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
                                     {
-                                        for (int c_Row = 0; c_Row < height; c_Row++)
-                                        {
-                                            if (blocks[c_Row, c_Col] == null)
-                                            {
-                                                downCount++;
-                                            }
-                                            else
-                                            {
-                                                blocks[c_Row, c_Col].downCount = downCount;
-                                            }
-                                        }
-
-                                        downCount = 0;
-                                    }
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 블럭 내리기 작업
-                                    for (int d_Row = 0; d_Row < height; d_Row++)
-                                    {
-                                        for (int d_Col = 0; d_Col < width; d_Col++)
-                                        {
-                                            if (blocks[d_Row, d_Col] != null)
-                                            {
-                                                if (blocks[d_Row, d_Col].downCount > 0)
-                                                {
-                                                    // 내릴 공간이 존재한다
-
-                                                    var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
-
-                                                    if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
-                                                    {
-                                                        Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
-                                                        blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
-                                                    }
-
-                                                    // 다운 카운트 초기화
-                                                    blocks[d_Row, d_Col].downCount = 0;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 빈 공간 블럭 생성
-                                    int newCol = -3;
-                                    int newRow = 3;
-
-                                    for (int n_Col = 0; n_Col < width; n_Col++)
-                                    {
-                                        for (int n_Row = 0; n_Row < height; n_Row++)
-                                        {
-                                            if (blocks[n_Row, n_Col] == null)
-                                            {
-                                                // 어? 여기 비어있는데? 탈모인데?
-                                                // 그러면 머리 심어줘야자~
-                                                Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-
-                                                // 부모 설정
-                                                newBlock.transform.SetParent(this.transform);
-
-                                                // 위치값 설정
-                                                newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
-
-                                                // 회전값 설정
-                                                newBlock.transform.localRotation = Quaternion.identity;
-
-                                                // 사이즈값 설정
-                                                newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
-
-                                                // 활성화
-                                                newBlock.gameObject.SetActive(true);
-
-                                                // 블럭 초기화
-                                                newBlock.Initialize(newCol, 4 + n_Row);
-
-                                                // 블럭 저장
-                                                blocks[n_Row, n_Col] = newBlock;
-
-                                                var targetrow = (newBlock.row = newRow);
-
-                                                if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
-                                                {
-                                                    Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
-                                                    newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
-                                                }
-
-                                                newRow--;
-                                            }
-                                        }
-
-                                        newCol++;
-                                        newRow = 3;
-                                    }
-
-                                    /// Test
-                                    yield return new WaitForSeconds(.3f);
-
-                                    isMake = false;
-
-                                    // 블록 정렬
-                                    BlockSort();
-                                }
-                            }
-                        }
-                    }
-
-                    // Row
-                    if (blocks[row, col] != null)
-                    {
-                        checkBlock = blocks[row, col];
-
-                        if (checkBlock.row <= 0)
-                        {
-                            row_0 = blocks[row + 1, col];
-                            row_1 = blocks[row + 2, col];
-                            row_2 = blocks[row + 3, col];
-
-                            // 4X4 특수 상황
-                            if (checkBlock.col <= 0 && (row_0 != null && row_1 != null && row_2 != null))
-                            {
-                                /*
-                                 * O
-                                 * O
-                                 * O O O O
-                                 * O
-                                 */
-                                checkBlock = blocks[row + 1, col];
-                                row_0 = blocks[row, col];
-
-                                col_0 = blocks[row + 1, col + 1];
-                                col_1 = blocks[row + 1, col + 2];
-                                col_2 = blocks[row + 1, col + 3];
-
-                                if ((checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType) &&
-                                    (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType))
-                                {
-                                    // 블럭 이동
-                                    col_0.col = checkBlock.col;
-                                    col_1.col = checkBlock.col;
-                                    col_2.col = checkBlock.col;
-
-                                    row_0.row = checkBlock.row;
-                                    row_1.row = checkBlock.row;
-                                    row_2.row = checkBlock.row;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    blockPool.ReturnPoolableObject(col_0);
-                                    blockPool.ReturnPoolableObject(col_1);
-                                    blockPool.ReturnPoolableObject(col_2);
-
-                                    blockPool.ReturnPoolableObject(row_0);
-                                    blockPool.ReturnPoolableObject(row_1);
-                                    blockPool.ReturnPoolableObject(row_2);
-
-                                    DM.SetScore(col_0.BlockScore);
-                                    DM.SetScore(col_1.BlockScore);
-                                    DM.SetScore(col_2.BlockScore);
-
-                                    DM.SetScore(row_0.BlockScore);
-                                    DM.SetScore(row_1.BlockScore);
-                                    DM.SetScore(row_2.BlockScore);
-
-                                    // 블럭 제거
-                                    blocks[row, col] = null;
-                                    blocks[row + 2, col] = null;
-                                    blocks[row + 3, col] = null;
-
-                                    blocks[row + 1, col + 1] = null;
-                                    blocks[row + 1, col + 2] = null;
-                                    blocks[row + 1, col + 3] = null;
-
-                                    checkBlock.elementType = ElementType.Balance;
-                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                    isMake = true;
-                                }
-                                else
-                                {
-                                    /*
-                                     * O
-                                     * O O O O
-                                     * O
-                                     * O
-                                     */
-                                    checkBlock = blocks[row + 2, col];
-                                    row_1 = blocks[row + 1, col];
-
-                                    col_0 = blocks[row + 2, col + 1];
-                                    col_1 = blocks[row + 2, col + 2];
-                                    col_2 = blocks[row + 2, col + 3];
-
-                                    if ((checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType) &&
-                                        (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType))
-                                    {
-                                        // 블럭 이동
-                                        col_0.col = checkBlock.col;
-                                        col_1.col = checkBlock.col;
-                                        col_2.col = checkBlock.col;
-
-                                        row_0.row = checkBlock.row;
-                                        row_1.row = checkBlock.row;
-                                        row_2.row = checkBlock.row;
+                                        col_0.row = moveBlock.row;
+                                        col_1.row = moveBlock.row;
+                                        col_2.row = moveBlock.row;
 
                                         yield return new WaitForSeconds(.3f);
 
@@ -3862,229 +3122,69 @@ namespace XR_3MatchGame_Object
                                         blockPool.ReturnPoolableObject(col_1);
                                         blockPool.ReturnPoolableObject(col_2);
 
-                                        blockPool.ReturnPoolableObject(row_0);
-                                        blockPool.ReturnPoolableObject(row_1);
-                                        blockPool.ReturnPoolableObject(row_2);
-
+                                        // 점수를 더합니다!
                                         DM.SetScore(col_0.BlockScore);
                                         DM.SetScore(col_1.BlockScore);
                                         DM.SetScore(col_2.BlockScore);
 
-                                        DM.SetScore(row_0.BlockScore);
-                                        DM.SetScore(row_1.BlockScore);
-                                        DM.SetScore(row_2.BlockScore);
+                                        blocks[row - 1, col] = null;
+                                        blocks[row - 2, col] = null;
+                                        blocks[row - 3, col] = null;
 
-                                        // 블럭 제거
-                                        blocks[row, col] = null;
-                                        blocks[row + 1, col] = null;
-                                        blocks[row + 3, col] = null;
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
 
-                                        blocks[row + 2, col + 1] = null;
-                                        blocks[row + 2, col + 2] = null;
-                                        blocks[row + 2, col + 3] = null;
-
-                                        checkBlock.elementType = ElementType.Balance;
-                                        checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                        isMake = true;
+                                        moveBlock = null;
                                     }
-                                }
-
-                                //if (isMake)
-                                {
-                                    // 블럭 다운 카운트 계산
-                                    int downCount = 0;
-
-                                    for (int c_Col = 0; c_Col < width; c_Col++)
+                                    else
                                     {
-                                        for (int c_Row = 0; c_Row < height; c_Row++)
+                                        // OO★O
+                                        col_0 = blocks[row + 1, col];
+                                        col_1 = blocks[row - 1, col];
+                                        col_2 = blocks[row - 2, col];
+
+                                        if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
                                         {
-                                            if (blocks[c_Row, c_Col] == null)
-                                            {
-                                                downCount++;
-                                            }
-                                            else
-                                            {
-                                                blocks[c_Row, c_Col].downCount = downCount;
-                                            }
-                                        }
+                                            col_0.row = moveBlock.row;
+                                            col_1.row = moveBlock.row;
+                                            col_2.row = moveBlock.row;
 
-                                        downCount = 0;
-                                    }
+                                            yield return new WaitForSeconds(.3f);
 
-                                    yield return new WaitForSeconds(.3f);
+                                            blockPool.ReturnPoolableObject(col_0);
+                                            blockPool.ReturnPoolableObject(col_1);
+                                            blockPool.ReturnPoolableObject(col_2);
 
-                                    // 블럭 내리기 작업
-                                    for (int d_Row = 0; d_Row < height; d_Row++)
-                                    {
-                                        for (int d_Col = 0; d_Col < width; d_Col++)
-                                        {
-                                            if (blocks[d_Row, d_Col] != null)
-                                            {
-                                                if (blocks[d_Row, d_Col].downCount > 0)
-                                                {
-                                                    // 내릴 공간이 존재한다
+                                            // 점수를 더합니다!
+                                            DM.SetScore(col_0.BlockScore);
+                                            DM.SetScore(col_1.BlockScore);
+                                            DM.SetScore(col_2.BlockScore);
 
-                                                    var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
+                                            blocks[row + 1, col] = null;
+                                            blocks[row - 1, col] = null;
+                                            blocks[row - 2, col] = null;
 
-                                                    if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
-                                                    {
-                                                        Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
-                                                        blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
-                                                    }
+                                            // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                            moveBlock.elementType = ElementType.Balance;
+                                            moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
 
-                                                    // 다운 카운트 초기화
-                                                    blocks[d_Row, d_Col].downCount = 0;
-                                                }
-                                            }
+                                            moveBlock = null;
                                         }
                                     }
+                                    break;
 
-                                    yield return new WaitForSeconds(.3f);
+                                case 3:
+                                    // OOO★
+                                    col_0 = blocks[row - 1, col];
+                                    col_1 = blocks[row - 2, col];
+                                    col_2 = blocks[row - 3, col];
 
-                                    // 빈 공간 블럭 생성
-                                    int newCol = -3;
-                                    int newRow = 3;
-
-                                    for (int n_Col = 0; n_Col < width; n_Col++)
+                                    if (moveBlock.elementType == col_0.elementType && moveBlock.elementType == col_1.elementType && moveBlock.elementType == col_2.elementType)
                                     {
-                                        for (int n_Row = 0; n_Row < height; n_Row++)
-                                        {
-                                            if (blocks[n_Row, n_Col] == null)
-                                            {
-                                                // 어? 여기 비어있는데? 탈모인데?
-                                                // 그러면 머리 심어줘야자~
-                                                Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-
-                                                // 부모 설정
-                                                newBlock.transform.SetParent(this.transform);
-
-                                                // 위치값 설정
-                                                newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
-
-                                                // 회전값 설정
-                                                newBlock.transform.localRotation = Quaternion.identity;
-
-                                                // 사이즈값 설정
-                                                newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
-
-                                                // 활성화
-                                                newBlock.gameObject.SetActive(true);
-
-                                                // 블럭 초기화
-                                                newBlock.Initialize(newCol, 4 + n_Row);
-
-                                                // 블럭 저장
-                                                blocks[n_Row, n_Col] = newBlock;
-
-                                                var targetrow = (newBlock.row = newRow);
-
-                                                if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
-                                                {
-                                                    Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
-                                                    newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
-                                                }
-
-                                                newRow--;
-                                            }
-                                        }
-
-                                        newCol++;
-                                        newRow = 3;
-                                    }
-
-                                    isMake = false;
-
-                                    BlockSort();
-                                }
-                            }
-
-                            // 4X4 특수 상황
-                            if (checkBlock.col >= 0 && (row_0 != null && row_1 != null && row_2 != null))
-                            {
-                                /*
-                                 *       O
-                                 *       O
-                                 * O O O O
-                                 *       O
-                                 */
-                                checkBlock = blocks[row + 1, col];
-                                row_0 = blocks[row, col];
-
-                                col_0 = blocks[row + 1, col - 1];
-                                col_1 = blocks[row + 1, col - 2];
-                                col_2 = blocks[row + 1, col - 3];
-
-                                if ((checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType) &&
-                                    (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType))
-                                {
-                                    // 블럭 이동
-                                    col_0.col = checkBlock.col;
-                                    col_1.col = checkBlock.col;
-                                    col_2.col = checkBlock.col;
-
-                                    row_0.row = checkBlock.row;
-                                    row_1.row = checkBlock.row;
-                                    row_2.row = checkBlock.row;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    blockPool.ReturnPoolableObject(col_0);
-                                    blockPool.ReturnPoolableObject(col_1);
-                                    blockPool.ReturnPoolableObject(col_2);
-
-                                    blockPool.ReturnPoolableObject(row_0);
-                                    blockPool.ReturnPoolableObject(row_1);
-                                    blockPool.ReturnPoolableObject(row_2);
-
-                                    DM.SetScore(col_0.BlockScore);
-                                    DM.SetScore(col_1.BlockScore);
-                                    DM.SetScore(col_2.BlockScore);
-
-                                    DM.SetScore(row_0.BlockScore);
-                                    DM.SetScore(row_1.BlockScore);
-                                    DM.SetScore(row_2.BlockScore);
-
-                                    // 블럭 제거
-                                    blocks[row, col] = null;
-                                    blocks[row + 2, col] = null;
-                                    blocks[row + 3, col] = null;
-
-                                    blocks[row + 1, col - 1] = null;
-                                    blocks[row + 1, col - 2] = null;
-                                    blocks[row + 1, col - 3] = null;
-
-                                    checkBlock.elementType = ElementType.Balance;
-                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                    isMake = true;
-                                }
-                                else
-                                {
-                                    /*
-                                     *       O
-                                     * O O O O
-                                     *       O
-                                     *       O
-                                     */
-                                    checkBlock = blocks[row + 2, col];
-                                    row_1 = blocks[row + 1, col];
-
-                                    col_0 = blocks[row + 2, col - 1];
-                                    col_1 = blocks[row + 2, col - 2];
-                                    col_2 = blocks[row + 2, col - 3];
-
-                                    if ((checkBlock.elementType == row_0.elementType && checkBlock.elementType == row_1.elementType && checkBlock.elementType == row_2.elementType) &&
-                                        (checkBlock.elementType == col_0.elementType && checkBlock.elementType == col_1.elementType && checkBlock.elementType == col_2.elementType))
-                                    {
-                                        // 블럭 이동
-                                        col_0.col = checkBlock.col;
-                                        col_1.col = checkBlock.col;
-                                        col_2.col = checkBlock.col;
-
-                                        row_0.row = checkBlock.row;
-                                        row_1.row = checkBlock.row;
-                                        row_2.row = checkBlock.row;
+                                        col_0.row = moveBlock.row;
+                                        col_1.row = moveBlock.row;
+                                        col_2.row = moveBlock.row;
 
                                         yield return new WaitForSeconds(.3f);
 
@@ -4092,461 +3192,22 @@ namespace XR_3MatchGame_Object
                                         blockPool.ReturnPoolableObject(col_1);
                                         blockPool.ReturnPoolableObject(col_2);
 
-                                        blockPool.ReturnPoolableObject(row_0);
-                                        blockPool.ReturnPoolableObject(row_1);
-                                        blockPool.ReturnPoolableObject(row_2);
-
+                                        // 점수를 더합니다!
                                         DM.SetScore(col_0.BlockScore);
                                         DM.SetScore(col_1.BlockScore);
                                         DM.SetScore(col_2.BlockScore);
 
-                                        DM.SetScore(row_0.BlockScore);
-                                        DM.SetScore(row_1.BlockScore);
-                                        DM.SetScore(row_2.BlockScore);
+                                        blocks[row - 1, col] = null;
+                                        blocks[row - 2, col] = null;
+                                        blocks[row - 3, col] = null;
 
-                                        // 블럭 제거
-                                        blocks[row, col] = null;
-                                        blocks[row + 1, col] = null;
-                                        blocks[row + 3, col] = null;
+                                        // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
+                                        moveBlock.elementType = ElementType.Balance;
+                                        moveBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
 
-                                        blocks[row + 2, col - 1] = null;
-                                        blocks[row + 2, col - 2] = null;
-                                        blocks[row + 2, col - 3] = null;
-
-                                        checkBlock.elementType = ElementType.Balance;
-                                        checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                        isMake = true;
-
+                                        moveBlock = null;
                                     }
-                                }
-
-                                //if (isMake)
-                                {
-                                    // 블럭 다운 카운트 계산
-                                    int downCount = 0;
-
-                                    for (int c_Col = 0; c_Col < width; c_Col++)
-                                    {
-                                        for (int c_Row = 0; c_Row < height; c_Row++)
-                                        {
-                                            if (blocks[c_Row, c_Col] == null)
-                                            {
-                                                downCount++;
-                                            }
-                                            else
-                                            {
-                                                blocks[c_Row, c_Col].downCount = downCount;
-                                            }
-                                        }
-
-                                        downCount = 0;
-                                    }
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 블럭 내리기 작업
-                                    for (int d_Row = 0; d_Row < height; d_Row++)
-                                    {
-                                        for (int d_Col = 0; d_Col < width; d_Col++)
-                                        {
-                                            if (blocks[d_Row, d_Col] != null)
-                                            {
-                                                if (blocks[d_Row, d_Col].downCount > 0)
-                                                {
-                                                    // 내릴 공간이 존재한다
-
-                                                    var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
-
-                                                    if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
-                                                    {
-                                                        Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
-                                                        blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
-                                                    }
-
-                                                    // 다운 카운트 초기화
-                                                    blocks[d_Row, d_Col].downCount = 0;
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 빈 공간 블럭 생성
-                                    int newCol = -3;
-                                    int newRow = 3;
-
-                                    for (int n_Col = 0; n_Col < width; n_Col++)
-                                    {
-                                        for (int n_Row = 0; n_Row < height; n_Row++)
-                                        {
-                                            if (blocks[n_Row, n_Col] == null)
-                                            {
-                                                // 어? 여기 비어있는데? 탈모인데?
-                                                // 그러면 머리 심어줘야자~
-                                                Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-
-                                                // 부모 설정
-                                                newBlock.transform.SetParent(this.transform);
-
-                                                // 위치값 설정
-                                                newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
-
-                                                // 회전값 설정
-                                                newBlock.transform.localRotation = Quaternion.identity;
-
-                                                // 사이즈값 설정
-                                                newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
-
-                                                // 활성화
-                                                newBlock.gameObject.SetActive(true);
-
-                                                // 블럭 초기화
-                                                newBlock.Initialize(newCol, 4 + n_Row);
-
-                                                // 블럭 저장
-                                                blocks[n_Row, n_Col] = newBlock;
-
-                                                var targetrow = (newBlock.row = newRow);
-
-                                                if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
-                                                {
-                                                    Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
-                                                    newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
-                                                }
-
-                                                newRow--;
-                                            }
-                                        }
-
-                                        newCol++;
-                                        newRow = 3;
-                                    }
-
-                                    /// Test
-                                    yield return new WaitForSeconds(.3f);
-
-                                    isMake = false;
-
-                                    // 블록 정렬
-                                    BlockSort();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // 4X4 - 일반 상황
-            for (int row = 0; row < height; row++)
-            {
-                for (int col = 0; col < width; col++)
-                {
-                    if (blocks[row, col] != null)
-                    {
-                        checkBlock = blocks[row, col];
-
-                        if (checkBlock.col <= 0)
-                        {
-                            col_0 = blocks[row, col + 1];
-                            col_1 = blocks[row, col + 2];
-                            col_2 = blocks[row, col + 3];
-
-                            if (col_0 != null && col_1 != null && col_2 != null)
-                            {
-                                if (checkBlock.elementType == col_0.elementType &&
-                                    checkBlock.elementType == col_1.elementType &&
-                                    checkBlock.elementType == col_2.elementType)
-                                {
-                                    col_0.col = checkBlock.col;
-                                    col_1.col = checkBlock.col;
-                                    col_2.col = checkBlock.col;
-
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(col_0);
-                                    blockPool.ReturnPoolableObject(col_1);
-                                    blockPool.ReturnPoolableObject(col_2);
-
-                                    // 점수를 더합니다!
-                                    DM.SetScore(col_0.BlockScore);
-                                    DM.SetScore(col_1.BlockScore);
-                                    DM.SetScore(col_2.BlockScore);
-
-                                    // 블럭 저장소에서 제거
-                                    blocks[row, col + 1] = null;
-                                    blocks[row, col + 2] = null;
-                                    blocks[row, col + 3] = null;
-
-                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                    checkBlock.elementType = ElementType.Balance;
-                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                    isMake = true;
-                                }
-                            }
-
-                            //if (isMake)
-                            {
-                                // 블럭 다운 카운트 계산
-                                int downCount = 0;
-
-                                for (int c_Col = 0; c_Col < width; c_Col++)
-                                {
-                                    for (int c_Row = 0; c_Row < height; c_Row++)
-                                    {
-                                        if (blocks[c_Row, c_Col] == null)
-                                        {
-                                            downCount++;
-                                        }
-                                        else
-                                        {
-                                            blocks[c_Row, c_Col].downCount = downCount;
-                                        }
-                                    }
-
-                                    downCount = 0;
-                                }
-
-                                yield return new WaitForSeconds(.3f);
-
-                                // 블럭 내리기 작업
-                                for (int d_Row = 0; d_Row < height; d_Row++)
-                                {
-                                    for (int d_Col = 0; d_Col < width; d_Col++)
-                                    {
-                                        if (blocks[d_Row, d_Col] != null)
-                                        {
-                                            if (blocks[d_Row, d_Col].downCount > 0)
-                                            {
-                                                // 내릴 공간이 존재한다
-
-                                                var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
-
-                                                if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
-                                                {
-                                                    Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
-                                                    blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
-                                                }
-
-                                                // 다운 카운트 초기화
-                                                blocks[d_Row, d_Col].downCount = 0;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                yield return new WaitForSeconds(.3f);
-
-                                // 빈 공간 블럭 생성
-                                int newCol = -3;
-                                int newRow = 3;
-
-                                for (int n_Col = 0; n_Col < width; n_Col++)
-                                {
-                                    for (int n_Row = 0; n_Row < height; n_Row++)
-                                    {
-                                        if (blocks[n_Row, n_Col] == null)
-                                        {
-                                            // 어? 여기 비어있는데? 탈모인데?
-                                            // 그러면 머리 심어줘야자~
-                                            Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-
-                                            // 부모 설정
-                                            newBlock.transform.SetParent(this.transform);
-
-                                            // 위치값 설정
-                                            newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
-
-                                            // 회전값 설정
-                                            newBlock.transform.localRotation = Quaternion.identity;
-
-                                            // 사이즈값 설정
-                                            newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
-
-                                            // 활성화
-                                            newBlock.gameObject.SetActive(true);
-
-                                            // 블럭 초기화
-                                            newBlock.Initialize(newCol, 4 + n_Row);
-
-                                            // 블럭 저장
-                                            blocks[n_Row, n_Col] = newBlock;
-
-                                            var targetrow = (newBlock.row = newRow);
-
-                                            if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
-                                            {
-                                                Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
-                                                newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
-                                            }
-
-                                            newRow--;
-                                        }
-                                    }
-
-                                    newCol++;
-                                    newRow = 3;
-                                }
-
-                                /// Test
-                                yield return new WaitForSeconds(.3f);
-
-                                isMake = false;
-
-                                // 블록 정렬
-                                BlockSort();
-                            }
-                        }
-                        else if (checkBlock.row <= 0)
-                        {
-                            row_0 = blocks[row + 1, col];
-                            row_1 = blocks[row + 2, col];
-                            row_2 = blocks[row + 3, col];
-
-                            if (row_0 != null && row_1 != null && row_2 != null)
-                            {
-                                if (checkBlock.elementType == row_0.elementType &&
-                                    checkBlock.elementType == row_1.elementType &&
-                                    checkBlock.elementType == row_2.elementType)
-                                {
-                                    yield return new WaitForSeconds(.3f);
-
-                                    // 풀에 리턴
-                                    blockPool.ReturnPoolableObject(row_0);
-                                    blockPool.ReturnPoolableObject(row_1);
-                                    blockPool.ReturnPoolableObject(row_2);
-
-                                    // 점수를 더합니다!
-                                    DM.SetScore(row_0.BlockScore);
-                                    DM.SetScore(row_1.BlockScore);
-                                    DM.SetScore(row_2.BlockScore);
-
-                                    // 블럭 저장소에서 제거
-                                    blocks[row + 1, col] = null;
-                                    blocks[row + 2, col] = null;
-                                    blocks[row + 3, col] = null;
-
-                                    // 기준이 되는 블럭을 폭탄으로 바꿔줘야지!!
-                                    checkBlock.elementType = ElementType.Balance;
-                                    checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
-
-                                    isMake = true;
-                                }
-                            }
-
-                            //if (isMake)
-                            {
-                                // 블럭 다운 카운트 계산
-                                int downCount = 0;
-
-                                for (int c_Col = 0; c_Col < width; c_Col++)
-                                {
-                                    for (int c_Row = 0; c_Row < height; c_Row++)
-                                    {
-                                        if (blocks[c_Row, c_Col] == null)
-                                        {
-                                            downCount++;
-                                        }
-                                        else
-                                        {
-                                            blocks[c_Row, c_Col].downCount = downCount;
-                                        }
-                                    }
-
-                                    downCount = 0;
-                                }
-
-                                yield return new WaitForSeconds(.3f);
-
-                                // 블럭 내리기 작업
-                                for (int d_Row = 0; d_Row < height; d_Row++)
-                                {
-                                    for (int d_Col = 0; d_Col < width; d_Col++)
-                                    {
-                                        if (blocks[d_Row, d_Col] != null)
-                                        {
-                                            if (blocks[d_Row, d_Col].downCount > 0)
-                                            {
-                                                // 내릴 공간이 존재한다
-
-                                                var targetrow = (blocks[d_Row, d_Col].row -= blocks[d_Row, d_Col].downCount);
-
-                                                if (Mathf.Abs(targetrow - blocks[d_Row, d_Col].transform.localPosition.y) > .1f)
-                                                {
-                                                    Vector2 tempposition = new Vector2(blocks[d_Row, d_Col].transform.localPosition.x, targetrow);
-                                                    blocks[d_Row, d_Col].transform.localPosition = Vector2.Lerp(blocks[d_Row, d_Col].transform.localPosition, tempposition, .05f);
-                                                }
-
-                                                // 다운 카운트 초기화
-                                                blocks[d_Row, d_Col].downCount = 0;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                yield return new WaitForSeconds(.3f);
-
-                                // 빈 공간 블럭 생성
-                                int newCol = -3;
-                                int newRow = 3;
-
-                                for (int n_Col = 0; n_Col < width; n_Col++)
-                                {
-                                    for (int n_Row = 0; n_Row < height; n_Row++)
-                                    {
-                                        if (blocks[n_Row, n_Col] == null)
-                                        {
-                                            // 어? 여기 비어있는데? 탈모인데?
-                                            // 그러면 머리 심어줘야자~
-                                            Block newBlock = blockPool.GetPoolableObject(obj => obj.CanRecycle);
-
-                                            // 부모 설정
-                                            newBlock.transform.SetParent(this.transform);
-
-                                            // 위치값 설정
-                                            newBlock.transform.localPosition = new Vector3(newCol, 4 + n_Row, 0);
-
-                                            // 회전값 설정
-                                            newBlock.transform.localRotation = Quaternion.identity;
-
-                                            // 사이즈값 설정
-                                            newBlock.transform.localScale = new Vector3(.19f, .19f, .19f);
-
-                                            // 활성화
-                                            newBlock.gameObject.SetActive(true);
-
-                                            // 블럭 초기화
-                                            newBlock.Initialize(newCol, 4 + n_Row);
-
-                                            // 블럭 저장
-                                            blocks[n_Row, n_Col] = newBlock;
-
-                                            var targetrow = (newBlock.row = newRow);
-
-                                            if (Mathf.Abs(targetrow - newBlock.transform.localPosition.y) > .1f)
-                                            {
-                                                Vector2 tempposition = new Vector2(newBlock.transform.localPosition.x, targetrow);
-                                                newBlock.transform.localPosition = Vector2.Lerp(newBlock.transform.localPosition, tempposition, .05f);
-                                            }
-
-                                            newRow--;
-                                        }
-                                    }
-
-                                    newCol++;
-                                    newRow = 3;
-                                }
-
-                                /// Test
-                                yield return new WaitForSeconds(.3f);
-
-                                isMake = false;
-
-                                // 블록 정렬
-                                BlockSort();
+                                    break;
                             }
                         }
                     }
@@ -4560,9 +3221,7 @@ namespace XR_3MatchGame_Object
         /// <returns></returns>
         private IEnumerator BoomFun(int boomCol)
         {
-            /// 파티클 실행
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
-
             UIElement uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
             // Row
