@@ -37,17 +37,17 @@ namespace XR_3MatchGame_Data
 
             if (!PlayerPrefs.HasKey(HighScore.Name_0))
             {
-                PlayerPrefs.SetString(HighScore.Name_0, "마법사");
+                PlayerPrefs.SetString(HighScore.Name_0, "조");
             }
 
             if (!PlayerPrefs.HasKey(HighScore.Name_1))
             {
-                PlayerPrefs.SetString(HighScore.Name_1, "대마법사");
+                PlayerPrefs.SetString(HighScore.Name_1, "형");
             }
 
             if (!PlayerPrefs.HasKey(HighScore.Name_2))
             {
-                PlayerPrefs.SetString(HighScore.Name_2, "대대마법사");
+                PlayerPrefs.SetString(HighScore.Name_2, "훈");
             }
 
             #endregion

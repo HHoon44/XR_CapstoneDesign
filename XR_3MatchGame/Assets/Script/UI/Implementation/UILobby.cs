@@ -29,29 +29,24 @@ namespace XR_3MatchGame_UI
             // 내 점수 업데이트
             scoreText.text = DataManager.Instance.playerScore.ToString();
 
-            // 점수 업데이트
             // 1등
             var userScore_0 = user_0.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
             userScore_0.text = PlayerPrefs.GetInt(HighScore.Score_0).ToString();
+
+            var userName_0 = user_0.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
+            userName_0.text = PlayerPrefs.GetString(HighScore.Name_0);
 
             // 2등
             var userScore_1 = user_1.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
             userScore_1.text = PlayerPrefs.GetInt(HighScore.Score_1).ToString();
 
-            // 3등
-            var userScore_2 = user_2.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
-            userScore_2.text = PlayerPrefs.GetInt(HighScore.Score_2).ToString();
-
-            // 유저 이름 업데이트
-            // 1등
-            var userName_0 = user_0.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
-            userName_0.text = PlayerPrefs.GetString(HighScore.Name_0);
-
-            // 2등
             var userName_1 = user_1.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
             userName_1.text = PlayerPrefs.GetString(HighScore.Name_1);
 
             // 3등
+            var userScore_2 = user_2.transform.GetChild(2).GetComponent<TextMeshProUGUI>();
+            userScore_2.text = PlayerPrefs.GetInt(HighScore.Score_2).ToString();
+
             var userName_2 = user_2.transform.GetChild(1).GetComponent<TextMeshProUGUI>();
             userName_2.text = PlayerPrefs.GetString(HighScore.Name_2);
 

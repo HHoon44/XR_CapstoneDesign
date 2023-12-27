@@ -8,43 +8,24 @@ using XR_3MatchGame_Util;
 
 public class InGameManager : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject board;
+    public GameObject board;
+    public GameObject uiEnd;
 
-    [SerializeField]
-    private GameObject uiEnd;
+    private GameManager GM;
+
+    private void Start()
+    {
+        GM = GameManager.Instance;
+        GM.inGameManager = this;
+    }
 
     public void Initiazlie()
     {
-        var GM = GameManager.Instance;
-        var blocks = GM.Board.blocks;
-        var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
+        // 보드 비활성화
+        GM.Board.gameObject.SetActive(false);
 
-        //if (GM.GameState == GameState.End)
-        //{
-        //    // 보드 비활성화
-        //    GM.Board.gameObject.SetActive(false);
-
-        //    // 게이지 풀 이펙트 비활성화
-        //    if (UIWindowManager.Instance.GetWindow<UIElement>().fullEffect.activeSelf)
-        //    {
-        //        UIWindowManager.Instance.GetWindow<UIElement>().fullEffect.SetActive(false);
-        //    }
-
-
-        //    // End UI 활성화
-        //    uiEnd.gameObject.SetActive(true);
-
-        //    // 음악정지
-        //    SoundManager.Instance.AllStop();
-
-        //    for (int i = 0; i < blocks.Count; i++)
-        //    {
-        //        blockPool.ReturnPoolableObject(blocks[i]);
-        //    }
-
-        //    blocks.Clear();
-        //}
+        // End UI 활성화
+        uiEnd.gameObject.SetActive(true);
     }
 
     public void InputPlayerName()

@@ -32,6 +32,8 @@ namespace XR_3MatchGame_UI
         /// </summary>
         public void HighScore()
         {
+            Debug.Log("세이브");
+
             // 점수
             var currentScore = DataManager.Instance.playerScore;
             var score_0 = PlayerPrefs.GetInt(XR_3MatchGame.Util.HighScore.Score_0);

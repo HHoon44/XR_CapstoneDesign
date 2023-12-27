@@ -43,11 +43,11 @@ namespace XR_3MatchGame_UI
                     gaugeFill.fillAmount = 0;
 
                     // 게임 종료 및 게임 종료 로직 실행
+                    GameManager.Instance.Board.SetState(GameState.End);
                 }
                 else
                 {
                     gaugeFill.fillAmount = Mathf.Lerp(gaugeFill.fillAmount, 0, Time.deltaTime * .02f);
-                    GameManager.Instance.Board.SetState(GameState.End);
                 }
             }
         }

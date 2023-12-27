@@ -25,6 +25,7 @@ namespace XR_3MatchGame_InGame
         public bool isMatch = false;    // 블럭 매칭 여부
         public bool isPlus = false;     
         public float loadProgress;      // 로딩 진행도
+        public InGameManager inGameManager;
 
         [Header("현재 스테이지 정보")]
         public string stageName;
@@ -54,7 +55,7 @@ namespace XR_3MatchGame_InGame
 
         public void GameEndFunction()
         {
-            Board.gameObject.SetActive(false);
+            inGameManager.Initiazlie();
         }
 
         /// <summary>
