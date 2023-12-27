@@ -55,8 +55,7 @@ public class SoundManager : Singleton<SoundManager>
         {
             if (EGMClips[i].name.Split('_')[0] == name)
             {
-                audioSources[0].clip = EGMClips[i];
-                audioSources[0].Play();
+                audioSources[1].clip = EGMClips[i];
             }
         }
     }

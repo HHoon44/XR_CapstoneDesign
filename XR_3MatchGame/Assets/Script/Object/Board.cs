@@ -25,6 +25,9 @@ namespace XR_3MatchGame_Object
         public Block moveBlock;
         public Block boomBlock;
 
+        public AudioSource destroySound;
+        public AudioSource boomSound;
+
         public bool isReStart;
 
         #region Manager
@@ -36,6 +39,7 @@ namespace XR_3MatchGame_Object
 
         #endregion
 
+        // 매칭 체크 할 때 사용할 블록들
         private Block checkBlock;
 
         private Block col_0;
@@ -45,7 +49,6 @@ namespace XR_3MatchGame_Object
         private Block row_0;
         private Block row_1;
         private Block row_2;
-
 
         private void Start()
         {
@@ -153,7 +156,7 @@ namespace XR_3MatchGame_Object
             StartCoroutine(BlockMatch());
         }
 
-        private void DelBlockFuntion(Block boom = null)
+        private void DelBlockFunction(Block boom = null)
         {
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             var uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
@@ -216,10 +219,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                DelBlockFuntion(moveBlock);
-
-                                                yield return new WaitForSeconds(.3f);
-
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col + 1] = null;
                                                 blocks[row, col + 2] = null;
@@ -246,10 +245,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock);
-
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col + 1] = null;
                                                 blocks[row, col + 2] = null;
@@ -272,10 +267,6 @@ namespace XR_3MatchGame_Object
                                                         delBlocks.Add(col_0);
                                                         delBlocks.Add(col_1);
                                                         delBlocks.Add(col_2);
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        DelBlockFuntion(moveBlock);
 
                                                         blocks[row, col - 1] = null;
                                                         blocks[row, col - 2] = null;
@@ -305,10 +296,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock);
-
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col - 2] = null;
                                                 blocks[row, col + 1] = null;
@@ -332,10 +319,6 @@ namespace XR_3MatchGame_Object
                                                         delBlocks.Add(col_0);
                                                         delBlocks.Add(col_1);
                                                         delBlocks.Add(col_2);
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        DelBlockFuntion(moveBlock);
 
                                                         blocks[row, col - 1] = null;
                                                         blocks[row, col + 1] = null;
@@ -364,10 +347,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_0);
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock);
 
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col - 2] = null;
@@ -398,10 +377,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock);
-
                                                 blocks[row - 1, col] = null;
                                                 blocks[row + 1, col] = null;
                                                 blocks[row + 2, col] = null;
@@ -428,10 +403,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock);
-
                                                 blocks[row - 1, col] = null;
                                                 blocks[row + 1, col] = null;
                                                 blocks[row + 2, col] = null;
@@ -454,10 +425,6 @@ namespace XR_3MatchGame_Object
                                                         delBlocks.Add(col_0);
                                                         delBlocks.Add(col_1);
                                                         delBlocks.Add(col_2);
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        DelBlockFuntion(moveBlock);
 
                                                         blocks[row - 1, col] = null;
                                                         blocks[row - 2, col] = null;
@@ -486,10 +453,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock);
-
                                                 blocks[row + 1, col] = null;
                                                 blocks[row - 1, col] = null;
                                                 blocks[row - 2, col] = null;
@@ -512,10 +475,6 @@ namespace XR_3MatchGame_Object
                                                         delBlocks.Add(col_0);
                                                         delBlocks.Add(col_1);
                                                         delBlocks.Add(col_2);
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        DelBlockFuntion(moveBlock);
 
                                                         blocks[row + 1, col] = null;
                                                         blocks[row + 2, col] = null;
@@ -544,16 +503,25 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock);
-
                                                 blocks[row + 1, col] = null;
                                                 blocks[row - 1, col] = null;
                                                 blocks[row - 2, col] = null;
                                             }
                                         }
                                         break;
+                                }
+
+                                if (delBlocks.Count > 0)
+                                {
+                                    for (int i = 0; i < delBlocks.Count; i++)
+                                    {
+                                        delBlocks[i].BlockParticle();
+                                        destroySound.Play();
+                                    }
+
+                                    yield return new WaitForSeconds(.3f);
+
+                                    DelBlockFunction(moveBlock);
                                 }
                             }
 
@@ -582,10 +550,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                DelBlockFuntion(moveBlock.otherBlock);
-
-                                                yield return new WaitForSeconds(.3f);
-
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col + 1] = null;
                                                 blocks[row, col + 2] = null;
@@ -612,10 +576,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock.otherBlock);
-
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col + 1] = null;
                                                 blocks[row, col + 2] = null;
@@ -638,10 +598,6 @@ namespace XR_3MatchGame_Object
                                                         delBlocks.Add(col_0);
                                                         delBlocks.Add(col_1);
                                                         delBlocks.Add(col_2);
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        DelBlockFuntion(moveBlock.otherBlock);
 
                                                         blocks[row, col - 1] = null;
                                                         blocks[row, col - 2] = null;
@@ -671,10 +627,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock.otherBlock);
-
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col - 2] = null;
                                                 blocks[row, col + 1] = null;
@@ -698,10 +650,6 @@ namespace XR_3MatchGame_Object
                                                         delBlocks.Add(col_0);
                                                         delBlocks.Add(col_1);
                                                         delBlocks.Add(col_2);
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        DelBlockFuntion(moveBlock.otherBlock);
 
                                                         blocks[row, col - 1] = null;
                                                         blocks[row, col + 1] = null;
@@ -730,10 +678,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_0);
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
-
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock.otherBlock);
 
                                                 blocks[row, col - 1] = null;
                                                 blocks[row, col - 2] = null;
@@ -764,10 +708,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock.otherBlock);
-
                                                 blocks[row - 1, col] = null;
                                                 blocks[row + 1, col] = null;
                                                 blocks[row + 2, col] = null;
@@ -794,10 +734,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock.otherBlock);
-
                                                 blocks[row - 1, col] = null;
                                                 blocks[row + 1, col] = null;
                                                 blocks[row + 2, col] = null;
@@ -820,10 +756,6 @@ namespace XR_3MatchGame_Object
                                                         delBlocks.Add(col_0);
                                                         delBlocks.Add(col_1);
                                                         delBlocks.Add(col_2);
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        DelBlockFuntion(moveBlock.otherBlock);
 
                                                         blocks[row - 1, col] = null;
                                                         blocks[row - 2, col] = null;
@@ -852,10 +784,6 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock.otherBlock);
-
                                                 blocks[row + 1, col] = null;
                                                 blocks[row - 1, col] = null;
                                                 blocks[row - 2, col] = null;
@@ -878,10 +806,6 @@ namespace XR_3MatchGame_Object
                                                         delBlocks.Add(col_0);
                                                         delBlocks.Add(col_1);
                                                         delBlocks.Add(col_2);
-
-                                                        yield return new WaitForSeconds(.3f);
-
-                                                        DelBlockFuntion(moveBlock.otherBlock);
 
                                                         blocks[row + 1, col] = null;
                                                         blocks[row + 2, col] = null;
@@ -910,16 +834,25 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
 
-                                                yield return new WaitForSeconds(.3f);
-
-                                                DelBlockFuntion(moveBlock.otherBlock);
-
                                                 blocks[row + 1, col] = null;
                                                 blocks[row - 1, col] = null;
                                                 blocks[row - 2, col] = null;
                                             }
                                         }
                                         break;
+                                }
+
+                                if (delBlocks.Count > 0)
+                                {
+                                    for (int i = 0; i < delBlocks.Count; i++)
+                                    {
+                                        delBlocks[i].BlockParticle();
+                                        destroySound.Play();
+                                    }
+
+                                    yield return new WaitForSeconds(.3f);
+
+                                    DelBlockFunction(moveBlock);
                                 }
                             }
                         }
@@ -947,7 +880,7 @@ namespace XR_3MatchGame_Object
                                 col_1 = blocks[row, col + 2];
                                 col_2 = blocks[row, col + 3];
 
-                                // 4X4 특수 상황 모음집 1탄
+                                // 4X4 특수 상황
                                 if (checkBlock.row <= 0)
                                 {
                                     /*
@@ -968,7 +901,6 @@ namespace XR_3MatchGame_Object
                                             col_0.col = checkBlock.col;
                                             col_1.col = checkBlock.col;
                                             col_2.col = checkBlock.col;
-
                                             row_0.row = checkBlock.row;
                                             row_1.row = checkBlock.row;
                                             row_2.row = checkBlock.row;
@@ -976,20 +908,27 @@ namespace XR_3MatchGame_Object
                                             delBlocks.Add(col_0);
                                             delBlocks.Add(col_1);
                                             delBlocks.Add(col_2);
-
                                             delBlocks.Add(row_0);
                                             delBlocks.Add(row_1);
                                             delBlocks.Add(row_2);
 
-                                            yield return new WaitForSeconds(.3f);
+                                            if (delBlocks.Count > 0)
+                                            {
+                                                for (int i = 0; i < delBlocks.Count; i++)
+                                                {
+                                                    delBlocks[i].BlockParticle();
+                                                    destroySound.Play();
+                                                }
 
-                                            DelBlockFuntion(checkBlock);
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFunction(checkBlock);
+                                            }
 
                                             // 블럭 제거
                                             blocks[row, col + 1] = null;
                                             blocks[row, col + 2] = null;
                                             blocks[row, col + 3] = null;
-
                                             blocks[row + 1, col] = null;
                                             blocks[row + 2, col] = null;
                                             blocks[row + 3, col] = null;
@@ -1017,7 +956,6 @@ namespace XR_3MatchGame_Object
                                                     col_0.col = checkBlock.col;
                                                     col_1.col = checkBlock.col;
                                                     col_2.col = checkBlock.col;
-
                                                     row_0.row = checkBlock.row;
                                                     row_1.row = checkBlock.row;
                                                     row_2.row = checkBlock.row;
@@ -1025,20 +963,27 @@ namespace XR_3MatchGame_Object
                                                     delBlocks.Add(col_0);
                                                     delBlocks.Add(col_1);
                                                     delBlocks.Add(col_2);
-
                                                     delBlocks.Add(row_0);
                                                     delBlocks.Add(row_1);
                                                     delBlocks.Add(row_2);
 
-                                                    yield return new WaitForSeconds(.3f);
+                                                    if (delBlocks.Count > 0)
+                                                    {
+                                                        for (int i = 0; i < delBlocks.Count; i++)
+                                                        {
+                                                            delBlocks[i].BlockParticle();
+                                                            destroySound.Play();
+                                                        }
 
-                                                    DelBlockFuntion(checkBlock);
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFunction(checkBlock);
+                                                    }
 
                                                     // 블럭 제거
                                                     blocks[row, col] = null;
                                                     blocks[row, col + 2] = null;
                                                     blocks[row, col + 3] = null;
-
                                                     blocks[row + 1, col + 1] = null;
                                                     blocks[row + 2, col + 1] = null;
                                                     blocks[row + 3, col + 1] = null;
@@ -1066,7 +1011,6 @@ namespace XR_3MatchGame_Object
                                                             col_0.col = checkBlock.col;
                                                             col_1.col = checkBlock.col;
                                                             col_2.col = checkBlock.col;
-
                                                             row_0.row = checkBlock.row;
                                                             row_1.row = checkBlock.row;
                                                             row_2.row = checkBlock.row;
@@ -1074,19 +1018,26 @@ namespace XR_3MatchGame_Object
                                                             delBlocks.Add(col_0);
                                                             delBlocks.Add(col_1);
                                                             delBlocks.Add(col_2);
-
                                                             delBlocks.Add(row_0);
                                                             delBlocks.Add(row_1);
                                                             delBlocks.Add(row_2);
 
-                                                            yield return new WaitForSeconds(.3f);
+                                                            if (delBlocks.Count > 0)
+                                                            {
+                                                                for (int i = 0; i < delBlocks.Count; i++)
+                                                                {
+                                                                    delBlocks[i].BlockParticle();
+                                                                    destroySound.Play();
+                                                                }
 
-                                                            DelBlockFuntion(checkBlock);
+                                                                yield return new WaitForSeconds(.3f);
+
+                                                                DelBlockFunction(checkBlock);
+                                                            }
 
                                                             blocks[row, col + 1] = null;
                                                             blocks[row, col + 2] = null;
                                                             blocks[row, col + 3] = null;
-
                                                             blocks[row + 1, col + 2] = null;
                                                             blocks[row + 2, col + 2] = null;
                                                             blocks[row + 3, col + 2] = null;
@@ -1116,7 +1067,6 @@ namespace XR_3MatchGame_Object
                                                                     col_0.col = checkBlock.col;
                                                                     col_1.col = checkBlock.col;
                                                                     col_2.col = checkBlock.col;
-
                                                                     row_0.row = checkBlock.row;
                                                                     row_1.row = checkBlock.row;
                                                                     row_2.row = checkBlock.row;
@@ -1124,19 +1074,26 @@ namespace XR_3MatchGame_Object
                                                                     delBlocks.Add(col_0);
                                                                     delBlocks.Add(col_1);
                                                                     delBlocks.Add(col_2);
-
                                                                     delBlocks.Add(row_0);
                                                                     delBlocks.Add(row_1);
                                                                     delBlocks.Add(row_2);
 
-                                                                    yield return new WaitForSeconds(.3f);
+                                                                    if (delBlocks.Count > 0)
+                                                                    {
+                                                                        for (int i = 0; i < delBlocks.Count; i++)
+                                                                        {
+                                                                            delBlocks[i].BlockParticle();
+                                                                            destroySound.Play();
+                                                                        }
 
-                                                                    DelBlockFuntion(checkBlock);
+                                                                        yield return new WaitForSeconds(.3f);
+
+                                                                        DelBlockFunction(checkBlock);
+                                                                    }
 
                                                                     blocks[row, col] = null;
                                                                     blocks[row, col + 1] = null;
                                                                     blocks[row, col + 2] = null;
-
                                                                     blocks[row + 1, col + 3] = null;
                                                                     blocks[row + 2, col + 3] = null;
                                                                     blocks[row + 3, col + 3] = null;
@@ -1150,7 +1107,7 @@ namespace XR_3MatchGame_Object
                                     }
                                 }
 
-                                // 4X4 특수 상황 모음집 2탄
+                                // 4X4 특수 상황
                                 if (checkBlock.row >= 0)
                                 {
                                     /*
@@ -1170,7 +1127,6 @@ namespace XR_3MatchGame_Object
                                             col_0.col = checkBlock.col;
                                             col_1.col = checkBlock.col;
                                             col_2.col = checkBlock.col;
-
                                             row_0.row = checkBlock.row;
                                             row_1.row = checkBlock.row;
                                             row_2.row = checkBlock.row;
@@ -1178,19 +1134,26 @@ namespace XR_3MatchGame_Object
                                             delBlocks.Add(col_0);
                                             delBlocks.Add(col_1);
                                             delBlocks.Add(col_2);
-
                                             delBlocks.Add(row_0);
                                             delBlocks.Add(row_1);
                                             delBlocks.Add(row_2);
 
-                                            yield return new WaitForSeconds(.3f);
+                                            if (delBlocks.Count > 0)
+                                            {
+                                                for (int i = 0; i < delBlocks.Count; i++)
+                                                {
+                                                    delBlocks[i].BlockParticle();
+                                                    destroySound.Play();
+                                                }
 
-                                            DelBlockFuntion(checkBlock);
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFunction(checkBlock);
+                                            }
 
                                             blocks[row, col + 1] = null;
                                             blocks[row, col + 2] = null;
                                             blocks[row, col + 3] = null;
-
                                             blocks[row - 1, col] = null;
                                             blocks[row - 2, col] = null;
                                             blocks[row - 3, col] = null;
@@ -1217,7 +1180,6 @@ namespace XR_3MatchGame_Object
                                                     col_0.col = checkBlock.col;
                                                     col_1.col = checkBlock.col;
                                                     col_2.col = checkBlock.col;
-
                                                     row_0.row = checkBlock.row;
                                                     row_1.row = checkBlock.row;
                                                     row_2.row = checkBlock.row;
@@ -1225,19 +1187,26 @@ namespace XR_3MatchGame_Object
                                                     delBlocks.Add(col_0);
                                                     delBlocks.Add(col_1);
                                                     delBlocks.Add(col_2);
-
                                                     delBlocks.Add(row_0);
                                                     delBlocks.Add(row_1);
                                                     delBlocks.Add(row_2);
 
-                                                    yield return new WaitForSeconds(.3f);
+                                                    if (delBlocks.Count > 0)
+                                                    {
+                                                        for (int i = 0; i < delBlocks.Count; i++)
+                                                        {
+                                                            delBlocks[i].BlockParticle();
+                                                            destroySound.Play();
+                                                        }
 
-                                                    DelBlockFuntion(checkBlock);
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFunction(checkBlock);
+                                                    }
 
                                                     blocks[row, col] = null;
                                                     blocks[row, col + 2] = null;
                                                     blocks[row, col + 3] = null;
-
                                                     blocks[row - 1, col + 1] = null;
                                                     blocks[row - 2, col + 1] = null;
                                                     blocks[row - 3, col + 1] = null;
@@ -1265,7 +1234,6 @@ namespace XR_3MatchGame_Object
                                                             col_0.col = checkBlock.col;
                                                             col_1.col = checkBlock.col;
                                                             col_2.col = checkBlock.col;
-
                                                             row_0.row = checkBlock.row;
                                                             row_1.row = checkBlock.row;
                                                             row_2.row = checkBlock.row;
@@ -1273,19 +1241,26 @@ namespace XR_3MatchGame_Object
                                                             delBlocks.Add(col_0);
                                                             delBlocks.Add(col_1);
                                                             delBlocks.Add(col_2);
-
                                                             delBlocks.Add(row_0);
                                                             delBlocks.Add(row_1);
                                                             delBlocks.Add(row_2);
 
-                                                            yield return new WaitForSeconds(.3f);
+                                                            if (delBlocks.Count > 0)
+                                                            {
+                                                                for (int i = 0; i < delBlocks.Count; i++)
+                                                                {
+                                                                    delBlocks[i].BlockParticle();
+                                                                    destroySound.Play();
+                                                                }
 
-                                                            DelBlockFuntion(checkBlock);
+                                                                yield return new WaitForSeconds(.3f);
+
+                                                                DelBlockFunction(checkBlock);
+                                                            }
 
                                                             blocks[row, col] = null;
                                                             blocks[row, col + 1] = null;
                                                             blocks[row, col + 3] = null;
-
                                                             blocks[row - 1, col + 2] = null;
                                                             blocks[row - 2, col + 2] = null;
                                                             blocks[row - 3, col + 2] = null;
@@ -1315,7 +1290,6 @@ namespace XR_3MatchGame_Object
                                                                 col_0.col = checkBlock.col;
                                                                 col_1.col = checkBlock.col;
                                                                 col_2.col = checkBlock.col;
-
                                                                 row_0.row = checkBlock.row;
                                                                 row_1.row = checkBlock.row;
                                                                 row_2.row = checkBlock.row;
@@ -1323,19 +1297,26 @@ namespace XR_3MatchGame_Object
                                                                 delBlocks.Add(col_0);
                                                                 delBlocks.Add(col_1);
                                                                 delBlocks.Add(col_2);
-
                                                                 delBlocks.Add(row_0);
                                                                 delBlocks.Add(row_1);
                                                                 delBlocks.Add(row_2);
 
-                                                                yield return new WaitForSeconds(.3f);
+                                                                if (delBlocks.Count > 0)
+                                                                {
+                                                                    for (int i = 0; i < delBlocks.Count; i++)
+                                                                    {
+                                                                        delBlocks[i].BlockParticle();
+                                                                        destroySound.Play();
+                                                                    }
 
-                                                                DelBlockFuntion(checkBlock);
+                                                                    yield return new WaitForSeconds(.3f);
+
+                                                                    DelBlockFunction(checkBlock);
+                                                                }
 
                                                                 blocks[row, col] = null;
                                                                 blocks[row, col + 1] = null;
                                                                 blocks[row, col + 2] = null;
-
                                                                 blocks[row - 1, col + 3] = null;
                                                                 blocks[row - 2, col + 3] = null;
                                                                 blocks[row - 3, col + 3] = null;
@@ -1388,7 +1369,6 @@ namespace XR_3MatchGame_Object
                                             col_0.col = checkBlock.col;
                                             col_1.col = checkBlock.col;
                                             col_2.col = checkBlock.col;
-
                                             row_0.row = checkBlock.row;
                                             row_1.row = checkBlock.row;
                                             row_2.row = checkBlock.row;
@@ -1396,26 +1376,30 @@ namespace XR_3MatchGame_Object
                                             delBlocks.Add(col_0);
                                             delBlocks.Add(col_1);
                                             delBlocks.Add(col_2);
-
                                             delBlocks.Add(row_0);
                                             delBlocks.Add(row_1);
                                             delBlocks.Add(row_2);
 
-                                            yield return new WaitForSeconds(.3f);
+                                            if (delBlocks.Count > 0)
+                                            {
+                                                for (int i = 0; i < delBlocks.Count; i++)
+                                                {
+                                                    delBlocks[i].BlockParticle();
+                                                    destroySound.Play();
+                                                }
 
-                                            DelBlockFuntion(checkBlock);
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFunction(checkBlock);
+                                            }
 
                                             // 블럭 제거
                                             blocks[row, col] = null;
                                             blocks[row + 2, col] = null;
                                             blocks[row + 3, col] = null;
-
                                             blocks[row + 1, col + 1] = null;
                                             blocks[row + 1, col + 2] = null;
                                             blocks[row + 1, col + 3] = null;
-
-                                            checkBlock.elementType = ElementType.Balance;
-                                            checkBlock.spriteRenderer.sprite = SpriteLoader.GetSprite(AtlasType.BlockAtlas, ElementType.Balance.ToString());
                                         }
                                         else
                                         {
@@ -1440,7 +1424,6 @@ namespace XR_3MatchGame_Object
                                                     col_0.col = checkBlock.col;
                                                     col_1.col = checkBlock.col;
                                                     col_2.col = checkBlock.col;
-
                                                     row_0.row = checkBlock.row;
                                                     row_1.row = checkBlock.row;
                                                     row_2.row = checkBlock.row;
@@ -1448,20 +1431,27 @@ namespace XR_3MatchGame_Object
                                                     delBlocks.Add(col_0);
                                                     delBlocks.Add(col_1);
                                                     delBlocks.Add(col_2);
-
                                                     delBlocks.Add(row_0);
                                                     delBlocks.Add(row_1);
                                                     delBlocks.Add(row_2);
 
-                                                    yield return new WaitForSeconds(.3f);
+                                                    if (delBlocks.Count > 0)
+                                                    {
+                                                        for (int i = 0; i < delBlocks.Count; i++)
+                                                        {
+                                                            delBlocks[i].BlockParticle();
+                                                            destroySound.Play();
+                                                        }
 
-                                                    DelBlockFuntion(checkBlock);
+                                                        yield return new WaitForSeconds(.3f);
+
+                                                        DelBlockFunction(checkBlock);
+                                                    }
 
                                                     // 블럭 제거
                                                     blocks[row, col] = null;
                                                     blocks[row + 1, col] = null;
                                                     blocks[row + 3, col] = null;
-
                                                     blocks[row + 2, col + 1] = null;
                                                     blocks[row + 2, col + 2] = null;
                                                     blocks[row + 2, col + 3] = null;
@@ -1495,7 +1485,6 @@ namespace XR_3MatchGame_Object
                                             col_0.col = checkBlock.col;
                                             col_1.col = checkBlock.col;
                                             col_2.col = checkBlock.col;
-
                                             row_0.row = checkBlock.row;
                                             row_1.row = checkBlock.row;
                                             row_2.row = checkBlock.row;
@@ -1503,20 +1492,27 @@ namespace XR_3MatchGame_Object
                                             delBlocks.Add(col_0);
                                             delBlocks.Add(col_1);
                                             delBlocks.Add(col_2);
-
                                             delBlocks.Add(row_0);
                                             delBlocks.Add(row_1);
                                             delBlocks.Add(row_2);
 
-                                            yield return new WaitForSeconds(.3f);
+                                            if (delBlocks.Count > 0)
+                                            {
+                                                for (int i = 0; i < delBlocks.Count; i++)
+                                                {
+                                                    delBlocks[i].BlockParticle();
+                                                    destroySound.Play();
+                                                }
 
-                                            DelBlockFuntion(checkBlock);
+                                                yield return new WaitForSeconds(.3f);
+
+                                                DelBlockFunction(checkBlock);
+                                            }
 
                                             // 블럭 제거
                                             blocks[row, col] = null;
                                             blocks[row + 2, col] = null;
                                             blocks[row + 3, col] = null;
-
                                             blocks[row + 1, col - 1] = null;
                                             blocks[row + 1, col - 2] = null;
                                             blocks[row + 1, col - 3] = null;
@@ -1545,7 +1541,6 @@ namespace XR_3MatchGame_Object
                                                 col_0.col = checkBlock.col;
                                                 col_1.col = checkBlock.col;
                                                 col_2.col = checkBlock.col;
-
                                                 row_0.row = checkBlock.row;
                                                 row_1.row = checkBlock.row;
                                                 row_2.row = checkBlock.row;
@@ -1553,20 +1548,27 @@ namespace XR_3MatchGame_Object
                                                 delBlocks.Add(col_0);
                                                 delBlocks.Add(col_1);
                                                 delBlocks.Add(col_2);
-
                                                 delBlocks.Add(row_0);
                                                 delBlocks.Add(row_1);
                                                 delBlocks.Add(row_2);
 
-                                                yield return new WaitForSeconds(.3f);
+                                                if (delBlocks.Count > 0)
+                                                {
+                                                    for (int i = 0; i < delBlocks.Count; i++)
+                                                    {
+                                                        delBlocks[i].BlockParticle();
+                                                        destroySound.Play();
+                                                    }
 
-                                                DelBlockFuntion(checkBlock);
+                                                    yield return new WaitForSeconds(.3f);
+
+                                                    DelBlockFunction(checkBlock);
+                                                }
 
                                                 // 블럭 제거
                                                 blocks[row, col] = null;
                                                 blocks[row + 1, col] = null;
                                                 blocks[row + 3, col] = null;
-
                                                 blocks[row + 2, col - 1] = null;
                                                 blocks[row + 2, col - 2] = null;
                                                 blocks[row + 2, col - 3] = null;
@@ -1607,9 +1609,18 @@ namespace XR_3MatchGame_Object
                                     delBlocks.Add(col_1);
                                     delBlocks.Add(col_2);
 
-                                    yield return new WaitForSeconds(.3f);
+                                    if (delBlocks.Count > 0)
+                                    {
+                                        for (int i = 0; i < delBlocks.Count; i++)
+                                        {
+                                            delBlocks[i].BlockParticle();
+                                            destroySound.Play();
+                                        }
 
-                                    DelBlockFuntion(checkBlock);
+                                        yield return new WaitForSeconds(.3f);
+
+                                        DelBlockFunction();
+                                    }
 
                                     // 블럭 저장소에서 제거
                                     blocks[row, col + 1] = null;
@@ -1637,9 +1648,18 @@ namespace XR_3MatchGame_Object
                                     delBlocks.Add(row_1);
                                     delBlocks.Add(row_2);
 
-                                    yield return new WaitForSeconds(.3f);
+                                    if (delBlocks.Count > 0)
+                                    {
+                                        for (int i = 0; i < delBlocks.Count; i++)
+                                        {
+                                            delBlocks[i].BlockParticle();
+                                            destroySound.Play();
+                                        }
 
-                                    DelBlockFuntion(checkBlock);
+                                        yield return new WaitForSeconds(.3f);
+
+                                        DelBlockFunction();
+                                    }
 
                                     // 블럭 저장소에서 제거
                                     blocks[row + 1, col] = null;
@@ -1651,8 +1671,6 @@ namespace XR_3MatchGame_Object
                     }
                 }
             }
-
-            yield return new WaitForSeconds(.3f);
 
             // 3X3 블록 파괴 - 예외 상황
             for (int row = 0; row < height; row++)
@@ -1692,7 +1710,7 @@ namespace XR_3MatchGame_Object
                                             delBlocks.Add(row_0);
                                             delBlocks.Add(row_1);
 
-                                            DelBlockFuntion();
+                                            //DelBlockFunction();
 
                                             blocks[row, col] = null;
                                             blocks[row, col + 1] = null;
@@ -1720,13 +1738,11 @@ namespace XR_3MatchGame_Object
                                                     delBlocks.Add(row_0);
                                                     delBlocks.Add(row_1);
 
-                                                    DelBlockFuntion();
+                                                    //DelBlockFunction();
 
-                                                    // 저장소에서 비우기
                                                     blocks[row, col] = null;
                                                     blocks[row, col + 1] = null;
                                                     blocks[row, col + 2] = null;
-
                                                     blocks[row + 1, col + 1] = null;
                                                     blocks[row + 2, col + 1] = null;
                                                 }
@@ -1750,13 +1766,11 @@ namespace XR_3MatchGame_Object
                                                             delBlocks.Add(row_0);
                                                             delBlocks.Add(row_1);
 
-                                                            DelBlockFuntion();
+                                                            //DelBlockFunction();
 
-                                                            // 저장소에서 비우기
                                                             blocks[row, col] = null;
                                                             blocks[row, col + 1] = null;
                                                             blocks[row, col + 2] = null;
-
                                                             blocks[row + 1, col + 2] = null;
                                                             blocks[row + 2, col + 2] = null;
                                                         }
@@ -1788,13 +1802,11 @@ namespace XR_3MatchGame_Object
                                             delBlocks.Add(row_0);
                                             delBlocks.Add(row_1);
 
-                                            DelBlockFuntion();
+                                            //DelBlockFunction();
 
-                                            // 저장소에서 비우기
                                             blocks[row, col] = null;
                                             blocks[row, col + 1] = null;
                                             blocks[row, col + 2] = null;
-
                                             blocks[row - 1, col] = null;
                                             blocks[row - 2, col] = null;
                                         }
@@ -1818,13 +1830,11 @@ namespace XR_3MatchGame_Object
                                                     delBlocks.Add(row_0);
                                                     delBlocks.Add(row_1);
 
-                                                    DelBlockFuntion();
+                                                    //DelBlockFunction();
 
-                                                    // 저장소에서 비우기
                                                     blocks[row, col] = null;
                                                     blocks[row, col + 1] = null;
                                                     blocks[row, col + 2] = null;
-
                                                     blocks[row - 1, col + 1] = null;
                                                     blocks[row - 2, col + 1] = null;
                                                 }
@@ -1848,13 +1858,11 @@ namespace XR_3MatchGame_Object
                                                             delBlocks.Add(row_0);
                                                             delBlocks.Add(row_1);
 
-                                                            DelBlockFuntion();
+                                                            //DelBlockFunction();
 
-                                                            // 저장소에서 비우기
                                                             blocks[row, col] = null;
                                                             blocks[row, col + 1] = null;
                                                             blocks[row, col + 2] = null;
-
                                                             blocks[row - 1, col + 2] = null;
                                                             blocks[row - 2, col + 2] = null;
                                                         }
@@ -1865,6 +1873,20 @@ namespace XR_3MatchGame_Object
                                     }
                                 }
                             }
+                        }
+
+                        // 블럭 파괴 작업
+                        if (delBlocks.Count > 0)
+                        {
+                            for (int i = 0; i < delBlocks.Count; i++)
+                            {
+                                delBlocks[i].BlockParticle();
+                                destroySound.Play();
+                            }
+
+                            yield return new WaitForSeconds(.3f);
+
+                            DelBlockFunction();
                         }
                     }
 
@@ -1901,13 +1923,11 @@ namespace XR_3MatchGame_Object
                                             delBlocks.Add(row_0);
                                             delBlocks.Add(row_1);
 
-                                            DelBlockFuntion();
+                                            //DelBlockFunction();
 
-                                            // 저장소에서 비우기
                                             blocks[row, col] = null;
                                             blocks[row + 1, col] = null;
                                             blocks[row + 2, col] = null;
-
                                             blocks[row + 1, col + 1] = null;
                                             blocks[row + 1, col + 2] = null;
                                         }
@@ -1935,19 +1955,31 @@ namespace XR_3MatchGame_Object
                                             delBlocks.Add(row_0);
                                             delBlocks.Add(row_1);
 
-                                            DelBlockFuntion();
+                                            //DelBlockFunction();
 
-                                            // 저장소에서 비우기
                                             blocks[row, col] = null;
                                             blocks[row + 1, col] = null;
                                             blocks[row + 2, col] = null;
-
                                             blocks[row + 1, col - 1] = null;
                                             blocks[row + 1, col - 2] = null;
                                         }
                                     }
                                 }
                             }
+                        }
+
+                        // 블럭 파괴 작업
+                        if (delBlocks.Count > 0)
+                        {
+                            for (int i = 0; i < delBlocks.Count; i++)
+                            {
+                                delBlocks[i].BlockParticle();
+                                destroySound.Play();
+                            }
+
+                            yield return new WaitForSeconds(.3f);
+
+                            DelBlockFunction();
                         }
                     }
                 }
@@ -1976,9 +2008,8 @@ namespace XR_3MatchGame_Object
                                     delBlocks.Add(col_0);
                                     delBlocks.Add(col_1);
 
-                                    DelBlockFuntion();
+                                    //DelBlockFunction();
 
-                                    // 저장소에서 비우기
                                     blocks[row, col] = null;
                                     blocks[row, col + 1] = null;
                                     blocks[row, col + 2] = null;
@@ -2000,7 +2031,7 @@ namespace XR_3MatchGame_Object
                                     delBlocks.Add(row_0);
                                     delBlocks.Add(row_1);
 
-                                    DelBlockFuntion();
+                                    //DelBlockFunction();
 
                                     blocks[row, col] = null;
                                     blocks[row + 1, col] = null;
@@ -2009,6 +2040,19 @@ namespace XR_3MatchGame_Object
                             }
                         }
 
+                        // 블럭 파괴 작업
+                        if (delBlocks.Count > 0)
+                        {
+                            for (int i = 0; i < delBlocks.Count; i++)
+                            {
+                                delBlocks[i].BlockParticle();
+                                destroySound.Play();
+                            }
+
+                            yield return new WaitForSeconds(.3f);
+
+                            DelBlockFunction();
+                        }
                     }
                 }
             }
@@ -3221,6 +3265,8 @@ namespace XR_3MatchGame_Object
         /// <returns></returns>
         private IEnumerator BoomFun(int boomCol)
         {
+            boomSound.Play();
+
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             UIElement uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 

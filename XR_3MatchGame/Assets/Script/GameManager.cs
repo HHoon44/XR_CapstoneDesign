@@ -51,6 +51,11 @@ namespace XR_3MatchGame_InGame
             Application.targetFrameRate = 60;
         }
 
+        public IEnumerator MyDelay()
+        {
+            yield return new WaitForSeconds(.3f);
+        }
+
         /// <summary>
         /// 현재 게임 상태 세팅 메서드
         /// </summary>

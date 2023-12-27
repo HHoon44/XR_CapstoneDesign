@@ -55,6 +55,9 @@ namespace XR_3MatchGame_Object
 
         private SwipeDir swipeDir = SwipeDir.None;          // 블럭의 이동 방향
 
+        /// <summary>
+        /// 블럭 파이클 실행 메서드
+        /// </summary>
         public void BlockParticle()
         {
             blockParticle.Play();

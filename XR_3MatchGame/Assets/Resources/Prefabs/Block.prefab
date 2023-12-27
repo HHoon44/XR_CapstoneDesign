@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 572379915854839428}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5535273068498844667}
@@ -19230,16 +19230,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockParticle: {fileID: 1523802145914290564}
+  downCount: 0
   spriteRenderer: {fileID: 5397802744972761918}
   col: 0
   row: 0
   targetCol: 0
   targetRow: 0
   elementType: 0
-  topBlock: {fileID: 0}
-  bottomBlock: {fileID: 0}
-  leftBlock: {fileID: 0}
-  rightBlock: {fileID: 0}
+  otherBlock: {fileID: 0}
 --- !u!1 &5795973875208965177
 GameObject:
   m_ObjectHideFlags: 0
@@ -28769,7 +28767,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6555444865233685466
 Transform:
   m_ObjectHideFlags: 0
