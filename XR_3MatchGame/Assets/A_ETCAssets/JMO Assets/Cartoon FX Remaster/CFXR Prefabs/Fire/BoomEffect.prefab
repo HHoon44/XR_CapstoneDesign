@@ -107,7 +107,7 @@ GameObject:
   - component: {fileID: 8892177129927377689}
   - component: {fileID: 762352654476923557}
   m_Layer: 0
-  m_Name: CFXR Fire Breath
+  m_Name: BoomEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

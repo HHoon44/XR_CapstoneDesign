@@ -27,6 +27,7 @@ namespace XR_3MatchGame_UI
             backBlack.SetActive(true);
         }
 
+        /// </summary>
         /// 게임 종료 후 최고 점수를 업데이트하는 메서드
         /// </summary>
         public void HighScore()

@@ -27,6 +27,7 @@ namespace XR_3MatchGame_Object
 
         public AudioSource destroySound;
         public AudioSource boomSound;
+        public BoomEffect boomEffect;
 
         public bool isReStart;
 
@@ -77,6 +78,8 @@ namespace XR_3MatchGame_Object
 
         public void SetState(GameState gameState)
         {
+            GM.SetGameState(gameState);
+
             switch (gameState)
             {
                 case GameState.Move:
@@ -92,11 +95,10 @@ namespace XR_3MatchGame_Object
                     break;
 
                 case GameState.End:
+                    GameManager.Instance.GameEndFunction();
                     break;
 
                 case GameState.Boom:
-                    // GameState -> Boom
-                    GM.SetGameState(gameState);
                     StartCoroutine(BoomFun(boomBlock.col));
                     break;
             }
@@ -1619,7 +1621,7 @@ namespace XR_3MatchGame_Object
 
                                         yield return new WaitForSeconds(.3f);
 
-                                        DelBlockFunction();
+                                        DelBlockFunction(checkBlock);
                                     }
 
                                     // 블럭 저장소에서 제거
@@ -1658,7 +1660,7 @@ namespace XR_3MatchGame_Object
 
                                         yield return new WaitForSeconds(.3f);
 
-                                        DelBlockFunction();
+                                        DelBlockFunction(checkBlock);
                                     }
 
                                     // 블럭 저장소에서 제거
@@ -3270,6 +3272,13 @@ namespace XR_3MatchGame_Object
             var blockPool = ObjectPoolManager.Instance.GetPool<Block>(PoolType.Block);
             UIElement uiElement = UIWindowManager.Instance.GetWindow<UIElement>();
 
+            boomEffect.Initialize(boomCol);
+
+            /// 내려 오는 파티클 실행
+            boomEffect.boomEffect0.gameObject.SetActive(true);
+
+            yield return new WaitForSeconds(1f);
+
             // Row
             for (int col = 0; col < width; col++)
             {
@@ -3285,8 +3294,7 @@ namespace XR_3MatchGame_Object
                             // 스킬 게이지 업데이트
                             uiElement.SetGauge(blocks[row, col].ElementValue);
 
-                            // 블럭 파괴
-                            blockPool.ReturnPoolableObject(blocks[row, col]);
+                            delBlocks.Add(blocks[row, col]);
 
                             // 같은 Col에 있는 블럭 파괴
                             blocks[row, col] = null;
@@ -3294,6 +3302,27 @@ namespace XR_3MatchGame_Object
                     }
                 }
             }
+
+
+            // 블럭 파괴 작업
+            if (delBlocks.Count > 0)
+            {
+                for (int i = 0; i < delBlocks.Count; i++)
+                {
+                    delBlocks[i].BlockParticle();
+                    destroySound.Play();
+                }
+
+                yield return new WaitForSeconds(.3f);
+
+                DelBlockFunction();
+            }
+
+            /// 양 옆으로 가는 파티클 실행
+            boomEffect.boomEffect1.gameObject.SetActive(true);
+            boomEffect.boomEffect2.gameObject.SetActive(true);
+
+            yield return new WaitForSeconds(1f);
 
             // Col
             for (int row = 0; row < height; row++)
@@ -3310,14 +3339,27 @@ namespace XR_3MatchGame_Object
                             // 스킬 게이지 업데이트
                             uiElement.SetGauge(blocks[row, col].ElementValue);
 
-                            // 블럭 파괴
-                            blockPool.ReturnPoolableObject(blocks[row, col]);
+                            delBlocks.Add(blocks[row, col]);
 
                             // 같은 Col에 있는 블럭 파괴
                             blocks[row, col] = null;
                         }
                     }
                 }
+            }
+
+            // 블럭 파괴 작업
+            if (delBlocks.Count > 0)
+            {
+                for (int i = 0; i < delBlocks.Count; i++)
+                {
+                    delBlocks[i].BlockParticle();
+                    destroySound.Play();
+                }
+
+                yield return new WaitForSeconds(.3f);
+
+                DelBlockFunction();
             }
 
             // 블럭 다운 카운트 계산

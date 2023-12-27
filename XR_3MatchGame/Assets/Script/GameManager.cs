@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using XR_3MatchGame;
 using XR_3MatchGame.Util;
 using XR_3MatchGame_Object;
+using XR_3MatchGame_UI;
 
 namespace XR_3MatchGame_InGame
 {
@@ -51,9 +52,9 @@ namespace XR_3MatchGame_InGame
             Application.targetFrameRate = 60;
         }
 
-        public IEnumerator MyDelay()
+        public void GameEndFunction()
         {
-            yield return new WaitForSeconds(.3f);
+            Board.gameObject.SetActive(false);
         }
 
         /// <summary>

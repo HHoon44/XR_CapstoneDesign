@@ -46,7 +46,8 @@ namespace XR_3MatchGame_UI
                 }
                 else
                 {
-                    gaugeFill.fillAmount = Mathf.Lerp(gaugeFill.fillAmount, 0, Time.deltaTime * .08f);
+                    gaugeFill.fillAmount = Mathf.Lerp(gaugeFill.fillAmount, 0, Time.deltaTime * .02f);
+                    GameManager.Instance.Board.SetState(GameState.End);
                 }
             }
         }
